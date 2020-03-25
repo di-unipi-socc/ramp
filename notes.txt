@@ -32,6 +32,8 @@ era una mappa NodeIstance -> List<Requirement, NodeIstance>, ora e' id_nodo -> l
 ho messo Fault come coppia di tipo <NodeIstance, List<Requirement>>, cosi' 
 da rappresentare efficientemente il caso in cui una sola NodeIstance abbia 
 piu' di un fault allo stesso momento. 
+altrimenti una lista di fault, nel caso in cui un nodo avesse avuto piu' di un
+fault, avrebbe avuto piu' elementi con stesso nodo
 
 rappresentare i binding come Map<String, Map<Requirement, String>> secondo 
 me potrebbe peggiorare di molto la leggibilita'. 
