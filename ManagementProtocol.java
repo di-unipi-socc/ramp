@@ -4,7 +4,7 @@ import java.util.Map;
 //represents the protocol of a Node
 public class ManagementProtocol {
 
-    private final String firstState;
+    private final String initialState;
     // transition name -> Transition
     private final Map<String, Transition> transition;
     /**
@@ -20,7 +20,7 @@ public class ManagementProtocol {
     private final Map<String, List<String>> phi;
 
     /**
-     * @param firstState initial state of the node
+     * @param initialState initial state of the node
      * @param transition transition model: all the possible transitions
      * @param rho map the state with the needed requirements
      * @param gamma map the state with the offered capabilities
@@ -29,20 +29,20 @@ public class ManagementProtocol {
      * @throws InvalidArgumentException
      */
     public ManagementProtocol(
-        String firstState, 
+        String initialState, 
         Map<String, Transition> transition, 
         Map<String, List<Requirement>> rho,
         Map<String, List<String>> gamma, 
         Map<String, List<String>> phi
     ){
-        assert firstState.length() > 4;
+        assert initialState.length() > 0;
         assert transition != null;
         assert rho != null;
         assert gamma != null;
         assert phi != null;
 
         this.transition = transition;
-        this.firstState = firstState;
+        this.initialState = initialState;
         this.gamma = gamma;
         this.rho = rho;
         this.phi = phi;
@@ -52,34 +52,34 @@ public class ManagementProtocol {
      * @return TODO
      */
     public Map<String, List<String>> getPhi() {
-        return phi;
+        return this.phi;
     }
 
     /**
      * @return map such as: state -> offred caps in that state
      */
     public Map<String, List<String>> getGamma() {
-        return gamma;
+        return this.gamma;
     }
 
     /**
      * @return map such as: state -> needed reqs in that state
      */
     public Map<String, List<Requirement>> getRho() {
-        return rho;
+        return this.rho;
     }
 
     /**
      * @return map such as: transition's name -> Transition <s, op, s1> 
      */
     public Map<String, Transition> getTransition() {
-        return transition;
+        return this.transition;
     }
 
     /**
      * @return first state of the node
      */
-    public String getFirstState() {
-        return firstState;
+    public String getInitialState() {
+        return this.initialState;
     }
 }

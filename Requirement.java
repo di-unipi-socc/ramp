@@ -2,15 +2,15 @@ enum Sort {
     REPLICA_AWARE, REPLICA_UNAWARE, CONTAINMENT
 }
 
-//represent the requirement that a Node need to work properly
+//represent the requirement that a node need to work properly
 public class Requirement {
 
     private final String name;
     private final Sort reqSort;
 
     /**
-     * @param name of Requirement
-     * @param reqSort sort of the Requirement 
+     * @param name of the requirement
+     * @param reqSort sort of the requirement 
      * @throws InvalidArgumentException
      * @throws NullPointerException
      */
@@ -23,7 +23,7 @@ public class Requirement {
     }
 
     /**
-     * @return name of the Requirement
+     * @return name of the requirement
      */
     public String getName() {
         return name;

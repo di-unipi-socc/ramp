@@ -18,7 +18,11 @@ public class Application {
      * @param name application's name
      */
     public Application(String name) {
-        assert name.length() > 4;
+        //this assert is just to check that name is not null nor empty
+        //used many more times in this project, it is just a reminder for 
+        //a real exception handling
+        assert name.length() > 0;
+        
         this.name = name;
         this.nodes = new ArrayList<Node>();
         this.gState = new GlobalState(this);
@@ -31,7 +35,7 @@ public class Application {
      * @param nodes list of applicaton's Node
      */
     public Application(String name, List<Node> nodes){
-        assert name.length() > 4;
+        assert name.length() > 0;
         this.name = name; 
         this.setNodes(nodes);
         this.gState = new GlobalState(this);
@@ -74,12 +78,12 @@ public class Application {
         return name;
     }
 
-    //crea una node istance di n
+    //TODO
     public void scaleOut(Node n){
 
     }
 
-    //distrugge una node istance di n
+    //TODO
     public void scaleIn(Node n){
 
     }

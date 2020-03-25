@@ -18,10 +18,10 @@ public class Node {
     /**
      * @param n name of the Node
      * @param m protocol of the Node
-     * @param r List of all Requirement of the Node
-     * @param c List of all the capabilities of the Node
-     * @param s List of all the states of the Node
-     * @param o List of all the possible management operations
+     * @param r list of all requirement of the Node
+     * @param c list of all the capabilities of the Node
+     * @param s list of all the states of the Node
+     * @param o list of all the possible management operations
      * @throws NullPointerException
      * @throws IllegalArgumentException
      */
@@ -49,28 +49,28 @@ public class Node {
     }
 
     /**
-     * @return List of all the possible management ops on Node
+     * @return list of all the possible management ops on Node
      */
     public List<String> getOps() {
         return ops;
     }
 
     /**
-     * @return List of all the states of Node
+     * @return list of all the states of Node
      */
     public List<String> getStates() {
         return states;
     }
 
     /**
-     * @return List of all the capabilities offered by Node
+     * @return list of all the capabilities offered by Node
      */
     public List<String> getCaps() {
         return caps;
     }
 
     /**
-     * @return List of all the Requirement needed by Node
+     * @return list of all the requirement needed by Node
      */
     public List<Requirement> getReqs() {
         return reqs;

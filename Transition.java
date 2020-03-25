@@ -1,6 +1,6 @@
 public class Transition {
 
-    //the name of a transition is need to identify the Transition as a 
+    //the name of a transition is need to identify the transition as a 
     //string, this way it can be passed to mp.rho and be thought as a state
     private final String name;
     private final String startingState;
@@ -8,10 +8,10 @@ public class Transition {
     private final String endingState;
 
     /**
-     * @param name of the Transition
-     * @param startingState of the Transition
-     * @param op management op that "cause" the Transition
-     * @param endingState of the Transition
+     * @param name of the transition
+     * @param startingState of the transition
+     * @param op management op that "cause" the transition
+     * @param endingState of the transition
      * @throws NullPointerException
      * @throws IllegalArgumentException
      */
@@ -21,10 +21,10 @@ public class Transition {
         String op, 
         String endingState
     ){
-        assert name.length() > 4;
-        assert startingState != null && startingState.length() > 4;
-        assert op.length() > 4;
-        assert endingState.length() > 4;
+        assert name.length() > 0;
+        assert startingState != null && startingState.length() > 0;
+        assert op.length() > 0;
+        assert endingState.length() > 0;
 
         this.name = name;
         this.startingState = startingState;
@@ -33,31 +33,31 @@ public class Transition {
     }
 
     /**
-     * @return name of Transition
+     * @return name of transition
      */
     public String getName() {
-        return name;
+        return this.name;
     }
 
     /**
-     * @return management op of Transition
+     * @return management op of transition
      */
     public String getOp() {
-        return op;
+        return this.op;
     }
 
     /**
-     * @return starting state of Transition
+     * @return starting state of transition
      */
     public String getStartingState() {
-        return startingState;
+        return this.startingState;
     }
 
     /**
-     * @return ending state of Transition
+     * @return ending state of transition
      */
     public String getEndingState() {
-        return endingState;
+        return this.endingState;
     }
   
 }

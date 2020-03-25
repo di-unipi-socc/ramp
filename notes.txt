@@ -1,0 +1,49 @@
+TODO
+- creare classe Fault e altra classe che "implementa" la coppia per migliorare
+  la leggibilita'
+    - ok
+- cambia firstState in initialState dentro ManagementProtocol
+    - ok
+- mappa di mappe per rappresentare i binding
+- refactoring degli assert e nomi campi 
+- definire opportune eccezioni per op fallite o non fattibili
+- applicare licenza apache 2.0
+- implementare operazioni offerte all'analyzer (op_start, ...)
+- metodi per il ritorno dei fault
+    - cambiato molto il metodo getPendingFaults(NodeIstance n)
+        - qui ho preferito comunque far tornare una lista di requirement, 
+          secondo me non ha senso far tornare una lista di fault
+          <nodo n con requirement fallito, requirement fallito> dato che quella
+          node istance gia' la conosco (l'ho passata per parametro)
+    - implementato il metodo getPendingFaults()
+        - questo si' che torna una struttura dati di fault
+            - nello specifico una mappa id node istance -> fault
+              - vedi sotto come e' definito fault
+    - TODO broken istances & resolvable fault
+- implementare metodo "getPossibleTransition"
+- sistemare commenti in modo corente
+
+NOTE
+prima binding (classe global state) 
+(ovvero nodo n -> lista dei Bond del tipo <requirement di n, nodo n1 che soddisfa r di n>)
+era una mappa NodeIstance -> List<Requirement, NodeIstance>, ora e' id_nodo -> lista ...
+(uso l'id del node istance e non il node istance come chiave)
+
+ho messo Fault come coppia di tipo <NodeIstance, List<Requirement>>, cosi' 
+da rappresentare efficientemente il caso in cui una sola NodeIstance abbia 
+piu' di un fault allo stesso momento. 
+
+rappresentare i binding come Map<String, Map<Requirement, String>> secondo 
+me potrebbe peggiorare di molto la leggibilita'. 
+Ad esempio, nel metodo getSatisfiedReq(NodeIstance n) devo tornare la lista
+di requirement di n che sono soddisfatti. 
+In questo modo pero' ho bisogno dei requirement da usare come chiave per 
+la seconda mappa. 
+Quindi dovrei andare a prendermi tutti i requirement necessari in quello stato, e
+per ogni requirement, usare la mappa.
+Il vantaggio presazionale si ha in base a quanti requirement un singolo nodo ha
+(la mia implementazione costa n, c'e' una lista). a questo punto la scelta
+dipende dagli obiettivi della libreria, se vuole essere super generale, in modo
+da venire potenzialmente usata in applicazioni in cui ci sono moltissimi nodi
+(molti dei quali hanno decine di requirement) scrivo la map di map, 
+altrimenti il tradeoff leggibilita'/efficienza potrebbe non convenire (?) 

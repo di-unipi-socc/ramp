@@ -1,13 +1,13 @@
 //represent the runtime istances of a Node
 public class NodeIstance {
-    private final Node myNode;
+    private final Node nodeType;
     private String currenState;
     private final String id;
 
     /**
-     * @param n Node of which NodeIstance is an instance
-     * @param cS current state of the NodeIstance
-     * @param id unique identifier of NodeIstance
+     * @param n node of which this is an instance
+     * @param cS current state of the new node istance
+     * @param id unique identifier of the new node istance
      * @throws NullPointerException
      * @throws InvalidArgumentException
      */
@@ -19,28 +19,28 @@ public class NodeIstance {
         this.currenState = cS;
         //TODO: come arrivo in questo stato? Ci saranno un set di op da fare
         this.id = id;
-        this.myNode = n;
+        this.nodeType = n;
     }
     
     /**
-     * @return Node of which NodeIstance is an istance
+     * @return Node of which node istance is an istance
      */
-    public Node getMyNode() {
-        return myNode;
+    public Node getNodeType() {
+        return this.nodeType;
     }
 
     /**
      * @return unique identifier of NodeIstance
      */
     public String getId() {
-        return id;
+        return this.id;
     }
 
     /**
      * @return current state of NodeIstance
      */
     public String getCurrenState() {
-        return currenState;
+        return this.currenState;
     }
 
     /**
