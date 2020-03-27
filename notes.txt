@@ -50,6 +50,11 @@ da venire potenzialmente usata in applicazioni in cui ci sono moltissimi nodi
 (molti dei quali hanno decine di requirement) scrivo la map di map, 
 altrimenti il tradeoff leggibilita'/efficienza potrebbe non convenire (?) 
 
+resolvable fault e' una coppia <requisito, nodi che possono risolvere quel req>
+una lista di resolvable fault rappresenta, per ogni requisito, la lista di nodi
+che possono risolvere quel requisito
+La map<String, list<resolvable fault>> associa ad ogni nodo la lista di 
+requisiti falliti e la lista dei nodi che possono risolvere il fault
 
 DOMANDE
 1) e' possibile per una node istance avere piu' di un rapporto di containment?

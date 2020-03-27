@@ -152,7 +152,7 @@ public class GlobalState {
     }
 
     /**
-     * @return all the pending faults of the whole application, node istance by node istance
+     * @return map of all the pending faults of the whole application, node istance by node istance
      */
     public Map<String, PendingFault> getPendingFaults(){
 
@@ -215,26 +215,34 @@ public class GlobalState {
         return brokenIstances;    
     }
 
-    //per ogni requirement fallito di n associa la lista di nodi che lo risolvono
+    /**
+     * @param n node istance of which we want the resolvable faults
+     * @return list of resolvable faults of n
+     * @throws NullPointerException
+     */
     public List<ResolvableFault> getResolvableFaults(NodeIstance n){
         assert n != null;
         List<ResolvableFault> resolvableFaults = new ArrayList<>();
 
-        //requisiti di n non soddisfatti
+        //requirement of n no longer met
         ArrayList<Requirement> reqsNotMet = (ArrayList<Requirement>) this.getRequirementsNotMet(n);
         
-        //tutti i nodi attivi
         ArrayList<NodeIstance> activeNodes = (ArrayList<NodeIstance>) this.activeNodes.values();
 
-
+        //for each requirement not met of n we check if it rises a resolvable fault
         for(Requirement r : reqsNotMet){
             if(r.isReplicaUnaware() == true){
+                //resolvable fault are replica unware by definition
+
                 List<String> capableNodeIstance = new ArrayList<>();
                 for(NodeIstance n1 : activeNodes){
                     if(this.getOfferedCaps(n1).contains(r.getName()) == true)
+                        //among all active nodes n1 is offering the right cap to take care of r
                         capableNodeIstance.add(n1.getId());
                 }
+
                 if(capableNodeIstance.isEmpty() == false)
+                    //means that there are node istances that can resolve the fault
                     resolvableFaults.add(new ResolvableFault(r, capableNodeIstance));
                 
             }
@@ -242,6 +250,9 @@ public class GlobalState {
         return resolvableFaults;
     }
 
+    /**
+     * @return map of all the resolvable faults of the whole applicaton, node istance by node istance
+     */
     public Map<String, List<ResolvableFault>> getResolvableFaults(){
         Map<String, List<ResolvableFault>> resolvableFault = new HashMap<>();
 
