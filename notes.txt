@@ -49,3 +49,14 @@ dipende dagli obiettivi della libreria, se vuole essere super generale, in modo
 da venire potenzialmente usata in applicazioni in cui ci sono moltissimi nodi
 (molti dei quali hanno decine di requirement) scrivo la map di map, 
 altrimenti il tradeoff leggibilita'/efficienza potrebbe non convenire (?) 
+
+
+DOMANDE
+1) e' possibile per una node istance avere piu' di un rapporto di containment?
+    NO
+
+2) i metodi che prendono come parametro una node istance dovrebbero prendere 
+   una stringa? Secondo me e' uguale (o uso la map in gs o la usa l'analyzer)
+
+3) i tipi di dato per i fault potrebbero essere meglio, cosi' e' oggettivamente
+   brutto. pero' se uso i generics lo capisco solo io
