@@ -2,9 +2,9 @@
  * this is just a pair (tuple). we do not use Map.Entry for readibility
  * this represent a bond, given the requirement r, if the node istance n 
  * is the one who satisfy r offering the right capability, we have a bond, 
- * such as <r, unique id of n>
+ * such as <r, unique id of n> in the global state (binding)
  */
-public class Bond {
+public class Binding {
     private final String ist;
     private final Requirement req;
 
@@ -13,7 +13,7 @@ public class Bond {
      * @param ist node istance that take care of req
      * @throws NullPointerException
      */
-    public Bond(Requirement req, String ist) {
+    public Binding(Requirement req, String ist) {
         assert ist != null;
         assert req != null;
 

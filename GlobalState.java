@@ -7,12 +7,12 @@ import java.util.Map;
 public class GlobalState {
     Application app;
 
-    //active node istances: <NodeIstance unique id, NodeIstance>
-    Map<String, NodeIstance> activeNodes;
+    //active node instances: <NodeInstance unique id, NodeInstance>
+    Map<String, NodeInstance> activeNodes;
 
     //set of runtime binding such as: 
-    //id of node istance n-> list of bond <Requirement r of n, unique id of n1 that satisfies r>
-    Map<String, List<Bond>> binding;
+    //id of node instance n-> list of Binding <Requirement r of n, unique id of n1 that satisfies r>
+    Map<String, List<Binding>> binding;
 
     /**
      * @param app application of which this is the global state
@@ -27,33 +27,33 @@ public class GlobalState {
     }
 
     /**
-     * @return map of the node istances currently active
+     * @return map of the node instances currently active
      */
-    public Map<String, NodeIstance> getActiveNodes(){
+    public Map<String, NodeInstance> getActiveNodes(){
         return this.activeNodes;
     }
 
     /**
-     * @return map of the runtime bindings between node istances 
+     * @return map of the runtime bindings between node instances 
      */
-    public Map<String, List<Bond>> getBinding(){
+    public Map<String, List<Binding>> getBinding(){
         return this.binding;
     }
 
     /**
-     * @param n node istance of which it's asked the list of satisfied reqs
-     * @return list of the satisfied requirement of n
+     * @param n node instance of which it's asked the list of satisfied reqs
+     * @return list of the satisfied requirement of n (for which exist a binding)
      * @throws NullPointerException
      */
-    public List<Requirement> getSatisfiedReqs(NodeIstance n){
+    public List<Requirement> getSatisfiedReqs(NodeInstance n){
         assert n != null;
         List<Requirement> satisfiedReqs = new ArrayList<>();
         
-        //list of <Requirement of n, NodeIstance that satisfy r>
-        List<Bond> nBindings = this.binding.get(n.getId());
+        //list of <Requirement of n, NodeInstance that satisfy r>
+        List<Binding> nBindings = this.binding.get(n.getId());
 
         //for each pair this extract just the satisfied requirement
-        for(Bond e: nBindings){
+        for(Binding e: nBindings){
             satisfiedReqs.add(e.getReq());
         }
 
@@ -62,130 +62,105 @@ public class GlobalState {
 
     /**
      * add a runtime binding such as <n, r, n1>
-     * @param n node istance asking for the requirement r
+     * @param n node instance asking for the requirement r
      * @param r requirement that is being asked by n
      * @param n1 node istanc that satisfy r with the correct capability
      * @throws NullPointerException
      */
-    public void addBinding(NodeIstance n, Requirement r, NodeIstance n1){
+    public void addBinding(NodeInstance n, Requirement r, NodeInstance n1){
         assert n != null;
         assert r != null;
         assert n1 != null;
 
         //get the value of the binding using the key n
-        List<Bond> tmp = this.binding.get(n.getId());
+        List<Binding> tmp = this.binding.get(n.getId());
 
         if(tmp == null){ 
             //this is the first binding of n
             tmp = new ArrayList<>();
-            tmp.add(new Bond(r, n1.getId()));
+            tmp.add(new Binding(r, n1.getId()));
         }else
             //this is another binding of n
-            tmp.add(new Bond(r, n1.getId()));
+            tmp.add(new Binding(r, n1.getId()));
     
     }
 
     /**
-     * @param n node istance of which we want a list of all its requirement that are not met
-     * @return list of requirement of n that are not met
-     */
-    public List<Requirement> getRequirementsNotMet(NodeIstance n){
-        List<Requirement> reqsNotMet = new ArrayList<>();
-
-        ArrayList<Requirement> neededReqs = (ArrayList<Requirement>) this.getNeededReqs(n);
-        ArrayList<Requirement> satisfiedReqs = (ArrayList<Requirement>) this.getSatisfiedReqs(n);
-
-        for(Requirement r : neededReqs){
-            if(satisfiedReqs.contains(r) == false)
-                reqsNotMet.add(r);
-            
-        }
-        return reqsNotMet;
-    }
-
-    /**
      * remove a runtime binding such as <n, r, n1>
-     * @param n node istance that was asking for the requirement r
+     * @param n node instance that was asking for the requirement r
      * @param r requirement that was required
-     * @param n1 nodeIstance that was satisfying r with the correct capability
+     * @param n1 NodeInstance that was satisfying r with the correct capability
      * @throws NullPointerException
      */
-    public void removeBinding(NodeIstance n, Requirement r, NodeIstance n1){
+    public void removeBinding(NodeInstance n, Requirement r, NodeInstance n1){
         assert n != null;
         assert n1 != null;
-        assert r != null;
+        assert r != null;   
         this.binding.remove(n.getId());
     }
 
     /**
-     * pending fault: a node istance require a requirement and there isn't a node
-     * istance offering that capability
-     * @param n node istance of which it's asked the pending faults
+     * pending fault: a node instance require a requirement and there isn't a node
+     * instance offering that capability
+     * @param n node instance of which it's asked the pending faults
      * @return list of requirement of n that are not met 
      * @throws NullPointerException
      */
-    public List<Requirement> getPendingFaults(NodeIstance n){
+    public List<Fault> getPendingFaults(NodeInstance n){
         assert n != null;
+        //list of fault that will return
+        List<Fault> faults = new ArrayList<>();
+    
+        //list of requirement needed by n
+        List<Requirement> neededReqs = this.getNeededReqs(n);
 
-        ArrayList<Requirement> reqsNotMet = (ArrayList<Requirement>) this.getRequirementsNotMet(n);
-        List<Requirement> faults = new ArrayList<>();
+        //list of assumed requirement of n
+        List<Requirement> satisfiedReqs = this.getSatisfiedReqs(n);
 
-        //all the currently active node istances
-        ArrayList<NodeIstance> istances = (ArrayList<NodeIstance>) this.activeNodes.values();
-        boolean found = false;
-
-        for(Requirement r : reqsNotMet){  
-                //the requirement r it's not satisfied anymore, hence we check if there is another
-                //node istance that can satisfy it, if there isn't we have a pending fault
-                for(NodeIstance ist : istances){
-                    if(this.getOfferedCaps(ist).contains(r.getName()) == true)
-                        //we have found a node istance that can take care of r
-                        found = true;
-
-                //a node istance offering the right capability was not found, hence pending fault
-                if(found == false)
-                    faults.add(r);
+        //for each needed requirement r we check if exists a binding that 
+        //resolve it, if not there is a fault
+        for(Requirement r : neededReqs){
+            if(r.isContainment() == false){
+                if(satisfiedReqs.contains(r) == false)
+                    faults.add(new Fault(n.toString(), r));
             }
-            found = false;      
         }
         return faults;
     }
 
     /**
-     * @return map of all the pending faults of the whole application, node istance by node istance
+     * @return list of all the pending faults of the whole application
      */
-    public Map<String, PendingFault> getPendingFaults(){
+    public List<Fault> getPendingFaults(){
+       List<Fault> faults = new ArrayList<>();
 
-        //node istance id -> fault of that node istance
-        //if needed the node istance is stored inside Fault
-        Map<String, PendingFault> faults = new HashMap<>();
-
-        //all the currently active node istances
-        ArrayList<NodeIstance> istances = (ArrayList<NodeIstance>) this.activeNodes.values();
+        //all the currently active node instances
+        ArrayList<NodeInstance> instances = (ArrayList<NodeInstance>) this.activeNodes.values();
         
-        for(NodeIstance ist : istances){
-            faults.put(ist.getId(), new PendingFault(ist, this.getPendingFaults(ist)));
+        //for each instance we get the list of failed requirement and then we add <ist, failed req> 
+        //to the list of all faults
+        for(NodeInstance ist : instances){
+            ArrayList<Fault> istPendingFaults = (ArrayList<Fault>) this.getPendingFaults(ist);
+            faults.addAll(istPendingFaults);
         }
-        
         return faults;
-
     }
 
     /**
-     * @param n node istance of which we want to know if it he has a broken istance
-     * @return true if n has a broken istance, false otherwise
+     * @param n node instance of which we want to know if it he has a broken instance
+     * @return true if n has a broken instance, false otherwise
      * @throws NullPointerException
      */
-    public boolean haveBrokenIstance(NodeIstance n){
+    public boolean isBrokeninstance(NodeInstance n){
         assert n != null;
         boolean res = false;
 
-        //all bonds of n
-        List<Bond> bondsOfN = this.binding.get(n.getId());
+        //all Bindings of n
+        List<Binding> BindingsOfN = this.binding.get(n.getId());
 
-        //for each bond we check if this is a containment relation
-        for(Bond b : bondsOfN){
-            if(b.getReq().getName().equals("containment") == true){
+        //for each Binding we check if this is a containment relation
+        for(Binding b : BindingsOfN){
+            if(b.getReq().isContainment() == true){
 
                 //this is a containment relation, hence we check if the container
                 //is still active
@@ -199,86 +174,91 @@ public class GlobalState {
     }
 
     /**
-     * broken istance: a node istance have a "contain" relation with a 
-     * node istance that is no longer alive
-     * @return list of node istance id(s) that have a broken istance
+     * broken instance: a node instance have a "contain" relation with a 
+     * node instance that is no longer alive
+     * @return list of node instance id(s) that have a broken instance
      */
-    public List<String> getBrokenIstances(){
-        List<String> brokenIstances = new ArrayList<>();
-        List<NodeIstance> activeNodes = (ArrayList<NodeIstance>) this.activeNodes.values();
+    public List<String> getBrokeninstances(){
+        List<String> brokeninstances = new ArrayList<>();
+        List<NodeInstance> activeNodes = (ArrayList<NodeInstance>) this.activeNodes.values();
 
-        for(NodeIstance n : activeNodes){
-            if(this.haveBrokenIstance(n) == true)
-                brokenIstances.add(n.getId());
+        for(NodeInstance n : activeNodes){
+            if(this.isBrokeninstance(n) == true)
+                brokeninstances.add(n.getId());
         }
 
-        return brokenIstances;    
+        return brokeninstances;    
+    }
+
+    public boolean isResolvableFault(Fault f){
+        assert f != null;
+        boolean res = false;
+
+        //all active node instances
+        ArrayList<NodeInstance> instances = (ArrayList<NodeInstance>) this.activeNodes.values();
+        
+        //a fault can be resolvable only if it is replica unware
+        if(f.getReq().isReplicaUnaware()){
+            //for each active node instance we check if it offer the right capability 
+            //to resolve the fault
+            for(NodeInstance n : instances){
+                if(this.getOfferedCaps(n).contains(f.getReq().getName()) == true){
+                    res = true;
+                    break;
+                }
+            }
+        }
+        
+        return res;
     }
 
     /**
-     * @param n node istance of which we want the resolvable faults
+     * @param n node instance of which we want the resolvable faults
      * @return list of resolvable faults of n
      * @throws NullPointerException
      */
-    public List<ResolvableFault> getResolvableFaults(NodeIstance n){
+    public List<Fault> getResolvableFaults(NodeInstance n){
         assert n != null;
-        List<ResolvableFault> resolvableFaults = new ArrayList<>();
+        List<Fault> resolvableFaults = new ArrayList<>();
 
-        //requirement of n no longer met
-        ArrayList<Requirement> reqsNotMet = (ArrayList<Requirement>) this.getRequirementsNotMet(n);
-        
-        ArrayList<NodeIstance> activeNodes = (ArrayList<NodeIstance>) this.activeNodes.values();
+        ArrayList<Fault> pendingFaults = (ArrayList<Fault>) this.getPendingFaults(n);
 
-        //for each requirement not met of n we check if it rises a resolvable fault
-        for(Requirement r : reqsNotMet){
-            if(r.isReplicaUnaware() == true){
-                //resolvable fault are replica unware by definition
-
-                List<String> capableNodeIstance = new ArrayList<>();
-                for(NodeIstance n1 : activeNodes){
-                    if(this.getOfferedCaps(n1).contains(r.getName()) == true)
-                        //among all active nodes n1 is offering the right cap to take care of r
-                        capableNodeIstance.add(n1.getId());
-                }
-
-                if(capableNodeIstance.isEmpty() == false)
-                    //means that there are node istances that can resolve the fault
-                    resolvableFaults.add(new ResolvableFault(r, capableNodeIstance));
-                
-            }
+        for(Fault f : pendingFaults){
+            if(this.isResolvableFault(f) == true)
+                resolvableFaults.add(f);
         }
         return resolvableFaults;
     }
 
     /**
-     * @return map of all the resolvable faults of the whole applicaton, node istance by node istance
+     * @return list of all the resolvable faults of the whole applicaton
      */
-    public Map<String, List<ResolvableFault>> getResolvableFaults(){
-        Map<String, List<ResolvableFault>> resolvableFault = new HashMap<>();
-
-        ArrayList<NodeIstance> activeNodes = (ArrayList<NodeIstance>) this.activeNodes.values();
-        for(NodeIstance n : activeNodes){
-            resolvableFault.put(n.getId(), this.getResolvableFaults(n));
-        }
+    public List<Fault> getResolvableFaults(){
+        List<Fault> resolvableFault = new ArrayList<>();
+        ArrayList<NodeInstance> activeNodes = (ArrayList<NodeInstance>) this.activeNodes.values();
+        
+        for(NodeInstance n : activeNodes)
+            resolvableFault.addAll(this.getResolvableFaults(n));
+        
         return resolvableFault;
     }
 
      /**
-     * @param n node istance of 
-     * @return list of requirements that the node istance is currently asking
+     * @param n node instance of 
+     * @return list of requirements that the node instance is currently asking
      * @throws NullPointerException
      */
-    public List<Requirement> getNeededReqs(NodeIstance n){
+    public List<Requirement> getNeededReqs(NodeInstance n){
         assert n != null;
         return n.getNodeType().getMp().getRho().get(n.getCurrenState());
     }
 
     /**
-     * @param n node istance of which it's asked the list of offered caps
+     * @param n node instance of which it's asked the list of offered caps
      * @return list of capabilities offred by n
      * @throws NullPointerException
      */
-    public List<String> getOfferedCaps(NodeIstance n){
+    public List<String> getOfferedCaps(NodeInstance n){
         assert n != null;
         return n.getNodeType().getMp().getGamma().get(n.getCurrenState());
     }

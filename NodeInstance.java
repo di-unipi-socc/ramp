@@ -1,5 +1,5 @@
 //represent the runtime istances of a Node
-public class NodeIstance {
+public class NodeInstance {
     private final Node nodeType;
     private String currenState;
     private final String id;
@@ -11,7 +11,7 @@ public class NodeIstance {
      * @throws NullPointerException
      * @throws InvalidArgumentException
      */
-    public NodeIstance(Node n, String cS, String id) {
+    public NodeInstance(Node n, String cS, String id) {
         assert n != null;
         assert cS.length() > 4;
         assert id.length() > 4;

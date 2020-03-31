@@ -62,6 +62,11 @@ DOMANDE
 
 2) i metodi che prendono come parametro una node istance dovrebbero prendere 
    una stringa? Secondo me e' uguale (o uso la map in gs o la usa l'analyzer)
+    E'uguale, lascio NodeIstance
 
 3) i tipi di dato per i fault potrebbero essere meglio, cosi' e' oggettivamente
    brutto. pero' se uso i generics lo capisco solo io
+   uso una classe padre che ha solo il nome del fault e poi estendo con i due fault 
+   attuali? 
+    Uso un fault unico, non devo distaccarmi dal modello generale. I pending sono tutti
+    i fault. I resolvable fault sono un sottoinsieme dei pending. Va bene fare le ripetizioni
