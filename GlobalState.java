@@ -190,6 +190,7 @@ public class GlobalState {
         return brokeninstances;    
     }
 
+    //TODO commenta
     public boolean isResolvableFault(Fault f){
         assert f != null;
         boolean res = false;
@@ -262,6 +263,4 @@ public class GlobalState {
         assert n != null;
         return n.getNodeType().getMp().getGamma().get(n.getCurrenState());
     }
-
-
 }

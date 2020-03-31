@@ -1,6 +1,8 @@
 import java.util.ArrayList;
 import java.util.List;
 
+import exceptions.OperationNotAvailable;
+
 //represents the whole application
 public class Application {
 
@@ -78,14 +80,44 @@ public class Application {
         return name;
     }
 
-    //TODO
-    public void scaleOut(Node n){
+    /**
+     * @param n node instance on which it's required to do the managment operation op
+     * @param op management operation to execute
+     * @throws NullPointerException
+     * @throws OperationNotAvailable
+     */
+    public void opStart(NodeInstance n, String op) throws OperationNotAvailable {
+        assert n != null;
+        assert op.length() != 0;
+
+        Transition transitionToHappen = null;
+
+        ArrayList<Transition> possibleTransitions = (ArrayList<Transition>) n.getPossibleTransitions();
+        for (Transition t : possibleTransitions){
+            if(t.getOp().equals(op) == true && t.getEndingState().equals("damaged") == false)
+               transitionToHappen = t;   
+        }
+
+        //among the possible transitions there is not a transition with this op, 
+        //hence the op is not available
+        if(transitionToHappen == null)
+            throw new OperationNotAvailable();
+        
+        //n goes in a transient state
+        n.setCurrenState(transitionToHappen.getName());
+
+        //TODO: aggiornare i binding
+            //1) rimuovi i vecchi binding legati al vecchio stato
+            //2) provi a creare in maniera automatica i nuovi binding 
+            //   (relativi ai nuovi reqs dello stato transiente di n)
+            //   TODO: devi quindi definire finalmente pi, la funzione che decide quale istanza usare
+            //   fra quelle che offrono le corrette capability
 
     }
 
-    //TODO
-    public void scaleIn(Node n){
+    public void opEnd(NodeInstance n, String op){
 
     }
+
 
 }

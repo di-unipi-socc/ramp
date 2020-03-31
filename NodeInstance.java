@@ -1,3 +1,6 @@
+import java.util.ArrayList;
+import java.util.List;
+
 //represent the runtime istances of a Node
 public class NodeInstance {
     private final Node nodeType;
@@ -48,6 +51,25 @@ public class NodeInstance {
      */
     public void setCurrenState(String currenState) {
         this.currenState = currenState;
+    }
+
+    /**
+     * @return list of all the transitions that start in the current state
+     */
+    public List<Transition> getPossibleTransitions(){
+        List<Transition> possibleTransitions = new ArrayList<>();
+
+        //list of all the transitions of the this node instance
+        ArrayList<Transition> transitions = (ArrayList<Transition>) this.getNodeType().getMp().getTransition().values();
+
+        //for each transistion we check if it starts in the current state, if so it is a 
+        //(theorically) possible transition
+        for(Transition t : transitions){
+            if(t.getStartingState().equals(this.currenState))
+                possibleTransitions.add(t);
+        }
+
+        return possibleTransitions;
     }
 
 }

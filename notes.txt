@@ -5,68 +5,38 @@ TODO
 - cambia firstState in initialState dentro ManagementProtocol
     - ok
 - mappa di mappe per rappresentare i binding
+    - per ora no, ok
 - refactoring degli assert e nomi campi 
+    - ok
 - definire opportune eccezioni per op fallite o non fattibili
 - applicare licenza apache 2.0
 - implementare operazioni offerte all'analyzer (op_start, ...)
 - metodi per il ritorno dei fault
-    - cambiato molto il metodo getPendingFaults(NodeIstance n)
-        - qui ho preferito comunque far tornare una lista di requirement, 
-          secondo me non ha senso far tornare una lista di fault
-          <nodo n con requirement fallito, requirement fallito> dato che quella
-          node istance gia' la conosco (l'ho passata per parametro)
-    - implementato il metodo getPendingFaults()
-        - questo si' che torna una struttura dati di fault
-            - nello specifico una mappa id node istance -> fault
-              - vedi sotto come e' definito fault
-    - TODO broken istances & resolvable fault
+    - ok
 - implementare metodo "getPossibleTransition"
+    - ok
 - sistemare commenti in modo corente
+    - ok
+- correzione "istance" e "bond" in Instance e Binding
+    - ok
 
 NOTE
-prima binding (classe global state) 
-(ovvero nodo n -> lista dei Bond del tipo <requirement di n, nodo n1 che soddisfa r di n>)
-era una mappa NodeIstance -> List<Requirement, NodeIstance>, ora e' id_nodo -> lista ...
-(uso l'id del node istance e non il node istance come chiave)
+1) Binding: id nodo n -> lista dei Binding del tipo <requirement di n, nodo n1 che soddisfa r di n>
 
-ho messo Fault come coppia di tipo <NodeIstance, List<Requirement>>, cosi' 
-da rappresentare efficientemente il caso in cui una sola NodeIstance abbia 
-piu' di un fault allo stesso momento. 
-altrimenti una lista di fault, nel caso in cui un nodo avesse avuto piu' di un
-fault, avrebbe avuto piu' elementi con stesso nodo
-
-rappresentare i binding come Map<String, Map<Requirement, String>> secondo 
-me potrebbe peggiorare di molto la leggibilita'. 
-Ad esempio, nel metodo getSatisfiedReq(NodeIstance n) devo tornare la lista
-di requirement di n che sono soddisfatti. 
-In questo modo pero' ho bisogno dei requirement da usare come chiave per 
-la seconda mappa. 
-Quindi dovrei andare a prendermi tutti i requirement necessari in quello stato, e
-per ogni requirement, usare la mappa.
-Il vantaggio presazionale si ha in base a quanti requirement un singolo nodo ha
-(la mia implementazione costa n, c'e' una lista). a questo punto la scelta
-dipende dagli obiettivi della libreria, se vuole essere super generale, in modo
-da venire potenzialmente usata in applicazioni in cui ci sono moltissimi nodi
-(molti dei quali hanno decine di requirement) scrivo la map di map, 
-altrimenti il tradeoff leggibilita'/efficienza potrebbe non convenire (?) 
-
-resolvable fault e' una coppia <requisito, nodi che possono risolvere quel req>
-una lista di resolvable fault rappresenta, per ogni requisito, la lista di nodi
-che possono risolvere quel requisito
-La map<String, list<resolvable fault>> associa ad ogni nodo la lista di 
-requisiti falliti e la lista dei nodi che possono risolvere il fault
+2) rappresentare i binding come Map<String, Map<Requirement, String>> secondo 
+   me potrebbe peggiorare di molto la leggibilita'. 
+   Ad esempio, nel metodo getSatisfiedReq(NodeIstance n) devo tornare la lista
+   di requirement di n che sono soddisfatti. 
+   In questo modo pero' ho bisogno dei requirement da usare come chiave per 
+   la seconda mappa. 
+   Quindi dovrei andare a prendermi tutti i requirement necessari in quello stato, e
+   per ogni requirement, usare la mappa.
+   Il vantaggio presazionale si ha in base a quanti requirement un singolo nodo ha
+   (la mia implementazione costa n, c'e' una lista). a questo punto la scelta
+   dipende dagli obiettivi della libreria, se vuole essere super generale, in modo
+   da venire potenzialmente usata in applicazioni in cui ci sono moltissimi nodi
+   (molti dei quali hanno decine di requirement) scrivo la map di map, 
+   altrimenti il tradeoff leggibilita'/efficienza potrebbe non convenire (?) 
 
 DOMANDE
-1) e' possibile per una node istance avere piu' di un rapporto di containment?
-    NO
-
-2) i metodi che prendono come parametro una node istance dovrebbero prendere 
-   una stringa? Secondo me e' uguale (o uso la map in gs o la usa l'analyzer)
-    E'uguale, lascio NodeIstance
-
-3) i tipi di dato per i fault potrebbero essere meglio, cosi' e' oggettivamente
-   brutto. pero' se uso i generics lo capisco solo io
-   uso una classe padre che ha solo il nome del fault e poi estendo con i due fault 
-   attuali? 
-    Uso un fault unico, non devo distaccarmi dal modello generale. I pending sono tutti
-    i fault. I resolvable fault sono un sottoinsieme dei pending. Va bene fare le ripetizioni
+1) getPossibleTransition e' in NodeInstance, va bene li'??
