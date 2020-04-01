@@ -16,11 +16,11 @@ public class NodeInstance {
      */
     public NodeInstance(Node n, String cS, String id) {
         assert n != null;
-        assert cS.length() > 4;
-        assert id.length() > 4;
+        assert cS.length() > 0;
+        assert id.length() > 0;
 
         this.currenState = cS;
-        //TODO: come arrivo in questo stato? Ci saranno un set di op da fare
+        //TODO: come arrivo in questo stato? Ci saranno un set di op da fare (chain di transizioni ottimistiche)
         this.id = id;
         this.nodeType = n;
     }

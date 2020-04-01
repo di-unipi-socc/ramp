@@ -3,6 +3,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import exceptions.InstanceNotAvailableException;
+
 //represents the current runtime state of the applicaton 
 public class GlobalState {
     Application app;
@@ -60,6 +62,44 @@ public class GlobalState {
         return satisfiedReqs;
     }
 
+    //prende i requirement necessari e i requirement soddisfatti di n
+    //se ci sono requirement soddisfatti ma che non sono necessari rimuove i relativi
+    //binding dal global state
+    public void removeOldBindings(NodeInstance n){
+        //we remove the old bindings, the ones that was about an old state of the instance 
+        ArrayList<Requirement> satisfiedReqs = (ArrayList<Requirement>) this.getSatisfiedReqs(n);
+        ArrayList<Requirement> neededReqs = (ArrayList<Requirement>) this.getNeededReqs(n);
+
+        //if there is a satisfied requirement that it is not needed it means that it was from an old
+        //binding, hence we remove it
+        for(Requirement r : satisfiedReqs){
+            if(r.isContainment() == false){
+                if(neededReqs.contains(r) == false)
+                    this.removeBinding(n, r);
+            }
+        }
+    }
+
+     //TODO: validare
+     public void psiMethod(NodeInstance n) throws InstanceNotAvailableException {
+        ArrayList<Requirement> satisfiedReqs = (ArrayList<Requirement>) this.getSatisfiedReqs(n);
+        ArrayList<Requirement> neededReqs = (ArrayList<Requirement>) this.getNeededReqs(n);
+        //if a needed requirement it's not met we have to create the right binding
+        //to handle it. 
+        for(Requirement r : neededReqs){
+            if(r.isContainment() == false){
+                if(satisfiedReqs.contains(r) == false){
+                    //a needed reqs is not satisfied, we must create the right binding
+                    NodeInstance capableInstance = this.app.defaultPi(r);
+                    if(capableInstance == null)
+                        throw new InstanceNotAvailableException();
+
+                    this.addBinding(n, r, capableInstance);
+                }
+            }
+        }
+    }
+
     /**
      * add a runtime binding such as <n, r, n1>
      * @param n node instance asking for the requirement r
@@ -89,14 +129,21 @@ public class GlobalState {
      * remove a runtime binding such as <n, r, n1>
      * @param n node instance that was asking for the requirement r
      * @param r requirement that was required
-     * @param n1 NodeInstance that was satisfying r with the correct capability
      * @throws NullPointerException
      */
-    public void removeBinding(NodeInstance n, Requirement r, NodeInstance n1){
+    public void removeBinding(NodeInstance n, Requirement r){
         assert n != null;
-        assert n1 != null;
-        assert r != null;   
-        this.binding.remove(n.getId());
+        assert r != null;
+        
+        //ref to the binding of n
+        ArrayList<Binding> nBindings = (ArrayList<Binding>) this.binding.get(n.getId());
+
+        //we are already in a situation such as <n, ., .>
+        for (Binding b : nBindings) {
+            if(b.getReq().equals(r) == true)
+                //we have <n, r, x> so we remove it
+                nBindings.remove(b);   
+        }
     }
 
     /**
@@ -190,7 +237,10 @@ public class GlobalState {
         return brokeninstances;    
     }
 
-    //TODO commenta
+    /**
+     * @param f fault of witch we want to know if it is resolvable
+     * @return true if f is resolvable
+     */
     public boolean isResolvableFault(Fault f){
         assert f != null;
         boolean res = false;

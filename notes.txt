@@ -19,6 +19,12 @@ TODO
     - ok
 - correzione "istance" e "bond" in Instance e Binding
     - ok
+- definire funzione "higher order" per la funzione pi e definire una pi di defualt
+    - quella di default la facciamo tipo "load balancer"
+    > per il momento ho implementato una pi naive che torna la prima NodeInstance capace di
+      soddifare il requirement
+        - ok
+
 
 NOTE
 1) Binding: id nodo n -> lista dei Binding del tipo <requirement di n, nodo n1 che soddisfa r di n>
@@ -38,5 +44,13 @@ NOTE
    (molti dei quali hanno decine di requirement) scrivo la map di map, 
    altrimenti il tradeoff leggibilita'/efficienza potrebbe non convenire (?) 
 
+Da riferire
+- ho aggiornato il metodo removeBinding che era errato: rimuoveva completamente l' istanza
+  mentre deve solo rimuovere una tripla
+
 DOMANDE
 1) getPossibleTransition e' in NodeInstance, va bene li'??
+2) removeBinding in globalState non usa n1 e secondo me va tolto, mi manca un pezzo?
+    - infatti l'ho tolto, questo perche' voglio rimuovere un binding se il nodo n non 
+      richiede piu' r, non mi interessa in questo caso chi sta soddisfando quel requirement 
+3) conrolla psiMethod in GlobalState
