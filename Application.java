@@ -152,16 +152,7 @@ public class Application {
     public void opEnd(NodeInstance n, String op) throws OperationNotAvailableException, OperationNotStartableException {
         //qui basta verificare che lo stato corrente di n sia la transizione in cui compare op e
         //fare le relative verifiche specificate sulla tesi
-        Transition transitionToComplete = null;
-        ArrayList<Transition> possibleTransition = (ArrayList<Transition>) n.getPossibleTransitions();
-
-        for(Transition t : possibleTransition){
-            if(t.getOp().equals(op) == true){
-                //transizione trovata, e' questa che va completata
-                transitionToComplete = t;
-            }
-        }
-
+        Transition transitionToComplete = n.getTransitionByOp(op);
         if(transitionToComplete == null)
             //?? TODO forse operation failed?
             throw new OperationNotAvailableException();
