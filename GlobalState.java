@@ -3,7 +3,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import exceptions.InstanceNotAvailableException;
+import exceptions.OperationNotStartableException;
 
 //represents the current runtime state of the applicaton 
 public class GlobalState {
@@ -81,7 +81,7 @@ public class GlobalState {
     }
 
      //TODO: validare
-     public void psiMethod(NodeInstance n) throws InstanceNotAvailableException {
+     public void psiMethod(NodeInstance n) throws OperationNotStartableException {
         ArrayList<Requirement> satisfiedReqs = (ArrayList<Requirement>) this.getSatisfiedReqs(n);
         ArrayList<Requirement> neededReqs = (ArrayList<Requirement>) this.getNeededReqs(n);
         //if a needed requirement it's not met we have to create the right binding
@@ -92,7 +92,7 @@ public class GlobalState {
                     //a needed reqs is not satisfied, we must create the right binding
                     NodeInstance capableInstance = this.app.defaultPi(r);
                     if(capableInstance == null)
-                        throw new InstanceNotAvailableException();
+                        throw new OperationNotStartableException();
 
                     this.addBinding(n, r, capableInstance);
                 }

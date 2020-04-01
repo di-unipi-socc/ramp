@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 import java.util.List;
 
-import exceptions.InstanceNotAvailableException;
+import exceptions.OperationNotStartableException;
 import exceptions.OperationNotAvailableException;
 
 //represents the whole application
@@ -97,9 +97,9 @@ public class Application {
         for(NodeInstance n : activeNodes){
             //we add to allBindings all the binding of n, for each n
             allBindings.addAll(this.gState.binding.get(n.getId()));
-            if(this.getGState().getOfferedCaps(n).contains(r.getName()) == true){
+            if(this.getGState().getOfferedCaps(n).contains(r.getName()) == true && r.isContainment() == false){
                 //n is offering the right capability
-                capableInstances.add(n);
+                capableInstances.add(n); 
             }
         }
 
@@ -127,7 +127,7 @@ public class Application {
      */
     public void opStart(NodeInstance n, String op)
         throws OperationNotAvailableException, 
-        InstanceNotAvailableException 
+        OperationNotStartableException 
     {
         assert n != null;
         assert op.length() != 0;
@@ -143,17 +143,44 @@ public class Application {
         if(transitionToHappen == null)
             throw new OperationNotAvailableException();
         
+        //TODO: vanno gestite tutti i casi di fallimento 
+        //(se non riesco a partire rimetto tutto come era prima?)
+        //o lascio cosi' poi quando sparo op_end mi prendo i pending fault?
+    
         //n goes in a new transient state
         n.setCurrenState(transitionToHappen.getName());
         //we kill old bindings (the ones that were about the old state)
         this.gState.removeOldBindings(n);
         //we add the new bindings (the ones that are about the new transient state)
         this.gState.psiMethod(n);
-        
     }
 
-    public void opEnd(NodeInstance n, String op){
+    public void opEnd(NodeInstance n, String op) throws OperationNotAvailableException, OperationNotStartableException {
+        //qui basta verificare che lo stato corrente di n sia la transizione in cui compare op e
+        //fare le relative verifiche specificate sulla tesi
+        Transition transitionToComplete = null;
+        ArrayList<Transition> possibleTransition = (ArrayList<Transition>) n.getPossibleTransitions();
 
+        for(Transition t : possibleTransition){
+            if(t.getOp().equals(op) == true){
+                //transizione trovata, e' questa che va completata
+                transitionToComplete = t;
+            }
+        }
+
+        if(transitionToComplete == null)
+            //?? TODO forse operation failed?
+            throw new OperationNotAvailableException();
+
+        //qui completo la transizione, esattamente come prima, completando il passaggio da
+        //stato iniziale -> stato transiente (ok) -> stato finale (ok)
+
+        //n goes in a new final state
+        n.setCurrenState(transitionToComplete.getEndingState());
+        //we kill old bindings (the ones that were about the old state)
+        this.gState.removeOldBindings(n);
+        //we add the new bindings (the ones that are about the new transient state)
+        this.gState.psiMethod(n);
     }
 
 }
