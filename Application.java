@@ -132,15 +132,9 @@ public class Application {
         assert n != null;
         assert op.length() != 0;
 
-        Transition transitionToHappen = null;
-        ArrayList<Transition> possibleTransitions = (ArrayList<Transition>) n.getPossibleTransitions();
-        for (Transition t : possibleTransitions){
-            if(t.getOp().equals(op) == true && t.getEndingState().equals("damaged") == false)
-               transitionToHappen = t;   
-        }
-        //among the possible transitions there is not a transition with this op, 
-        //hence the op is not available
+        Transition transitionToHappen = n.getTransitionByOp(op);
         if(transitionToHappen == null)
+            //if op it's not bound to any transition it means that op is not available
             throw new OperationNotAvailableException();
         
         //TODO: vanno gestite tutti i casi di fallimento 

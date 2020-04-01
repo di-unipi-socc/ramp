@@ -68,8 +68,17 @@ public class NodeInstance {
             if(t.getStartingState().equals(this.currenState))
                 possibleTransitions.add(t);
         }
-
         return possibleTransitions;
+    }
+
+    public Transition getTransitionByOp(String op){
+        Transition ret = null;
+        ArrayList<Transition> possibleTransitions = (ArrayList<Transition>) this.getPossibleTransitions();
+        for (Transition t : possibleTransitions){
+            if(t.getOp().equals(op) == true && t.getEndingState().equals("damaged") == false)
+               ret = t;   
+        }
+        return ret;
     }
 
 }
