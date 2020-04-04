@@ -107,6 +107,9 @@ public class GlobalState {
         }
     }
 
+    /**
+     * @param n node instance that needs new bindings since it had a change of state
+     */
     public void addNewBindings(NodeInstance n){
         //list of requirement that n needs
         ArrayList<Requirement> reqs = (ArrayList<Requirement>) n.getNeededReqs();

@@ -180,7 +180,7 @@ public class Application {
         this.gState.addNewBindings(n);
     }
 
-    public void faultRule(NodeInstance n, Requirement r) throws FailedFaultHandlingExecption {
+    public void fault(NodeInstance n, Requirement r) throws FailedFaultHandlingExecption {
         Fault f = new Fault(n.getId(), r);
         ArrayList<String> faultHandlingStates = new ArrayList<>();
 
@@ -224,6 +224,24 @@ public class Application {
                 this.gState.removeOldBindings(n);
                 this.gState.addNewBindings(n);
             }
+        }
+    }
+
+    /**
+     * @param n node instance that have a fault to be resolved
+     * @param r requirement that has failed
+     */
+    public void autoreconnect(NodeInstance n, Requirement r){
+        Fault f = new Fault(n.getId(), r);
+
+        //TODO: qui la regola non rimuove il vecchio binding, secondo me pero' sarebbe utile. 
+        if(this.gState.getPendingFaults(n).contains(f) == false)
+            return; //nothing to do
+        else{
+            //we find a capable instance that can take care of r
+            NodeInstance n1 = this.defaultPi(n, r);
+            //n1 cant be null, otherwise r wouldn't be resolvable
+            this.gState.addBinding(n, r, n1);
         }
     }
 }

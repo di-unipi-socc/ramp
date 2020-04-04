@@ -57,5 +57,6 @@ Da validare
 - ho modificato il metodo getSatisfiedReq
 - ho modificato il metodo defaultPi
 - ho spostato getNeededReqs e getOfferedCaps in NodeInstance
-- implementato il metodo faultRule
+- implementato il metodo fault
+- implementato il metodo autoreconnect
 
