@@ -3,6 +3,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import exceptions.OperationNotStartableException;
+import exceptions.FailedFaultHandlingExecption;
 import exceptions.FailedOperationException;
 import exceptions.OperationNotAvailableException;
 
@@ -121,7 +122,7 @@ public class Application {
             for(NodeInstance n1 : activeNodes){
                 if(n1.getNodeType().getName().equals(staticBinding.getNodeName()) == true){
                     //n1 is an isntance of the right node of the right topological binding
-                    if(this.gState.getOfferedCaps(n1).contains(staticBinding.getNeed()) == true){
+                    if(n1.getOfferedCaps().contains(staticBinding.getNeed()) == true){
                         //this means that 
                         ret = n1;
                         break;
@@ -133,8 +134,7 @@ public class Application {
     }
 
     /**
-     * @param n  node instance on which it's required to do the managment operation
-     *           op
+     * @param n  node instance on which it's required to do the managment operation op
      * @param op management operation to execute
      * @throws NullPointerException
      * @throws OperationNotAvailableException
@@ -180,8 +180,50 @@ public class Application {
         this.gState.addNewBindings(n);
     }
 
-    public void faultRule(NodeInstance n, Requirement r){
+    public void faultRule(NodeInstance n, Requirement r) throws FailedFaultHandlingExecption {
+        Fault f = new Fault(n.getId(), r);
+        ArrayList<String> faultHandlingStates = new ArrayList<>();
 
+        if(this.gState.getPendingFaults().contains(f) == false)
+            return; //not a fault, we do nothing
+        else{
+            //required by the thesis
+            if(this.gState.isResolvableFault(f) == false){
+
+                //phi: failed state -> states to go
+                ArrayList<String> phiStates = 
+                            (ArrayList<String>) n.getNodeType().getMp().getPhi().get(n.getCurrenState());
+                
+                //for each state in phiStates we check if r it's needed in that state, if not the
+                //state is usable for the fault handling (stated by the thesis)
+                for(String s : phiStates){
+                    //rho: state s -> list of requirement needed in s
+                    if(n.getNodeType().getMp().getRho().get(s).contains(r) == false)
+                        //since r it's not required when n is in s we can use s
+                        faultHandlingStates.add(s);
+                }
+
+                //we have to choose to go to the state that have the most reqs needed (to mantein the deterministic of mp)
+                //required by the thesis
+                String rightState = null;
+                int max = -1;
+                for(String s : faultHandlingStates){
+                    int tmp = n.getNodeType().getMp().getRho().get(s).size();
+                    if(tmp > max){
+                        max = tmp;
+                        rightState = s;
+                    }
+                }
+
+                //giusto? TODO
+                if(rightState == null)
+                    throw new FailedFaultHandlingExecption();
+
+                //we apply the rule
+                n.setCurrenState(rightState);
+                this.gState.removeOldBindings(n);
+                this.gState.addNewBindings(n);
+            }
+        }
     }
-
 }

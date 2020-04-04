@@ -80,4 +80,18 @@ public class NodeInstance {
         }
         return ret;
     }
+
+     /**
+     * @return list of requirements that the node instance is currently asking
+     */
+    public List<Requirement> getNeededReqs(){
+        return this.getNodeType().getMp().getRho().get(this.getCurrenState());
+    }
+
+    /**
+     * @return list of capabilities offred by the node instance
+     */
+    public List<String> getOfferedCaps(){
+        return this.getNodeType().getMp().getGamma().get(this.getCurrenState());
+    }
 }

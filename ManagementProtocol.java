@@ -24,7 +24,7 @@ public class ManagementProtocol {
      * @param transition transition model: all the possible transitions
      * @param rho map the state with the needed requirements
      * @param gamma map the state with the offered capabilities
-     * @param phi fault handling TODO
+     * @param phi fault handling
      * @throws NullPonterException
      * @throws InvalidArgumentException
      */
@@ -49,7 +49,7 @@ public class ManagementProtocol {
     }
 
     /**
-     * @return TODO
+     * @return map a state (which can be a transition) to a list of state for the fault handling
      */
     public Map<String, List<String>> getPhi() {
         return this.phi;

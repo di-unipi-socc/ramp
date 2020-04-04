@@ -79,7 +79,7 @@ public class GlobalState {
                 //here we check if n1 is the right "type" of node (if it is the right "instance")
                 if(n1.getNodeType().getName().equals(staticBinding.getNodeName()) == true){
                     //here we check if n1 is offering the right cap
-                    if(this.getOfferedCaps(n1).contains(staticBinding.getNeed())){
+                    if(n1.getOfferedCaps().contains(staticBinding.getNeed())){
                         //this means that the node instance n1 is offering right now the requirement that
                         //it is needed topologically speaking, hence the requirement is satisfied
                         satisfiedReqs.add(b.getReq());
@@ -99,7 +99,7 @@ public class GlobalState {
         ArrayList<Requirement> reqs = (ArrayList<Requirement>) this.getSatisfiedReqs(n);
 
         //we remove the needed reqs for the satisfied reqs, so what remains are the unneeded reqs of n
-        if(reqs.removeAll(this.getNeededReqs(n)) == true){
+        if(reqs.removeAll(n.getNeededReqs()) == true){
             for(Requirement r : reqs){
                 if(r.isContainment() == false)
                     this.removeBinding(n, r);
@@ -109,7 +109,7 @@ public class GlobalState {
 
     public void addNewBindings(NodeInstance n){
         //list of requirement that n needs
-        ArrayList<Requirement> reqs = (ArrayList<Requirement>) this.getNeededReqs(n);
+        ArrayList<Requirement> reqs = (ArrayList<Requirement>) n.getNeededReqs();
 
         //we remove the satisfied reqs from the needed reqs, so what remains are the unsatisfied reqs of n
         if(reqs.removeAll(this.getSatisfiedReqs(n)) == true){
@@ -181,7 +181,7 @@ public class GlobalState {
         List<Fault> faults = new ArrayList<>();
     
         //list of requirement needed by n
-        List<Requirement> neededReqs = this.getNeededReqs(n);
+        List<Requirement> neededReqs = n.getNeededReqs();
 
         //list of assumed requirement of n
         List<Requirement> satisfiedReqs = this.getSatisfiedReqs(n);
@@ -274,7 +274,7 @@ public class GlobalState {
             //for each active node instance we check if it offer the right capability 
             //to resolve the fault
             for(NodeInstance n : instances){
-                if(this.getOfferedCaps(n).contains(f.getReq().getName()) == true){
+                if(n.getOfferedCaps().contains(f.getReq().getName()) == true){
                     res = true;
                     break;
                 }
@@ -315,23 +315,4 @@ public class GlobalState {
         return resolvableFault;
     }
 
-     /**
-     * @param n node instance of 
-     * @return list of requirements that the node instance is currently asking
-     * @throws NullPointerException
-     */
-    public List<Requirement> getNeededReqs(NodeInstance n){
-        assert n != null;
-        return n.getNodeType().getMp().getRho().get(n.getCurrenState());
-    }
-
-    /**
-     * @param n node instance of which it's asked the list of offered caps
-     * @return list of capabilities offred by n
-     * @throws NullPointerException
-     */
-    public List<String> getOfferedCaps(NodeInstance n){
-        assert n != null;
-        return n.getNodeType().getMp().getGamma().get(n.getCurrenState());
-    }
 }
