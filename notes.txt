@@ -59,4 +59,6 @@ Da validare
 - ho spostato getNeededReqs e getOfferedCaps in NodeInstance
 - implementato il metodo fault
 - implementato il metodo autoreconnect
+- implementato il metodo scaeOut1
+- come gestire la classe Tmp (non so come chiamarla e come fare refactoring)
 

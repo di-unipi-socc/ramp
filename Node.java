@@ -5,14 +5,15 @@ public class Node {
 
     private final String name;
     private final ManagementProtocol mp;
-    
-    //all the requirements asked by the node, no matter in what state it is
+
+    private final String initialState;
+    // all the requirements asked by the node, no matter in what state it is
     private final List<Requirement> reqs;
-    //all the capabilities offered by the node, no matter in what state it is
+    // all the capabilities offered by the node, no matter in what state it is
     private final List<String> caps;
-    //all the states of the Node
+    // all the states of the Node
     private final List<String> states;
-    //all the management operations executable on the node
+    // all the management operations executable on the node
     private final List<String> ops;
 
     /**
@@ -25,15 +26,10 @@ public class Node {
      * @throws NullPointerException
      * @throws IllegalArgumentException
      */
-    public Node(
-        String n, 
-        ManagementProtocol m, 
-        List<Requirement> r, 
-        List<String> c, 
-        List<String> s,
-        List<String> o
-    ){
-        assert n.length() > 4;
+    public Node(String n, String initialState, ManagementProtocol m, List<Requirement> r, List<String> c,
+            List<String> s, List<String> o) {
+        assert n.length() > 0;
+        assert initialState.length() > 0;
         assert m != null;
         assert r != null;
         assert c != null;
@@ -46,6 +42,14 @@ public class Node {
         this.ops = o;
         this.reqs = r;
         this.states = s;
+        this.initialState = initialState;
+    }
+
+    /**
+     * @return the initial state of the Node
+     */
+    public String getInitialState() {
+        return initialState;
     }
 
     /**

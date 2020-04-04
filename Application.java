@@ -3,6 +3,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import exceptions.OperationNotStartableException;
+import utils.RandomID;
 import exceptions.FailedFaultHandlingExecption;
 import exceptions.FailedOperationException;
 import exceptions.OperationNotAvailableException;
@@ -244,4 +245,32 @@ public class Application {
             this.gState.addBinding(n, r, n1);
         }
     }
+
+    /**
+     * @param n node of which we want create a new instance
+     * @throws OperationNotStartableException
+     */
+    public void scaleOut1(Node n) throws OperationNotStartableException {
+        //scaleOut1 can't handle nodes with contaimenent requirements
+        //for that see scaleOut2
+        ArrayList<Requirement> reqsOfN = (ArrayList<Requirement>) n.getReqs();
+        for(Requirement r : reqsOfN){
+            if(r.isContainment() == true)
+                throw new OperationNotStartableException();
+        }
+
+        String id = RandomID.generateRandomString(8);
+        //node instance's id must be unique among all instances
+        while(this.gState.activeNodes.keySet().contains(id) == true)
+            id = RandomID.generateRandomString(8);
+        
+        NodeInstance newNodeInstance = new NodeInstance(n, n.getInitialState(), id);
+        //add the new instance in the G set
+        this.gState.activeNodes.put(id, newNodeInstance);
+        //add the bindings needed for the initial state of the instance
+        this.gState.addNewBindings(newNodeInstance);
+    }
+
+
+    public void scaleOut2(){}
 }
