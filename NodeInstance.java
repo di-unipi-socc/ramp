@@ -75,10 +75,9 @@ public class NodeInstance {
         Transition ret = null;
         ArrayList<Transition> possibleTransitions = (ArrayList<Transition>) this.getPossibleTransitions();
         for (Transition t : possibleTransitions){
-            if(t.getOp().equals(op) == true && t.getEndingState().equals("damaged") == false)
+            if(t.getOp().equals(op) == true)
                ret = t;   
         }
         return ret;
     }
-
 }

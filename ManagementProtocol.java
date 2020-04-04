@@ -18,7 +18,7 @@ public class ManagementProtocol {
 
     // phi: state -> list of states for fault
     private final Map<String, List<String>> phi;
-
+    
     /**
      * @param initialState initial state of the node
      * @param transition transition model: all the possible transitions

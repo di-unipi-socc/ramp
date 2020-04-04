@@ -1,6 +1,6 @@
 /**
  * this is just a pair (tuple). we do not use Map.Entry for readibility
- * this represent a bond, given the requirement r, if the node istance n 
+ * this represent a binding, given the requirement r, if the node istance n 
  * is the one who satisfy r offering the right capability, we have a bond, 
  * such as <r, unique id of n> in the global state (binding)
  */

@@ -44,13 +44,16 @@ NOTE
    (molti dei quali hanno decine di requirement) scrivo la map di map, 
    altrimenti il tradeoff leggibilita'/efficienza potrebbe non convenire (?) 
 
-Da riferire
-- ho aggiornato il metodo removeBinding che era errato: rimuoveva completamente l' istanza
+Da validare
+- ho modificato il metodo removeBinding che era errato: rimuoveva completamente l' istanza
   mentre deve solo rimuovere una tripla
+- ho modificato il set T in una mappa stringa -> nodo (prima era una lista di Nodi statici)
+- ho modificato il metodo addNewBingings e removeOldBindings
+- ho modificato il metodo getSatisfiedReq
+- ho modificato il metodo defaultPi
 
 DOMANDE
 1) getPossibleTransition e' in NodeInstance, va bene li'??
 2) removeBinding in globalState non usa n1 e secondo me va tolto, mi manca un pezzo?
     - infatti l'ho tolto, questo perche' voglio rimuovere un binding se il nodo n non 
       richiede piu' r, non mi interessa in questo caso chi sta soddisfando quel requirement 
-3) conrolla psiMethod in GlobalState

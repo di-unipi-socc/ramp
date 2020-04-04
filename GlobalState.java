@@ -3,8 +3,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import exceptions.OperationNotStartableException;
-
 //represents the current runtime state of the applicaton 
 public class GlobalState {
     Application app;
@@ -49,51 +47,75 @@ public class GlobalState {
      */
     public List<Requirement> getSatisfiedReqs(NodeInstance n){
         assert n != null;
+        //devi aggiungere il controllo in cui si verifica che il nodo che soddisfa il r offra ancora la giusta cap
         List<Requirement> satisfiedReqs = new ArrayList<>();
         
-        //list of <Requirement of n, NodeInstance that satisfy r>
+        //list of <Requirement of n, NodeInstance that satisfy r> (theorically, in runtime)
         List<Binding> nBindings = this.binding.get(n.getId());
 
-        //for each pair this extract just the satisfied requirement
-        for(Binding e: nBindings){
-            satisfiedReqs.add(e.getReq());
-        }
+        /**
+         * detto potabile.
+         * prendo tutti i runtime binding n (cioe' una lista di <req di n, n1_i che soddisfa r>)
+         * prendo i binding statici, cioe' <nodo n, req r di n> -> <nodo n1_s, cap c di n1 che soddisfa r>
+         * 
+         * per ogni n1_i controllo che 
+         *  - sia del tipo corretto (cioe' n1_s)
+         *  - fra le caps offerte da n1_i ci sia quella richiesta dalla topologia statica
+         * 
+         * se si il req e' soddisfatto, questo perche il binding runtime <n, r, n'> e' giusto
+         * (ovvero n1 e' del tipo giusto, offre la giusta cap e la offre ora)
+         */
 
+        //for each pair this extract just the satisfied requirement
+        for(Binding b: nBindings){
+            //get the topoligical binding such as <node, req> -> <node, cap> (function b)
+            Tmp staticBinding = this.app.getBindingFunction().get(new Tmp(b.getIst(), b.getReq().getName()));
+            if(staticBinding != null){
+
+                //this is the node instance that is currently helding the runtime binding and
+                //theorically satisfying the requirement of n
+                NodeInstance n1 = this.activeNodes.get(b.getIst());
+
+                //here we check if n1 is the right "type" of node (if it is the right "instance")
+                if(n1.getNodeType().getName().equals(staticBinding.getNodeName()) == true){
+                    //here we check if n1 is offering the right cap
+                    if(this.getOfferedCaps(n1).contains(staticBinding.getNeed())){
+                        //this means that the node instance n1 is offering right now the requirement that
+                        //it is needed topologically speaking, hence the requirement is satisfied
+                        satisfiedReqs.add(b.getReq());
+                    }
+                }
+            }
+        }
         return satisfiedReqs;
     }
 
-    //prende i requirement necessari e i requirement soddisfatti di n
-    //se ci sono requirement soddisfatti ma che non sono necessari rimuove i relativi
-    //binding dal global state
+    /**
+     * @param n node instance of which we want to remove the old bindings
+     */
     public void removeOldBindings(NodeInstance n){
-        //we remove the old bindings, the ones that was about an old state of the instance 
-        ArrayList<Requirement> satisfiedReqs = (ArrayList<Requirement>) this.getSatisfiedReqs(n);
-        ArrayList<Requirement> neededReqs = (ArrayList<Requirement>) this.getNeededReqs(n);
+        assert n != null;
+        //list of the satisfied reqs of n
+        ArrayList<Requirement> reqs = (ArrayList<Requirement>) this.getSatisfiedReqs(n);
 
-        //if there is a satisfied requirement that it is not needed it means that it was from an old
-        //binding, hence we remove it
-        for(Requirement r : satisfiedReqs){
-            if(r.isContainment() == false){
-                if(neededReqs.contains(r) == false)
+        //we remove the needed reqs for the satisfied reqs, so what remains are the unneeded reqs of n
+        if(reqs.removeAll(this.getNeededReqs(n)) == true){
+            for(Requirement r : reqs){
+                if(r.isContainment() == false)
                     this.removeBinding(n, r);
             }
         }
     }
 
-     //TODO: validare
-     public void psiMethod(NodeInstance n) throws OperationNotStartableException {
-        ArrayList<Requirement> satisfiedReqs = (ArrayList<Requirement>) this.getSatisfiedReqs(n);
-        ArrayList<Requirement> neededReqs = (ArrayList<Requirement>) this.getNeededReqs(n);
-        //if a needed requirement it's not met we have to create the right binding
-        //to handle it. 
-        for(Requirement r : neededReqs){
-            if(r.isContainment() == false){
-                if(satisfiedReqs.contains(r) == false){
-                    //a needed reqs is not satisfied, we must create the right binding
-                    NodeInstance capableInstance = this.app.defaultPi(r);
-                    if(capableInstance == null)
-                        throw new OperationNotStartableException();
+    public void addNewBindings(NodeInstance n){
+        //list of requirement that n needs
+        ArrayList<Requirement> reqs = (ArrayList<Requirement>) this.getNeededReqs(n);
 
+        //we remove the satisfied reqs from the needed reqs, so what remains are the unsatisfied reqs of n
+        if(reqs.removeAll(this.getSatisfiedReqs(n)) == true){
+            for(Requirement r : reqs){
+                if(r.isContainment() == false){
+                    NodeInstance capableInstance = this.app.defaultPi(n, r);
                     this.addBinding(n, r, capableInstance);
                 }
             }
@@ -169,7 +191,7 @@ public class GlobalState {
         for(Requirement r : neededReqs){
             if(r.isContainment() == false){
                 if(satisfiedReqs.contains(r) == false)
-                    faults.add(new Fault(n.toString(), r));
+                    faults.add(new Fault(n.getId(), r));
             }
         }
         return faults;
@@ -208,7 +230,6 @@ public class GlobalState {
         //for each Binding we check if this is a containment relation
         for(Binding b : BindingsOfN){
             if(b.getReq().isContainment() == true){
-
                 //this is a containment relation, hence we check if the container
                 //is still active
                 if(activeNodes.get(b.getIst()) == null){
