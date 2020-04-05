@@ -249,8 +249,9 @@ public class Application {
     /**
      * @param n node of which we want create a new instance
      * @throws OperationNotStartableException
+     * @return the newly created instance
      */
-    public void scaleOut1(Node n) throws OperationNotStartableException {
+    public NodeInstance scaleOut1(Node n) throws OperationNotStartableException {
         //scaleOut1 can't handle nodes with contaimenent requirements
         //for that see scaleOut2
         ArrayList<Requirement> reqsOfN = (ArrayList<Requirement>) n.getReqs();
@@ -259,18 +260,78 @@ public class Application {
                 throw new OperationNotStartableException();
         }
 
-        String id = RandomID.generateRandomString(8);
+        String id = RandomID.generateRandomString(12);
         //node instance's id must be unique among all instances
         while(this.gState.activeNodes.keySet().contains(id) == true)
             id = RandomID.generateRandomString(8);
         
-        NodeInstance newNodeInstance = new NodeInstance(n, n.getInitialState(), id);
+        NodeInstance newNodeInstanceInstance = new NodeInstance(n, n.getInitialState(), id);
         //add the new instance in the G set
-        this.gState.activeNodes.put(id, newNodeInstance);
+        this.gState.activeNodes.put(id, newNodeInstanceInstance);
         //add the bindings needed for the initial state of the instance
-        this.gState.addNewBindings(newNodeInstance);
+        this.gState.addNewBindings(newNodeInstanceInstance);
+
+        return newNodeInstanceInstance;
     }
 
+    public NodeInstance scaleOut2(Node n, NodeInstance container) throws OperationNotStartableException {
+        ArrayList<Requirement> reqsOfN = (ArrayList<Requirement>) n.getReqs();
+        int i = 0;
+        Requirement containmentRequirement = null;
+        //the containement req must be defined and it mus be unique (stated by the thesis)
+        for(Requirement r : reqsOfN){
+            if(r.isContainment() == true){
+                i++;
+                containmentRequirement = r;
+            }
+        }
+        if(i != 1)
+            throw new OperationNotStartableException();
 
-    public void scaleOut2(){}
+        //bindingFunction: (node, req) -> (node, cap) 
+        Tmp staticBinding = this.bindingFunction.get(new Tmp(n.getName(), containmentRequirement.getName()));
+        NodeInstance newNodeInstance = null;
+
+        //here we check if the container is the right type of node
+        if(container.getNodeType().getName().equals(staticBinding.getNodeName()) == false)
+            throw new OperationNotStartableException();
+        else{
+            //here we check if the container is currently offering the right cap
+            if(container.getOfferedCaps().contains(staticBinding.getNeed()) == false)
+                throw new OperationNotStartableException();
+            else{
+                //the container has the right type and it is currently offering the right cap
+
+                //this take care of the non-containment reqs
+                newNodeInstance = this.scaleOut1(n);
+                //then we add the containement req binding
+                this.gState.addBinding(newNodeInstance, containmentRequirement, container);
+            }
+        }
+        return newNodeInstance;
+    }
+
+    /**
+     * @param i node instance we have to kill
+     * @throws OperationNotStartableException
+     */
+    public void scaleIn(NodeInstance i) throws OperationNotStartableException {
+        if(this.gState.activeNodes.containsValue(i) == false)
+            throw new OperationNotStartableException();
+        else{
+            //we remove i from the G set
+            this.gState.activeNodes.remove(i.getId());
+            this.gState.removeAllBindingsBothWays(i);
+            this.autodestroy();
+        }
+    }
+    
+    /**
+     * @throws OperationNotStartableException
+     */
+    private void autodestroy() throws OperationNotStartableException {
+        ArrayList<NodeInstance> brokenInstances = (ArrayList<NodeInstance>) this.gState.getBrokeninstances();
+        for(NodeInstance i : brokenInstances) 
+            this.scaleIn(i);     
+    }
 }

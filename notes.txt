@@ -1,4 +1,5 @@
 TODO
+- controlla sezione "da validare"
 - creare classe Fault e altra classe che "implementa" la coppia per migliorare
   la leggibilita'
     - ok
@@ -11,10 +12,7 @@ TODO
 - definire opportune eccezioni per op fallite o non fattibili
 - applicare licenza apache 2.0
 - implementare operazioni offerte all'analyzer (op_start, ...)
-    - opStart ok
-    - opEnd ok (?)
-    - faultRule ok (?)
-    - il resto da fare
+    - ok
 - metodi per il ritorno dei fault
     - ok
 - implementare metodo "getPossibleTransition"
@@ -28,6 +26,7 @@ TODO
     > per il momento ho implementato una pi naive che torna la prima NodeInstance capace di
       soddifare il requirement
         - ok
+- metti un po' di coerenza nel naming dei parametri, variabili di supporto ecc. 
 
 
 NOTE
@@ -50,6 +49,7 @@ NOTE
 
 Da validare
 - ho modificato il metodo removeBinding che era errato: rimuoveva completamente l' istanza
+    - serve per i cambi di stato
   mentre deve solo rimuovere una tripla
 - ho modificato il set T in una mappa: stringa -> nodo (prima era una lista di Nodi statici)
 - ho modificato il metodo addNewBingings e removeOldBindings
@@ -60,5 +60,8 @@ Da validare
 - implementato il metodo fault
 - implementato il metodo autoreconnect
 - implementato il metodo scaeOut1
+    - modificato, prima tornava null e ora torna il ref all'istanza ap1ena creata
+- implementato il metodo scaleOut2
 - come gestire la classe Tmp (non so come chiamarla e come fare refactoring)
+- modificato metdo getBrokenInstances, ora torna una lista di istanze e non una lista di id di istanze
 

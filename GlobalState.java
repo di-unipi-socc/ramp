@@ -172,6 +172,37 @@ public class GlobalState {
     }
 
     /**
+     * @param n node instance whose bindings are to be deleted. delete all bindings of n
+     */
+    public void removeAllBindingsBothWays(NodeInstance n){
+        //this remove the bindings of n where n is the served
+        ArrayList<Requirement> satisfiedReqs = (ArrayList<Requirement>) this.getSatisfiedReqs(n);
+        for(Requirement r : satisfiedReqs)
+            this.removeBinding(n, r);
+        
+        this.binding.remove(n.getId());
+
+        //this remove the bindings of n where n is the servant
+        ArrayList<NodeInstance> instances = (ArrayList<NodeInstance>) this.activeNodes.values();
+        ArrayList<Binding> nBinding = new ArrayList<>();
+        
+        //for each active instance i we take i's active bindings
+        //if the binding b shows that the requirement r of i is currently satified by n
+        //we remove that binding
+        for(NodeInstance i : instances){
+            nBinding = (ArrayList<Binding>) this.binding.get(i.getId());
+            for(Binding b : nBinding){
+                if(b.getIst().equals(n.getId())){
+                    //means that n is currently binded with i, as a "servant"
+                    //this binding must be deleted
+
+                    nBinding.remove(b); //il ref fa tutto il resto no? TODO
+                }
+            }
+        }
+    }
+
+    /**
      * pending fault: a node instance require a requirement and there isn't a node
      * instance offering that capability
      * @param n node instance of which it's asked the pending faults
@@ -247,15 +278,15 @@ public class GlobalState {
     /**
      * broken instance: a node instance have a "contain" relation with a 
      * node instance that is no longer alive
-     * @return list of node instance id(s) that have a broken instance
+     * @return list of node instances that have a broken instance
      */
-    public List<String> getBrokeninstances(){
-        List<String> brokeninstances = new ArrayList<>();
+    public List<NodeInstance> getBrokeninstances(){
+        List<NodeInstance> brokeninstances = new ArrayList<>();
         List<NodeInstance> activeNodes = (ArrayList<NodeInstance>) this.activeNodes.values();
 
         for(NodeInstance n : activeNodes){
             if(this.isBrokeninstance(n) == true)
-                brokeninstances.add(n.getId());
+                brokeninstances.add(n);
         }
 
         return brokeninstances;    
