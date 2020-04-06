@@ -1,3 +1,5 @@
+package application;
+
 //this is a couple (tuple). we do not use Map.Entry for readibility.
 //this is a fault such as <node istance unique id, failed requirement>
 public class Fault {

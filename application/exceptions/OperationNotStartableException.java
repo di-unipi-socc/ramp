@@ -1,4 +1,4 @@
-package exceptions;
+package application.exceptions;
 
 //when we start an operation we have to manage the new binding given by 
 //the new transient state. If a requirement of the instance in the new state

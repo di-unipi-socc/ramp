@@ -1,3 +1,4 @@
+package application;
 enum Sort {
     REPLICA_AWARE, REPLICA_UNAWARE, CONTAINMENT
 }

@@ -1,3 +1,5 @@
+package application;
+
 public class Transition {
 
     //the name of a transition is need to identify the transition as a 

@@ -1,3 +1,5 @@
+package application;
+
 import java.util.List;
 
 //represents a component of the application

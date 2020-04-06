@@ -1,12 +1,14 @@
+package application;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import exceptions.OperationNotStartableException;
-import utils.RandomID;
-import exceptions.FailedFaultHandlingExecption;
-import exceptions.FailedOperationException;
-import exceptions.OperationNotAvailableException;
+import application.utils.RandomID;
+import application.exceptions.FailedFaultHandlingExecption;
+import application.exceptions.FailedOperationException;
+import application.exceptions.OperationNotAvailableException;
+import application.exceptions.OperationNotStartableException;
 
 //represents the whole application
 public class Application {
@@ -16,9 +18,10 @@ public class Application {
     // set T: all the application's component
     private Map<String, Node> nodes;
     private GlobalState gState;
-    
-    //b in the cameriero's thesis. this represent a static binding such as
-    //<name of static node n, name of the requirement r of n> -> <name of static node n1 that satify r, capability that satisfy r>
+
+    // b in the cameriero's thesis. this represent a static binding such as
+    // <name of static node n, name of the requirement r of n> -> <name of static
+    // node n1 that satify r, capability that satisfy r>
     private Map<Tmp, Tmp> bindingFunction;
 
     /**
@@ -31,11 +34,12 @@ public class Application {
         // used many more times in this project, it is just a reminder for
         // a real exception handling
         assert name.length() > 0;
-
         this.name = name;
         this.nodes = new HashMap<>();
         this.gState = new GlobalState(this);
         this.bindingFunction = new HashMap<>();
+
+        // if p is null we will use this.defaultPi
     }
 
     public Map<Tmp, Tmp> getBindingFunction() {

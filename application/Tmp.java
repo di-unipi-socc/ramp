@@ -1,4 +1,4 @@
-
+package application;
 //represent a static binding, both ways
 //the name is temporary
 public class Tmp {
