@@ -1,4 +1,4 @@
-package application;
+package model;
 enum Sort {
     REPLICA_AWARE, REPLICA_UNAWARE, CONTAINMENT
 }

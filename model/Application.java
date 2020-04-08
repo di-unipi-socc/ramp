@@ -1,14 +1,14 @@
-package application;
+package model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import application.utils.RandomID;
-import application.exceptions.FailedFaultHandlingExecption;
-import application.exceptions.FailedOperationException;
-import application.exceptions.OperationNotAvailableException;
-import application.exceptions.OperationNotStartableException;
+import model.utils.RandomID;
+import model.exceptions.FailedFaultHandlingExecption;
+import model.exceptions.FailedOperationException;
+import model.exceptions.OperationNotAvailableException;
+import model.exceptions.OperationNotStartableException;
 
 //represents the whole application
 public class Application {
@@ -17,12 +17,12 @@ public class Application {
     private final String name;
     // set T: all the application's component
     private Map<String, Node> nodes;
-    private GlobalState gState;
+    private GlobalState globalState;
 
     // b in the cameriero's thesis. this represent a static binding such as
     // <name of static node n, name of the requirement r of n> -> <name of static
     // node n1 that satify r, capability that satisfy r>
-    private Map<Tmp, Tmp> bindingFunction;
+    private Map<StaticBinding, StaticBinding> bindingFunction;
 
     /**
      * @throws NullPointerException
@@ -36,17 +36,17 @@ public class Application {
         assert name.length() > 0;
         this.name = name;
         this.nodes = new HashMap<>();
-        this.gState = new GlobalState(this);
+        this.globalState = new GlobalState(this);
         this.bindingFunction = new HashMap<>();
 
         // if p is null we will use this.defaultPi
     }
 
-    public Map<Tmp, Tmp> getBindingFunction() {
+    public Map<StaticBinding, StaticBinding> getBindingFunction() {
         return this.bindingFunction;
     }
 
-    public void setBindingFunction(Map<Tmp, Tmp> bf){
+    public void setBindingFunction(Map<StaticBinding, StaticBinding> bf){
         this.bindingFunction = bf;
     }
 
@@ -56,28 +56,28 @@ public class Application {
      * @param name  application's name
      * @param nodes map of applicaton's Node, by name
      */
-    public Application(String name, Map<String, Node> nodes, Map<Tmp, Tmp> bf){
+    public Application(String name, Map<String, Node> nodes, Map<StaticBinding, StaticBinding> bf){
         assert name.length() > 0;
         assert nodes != null;
         assert bf != null;
         this.name = name; 
         this.nodes = nodes;
-        this.gState = new GlobalState(this);
+        this.globalState = new GlobalState(this);
         this.bindingFunction = bf;
     }
 
     /**
      * @return current GlobalState
      */
-    public GlobalState getGState() {
-        return gState;
+    public GlobalState getglobalState() {
+        return globalState;
     }
 
     /**
      * @param gs given GlobalState 
      */
-    public void setGState(GlobalState gs) {
-        this.gState = gs;
+    public void setglobalState(GlobalState gs) {
+        this.globalState = gs;
     }
 
     /**
@@ -110,7 +110,7 @@ public class Application {
      */
     public NodeInstance defaultPi(NodeInstance n, Requirement r){
         NodeInstance ret = null;
-        ArrayList<NodeInstance> activeNodes = (ArrayList<NodeInstance>) this.gState.activeNodes.values();
+        ArrayList<NodeInstance> actactiveNodeInstances = (ArrayList<NodeInstance>) this.globalState.activeNodeInstances.values();
         
         /**
          * detto facile. prendo il binding statico di <n, req>, cioe' quella coppia <n1, cap> che mi 
@@ -122,12 +122,12 @@ public class Application {
          * Se si ho finito.
          */
 
-        Tmp staticBinding = this.bindingFunction.get(new Tmp(n.getNodeType().getName(), r.getName())); 
+        StaticBinding staticBinding = this.bindingFunction.get(new StaticBinding(n.getNodeType().getName(), r.getName())); 
         if(staticBinding != null){
-            for(NodeInstance n1 : activeNodes){
+            for(NodeInstance n1 : actactiveNodeInstances){
                 if(n1.getNodeType().getName().equals(staticBinding.getNodeName()) == true){
                     //n1 is an isntance of the right node of the right topological binding
-                    if(n1.getOfferedCaps().contains(staticBinding.getNeed()) == true){
+                    if(n1.getOfferedCaps().contains(staticBinding.getCapOrReq()) == true){
                         //this means that 
                         ret = n1;
                         break;
@@ -160,9 +160,9 @@ public class Application {
         //n goes in a new transient state
         n.setCurrenState(transitionToHappen.getName());
         //we kill old bindings (the ones that were about the old state)
-        this.gState.removeOldBindings(n);
+        this.globalState.removeOldBindings(n);
         //we add the new bindings (the ones that are about the new transient state)
-        this.gState.addNewBindings(n);
+        this.globalState.addNewBindings(n);
     }
 
     /**
@@ -171,7 +171,7 @@ public class Application {
      * @throws FailedOperationException
      */
     public void opEnd(NodeInstance n, String op) throws FailedOperationException  {
-        ArrayList<Fault> faults = (ArrayList<Fault>) this.gState.getPendingFaults(n);
+        ArrayList<Fault> faults = (ArrayList<Fault>) this.globalState.getPendingFaults(n);
         if(faults.isEmpty() == false)
             throw new FailedOperationException();
 
@@ -180,20 +180,23 @@ public class Application {
         //n goes in a new final state
         n.setCurrenState(transitionToComplete.getEndingState());
         //we kill old bindings (the ones that were about the old state)
-        this.gState.removeOldBindings(n);
+        this.globalState.removeOldBindings(n);
         //we add the new bindings (the ones that are about the new transient state)
-        this.gState.addNewBindings(n);
+        this.globalState.addNewBindings(n);
     }
 
     public void fault(NodeInstance n, Requirement r) throws FailedFaultHandlingExecption {
         Fault f = new Fault(n.getId(), r);
-        ArrayList<String> faultHandlingStates = new ArrayList<>();
+        ArrayList<String> faultHandlinglobalStates = new ArrayList<>();
 
-        if(this.gState.getPendingFaults().contains(f) == false)
+        //TODO o implementi equals in fault o controlli esplicitamente che n e r siano gli stessi
+        //altrimenti usa object.equals e torna sempre false
+        if(this.globalState.getPendingFaults().contains(f) == false)
+            //qui lanci eccezione TODO rulenotapplicable
             return; //not a fault, we do nothing
         else{
             //required by the thesis
-            if(this.gState.isResolvableFault(f) == false){
+            if(this.globalState.isResolvableFault(f) == false){
 
                 //phi: failed state -> states to go
                 ArrayList<String> phiStates = 
@@ -205,14 +208,15 @@ public class Application {
                     //rho: state s -> list of requirement needed in s
                     if(n.getNodeType().getMp().getRho().get(s).contains(r) == false)
                         //since r it's not required when n is in s we can use s
-                        faultHandlingStates.add(s);
+                        faultHandlinglobalStates.add(s);
                 }
 
                 //we have to choose to go to the state that have the most reqs needed (to mantein the deterministic of mp)
                 //required by the thesis
                 String rightState = null;
                 int max = -1;
-                for(String s : faultHandlingStates){
+                //TODO: non e' l'esatta condizione, forse dara' problemi.
+                for(String s : faultHandlinglobalStates){
                     int tmp = n.getNodeType().getMp().getRho().get(s).size();
                     if(tmp > max){
                         max = tmp;
@@ -226,8 +230,8 @@ public class Application {
 
                 //we apply the rule
                 n.setCurrenState(rightState);
-                this.gState.removeOldBindings(n);
-                this.gState.addNewBindings(n);
+                this.globalState.removeOldBindings(n);
+                this.globalState.addNewBindings(n);
             }
         }
     }
@@ -240,13 +244,15 @@ public class Application {
         Fault f = new Fault(n.getId(), r);
 
         //TODO: qui la regola non rimuove il vecchio binding, secondo me pero' sarebbe utile. 
-        if(this.gState.getPendingFaults(n).contains(f) == false)
-            return; //nothing to do
+            //implementa il controllo
+        //todo contains poblematico
+        if(this.globalState.isResolvableFault(f) == false)
+            return; //nothing to do, notaplicableruleex
         else{
             //we find a capable instance that can take care of r
             NodeInstance n1 = this.defaultPi(n, r);
             //n1 cant be null, otherwise r wouldn't be resolvable
-            this.gState.addBinding(n, r, n1);
+            this.globalState.addBinding(n, r, n1);
         }
     }
 
@@ -266,34 +272,32 @@ public class Application {
 
         String id = RandomID.generateRandomString(12);
         //node instance's id must be unique among all instances
-        while(this.gState.activeNodes.keySet().contains(id) == true)
+        while(this.globalState.activeNodeInstances.keySet().contains(id) == true)
             id = RandomID.generateRandomString(8);
         
-        NodeInstance newNodeInstanceInstance = new NodeInstance(n, n.getInitialState(), id);
+        NodeInstance newNodeInstance = new NodeInstance(n, n.getInitialState(), id);
         //add the new instance in the G set
-        this.gState.activeNodes.put(id, newNodeInstanceInstance);
+        this.globalState.activeNodeInstances.put(id, newNodeInstance);
         //add the bindings needed for the initial state of the instance
-        this.gState.addNewBindings(newNodeInstanceInstance);
+        this.globalState.addNewBindings(newNodeInstance);
 
-        return newNodeInstanceInstance;
+        return newNodeInstance;
     }
 
     public NodeInstance scaleOut2(Node n, NodeInstance container) throws OperationNotStartableException {
         ArrayList<Requirement> reqsOfN = (ArrayList<Requirement>) n.getReqs();
-        int i = 0;
         Requirement containmentRequirement = null;
         //the containement req must be defined and it mus be unique (stated by the thesis)
         for(Requirement r : reqsOfN){
             if(r.isContainment() == true){
-                i++;
                 containmentRequirement = r;
             }
         }
-        if(i != 1)
+        if(containmentRequirement == null)
             throw new OperationNotStartableException();
 
         //bindingFunction: (node, req) -> (node, cap) 
-        Tmp staticBinding = this.bindingFunction.get(new Tmp(n.getName(), containmentRequirement.getName()));
+        StaticBinding staticBinding = this.bindingFunction.get(new StaticBinding(n.getName(), containmentRequirement.getName()));
         NodeInstance newNodeInstance = null;
 
         //here we check if the container is the right type of node
@@ -301,15 +305,18 @@ public class Application {
             throw new OperationNotStartableException();
         else{
             //here we check if the container is currently offering the right cap
-            if(container.getOfferedCaps().contains(staticBinding.getNeed()) == false)
+            //todo: non serve che container stia offrendo ORA la giusta cap, basta che la possa offrire in generale
+            //quindi basta il controllo sopra
+            if(container.getOfferedCaps().contains(staticBinding.getCapOrReq()) == false)
                 throw new OperationNotStartableException();
             else{
                 //the container has the right type and it is currently offering the right cap
 
                 //this take care of the non-containment reqs
+                //TODO in pratica errore, scaleOut1 controlla i reqs e tu ne hai uno di containement, ti fallisce
                 newNodeInstance = this.scaleOut1(n);
                 //then we add the containement req binding
-                this.gState.addBinding(newNodeInstance, containmentRequirement, container);
+                this.globalState.addBinding(newNodeInstance, containmentRequirement, container);
             }
         }
         return newNodeInstance;
@@ -320,12 +327,12 @@ public class Application {
      * @throws OperationNotStartableException
      */
     public void scaleIn(NodeInstance i) throws OperationNotStartableException {
-        if(this.gState.activeNodes.containsValue(i) == false)
+        if(this.globalState.activeNodeInstances.containsValue(i) == false)
             throw new OperationNotStartableException();
         else{
             //we remove i from the G set
-            this.gState.activeNodes.remove(i.getId());
-            this.gState.removeAllBindingsBothWays(i);
+            this.globalState.activeNodeInstances.remove(i.getId());
+            this.globalState.removeAllBindingsBothWays(i);
             this.autodestroy();
         }
     }
@@ -334,8 +341,8 @@ public class Application {
      * @throws OperationNotStartableException
      */
     private void autodestroy() throws OperationNotStartableException {
-        ArrayList<NodeInstance> brokenInstances = (ArrayList<NodeInstance>) this.gState.getBrokeninstances();
-        for(NodeInstance i : brokenInstances) 
-            this.scaleIn(i);     
+        ArrayList<NodeInstance> brokenInstances = (ArrayList<NodeInstance>) this.globalState.getBrokeninstances();
+        if(brokenInstances.isEmpty() == false)
+            this.scaleIn(brokenInstances.get(0));     
     }
 }

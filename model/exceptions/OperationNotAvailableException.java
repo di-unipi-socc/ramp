@@ -1,4 +1,4 @@
-package application.exceptions;
+package model.exceptions;
 
 //if it is called an operation on a node that have not that operation
 //we have OperationNotAvailableException

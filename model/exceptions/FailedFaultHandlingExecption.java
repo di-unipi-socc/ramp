@@ -1,4 +1,4 @@
-package application.exceptions;
+package model.exceptions;
 
 public class FailedFaultHandlingExecption extends Exception {
     private static final long serialVersionUID = 1L;

@@ -1,4 +1,4 @@
-package application.exceptions;
+package model.exceptions;
 
 //when we invoke opEnd, if the application cant be completed it's raised a FailedOperationException
 public class FailedOperationException extends Exception {
