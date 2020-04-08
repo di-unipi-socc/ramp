@@ -88,10 +88,10 @@ public class GlobalState {
     public void removeOldBindings(NodeInstance instance){
         assert instance != null;
 
-        //now this is a list of the satisfied reqs of target
+        //now this is a list of the satisfied reqs of instance
         ArrayList<Requirement> instanceUnneededReqs = (ArrayList<Requirement>) this.getSatisfiedReqs(instance);
 
-        //we remove the needed reqs from the satisfied reqs, so what remains are the unnecessary reqs of n
+        //we remove the needed reqs from the satisfied reqs, so what remains are the unnecessary reqs of instance
         if(instanceUnneededReqs.removeAll(instance.getNeededReqs()) == true){
             for(Requirement req : instanceUnneededReqs){
                 if(req.isContainment() == false)
@@ -101,7 +101,7 @@ public class GlobalState {
     }
 
     /**
-     * @param n node instance that needs new bindings since it had a change of state
+     * @param instance node instance that needs new bindings since it had a change of state
      * @throws NullPointerException
      */
     public void addNewBindings(NodeInstance instance){
@@ -110,7 +110,7 @@ public class GlobalState {
         //list of requirement that instance needs
         ArrayList<Requirement> instanceNeededReqs = (ArrayList<Requirement>) instance.getNeededReqs();
 
-        //we remove the satisfied reqs from the needed reqs, so what remains are the unsatisfied reqs of n
+        //we remove the satisfied reqs from the needed reqs, so what remains are the unsatisfied reqs of instance
         if(instanceNeededReqs.removeAll(this.getSatisfiedReqs(instance)) == true){
             for(Requirement req : instanceNeededReqs){
                 if(req.isContainment() == false){
@@ -123,9 +123,9 @@ public class GlobalState {
 
     /**
      * add a runtime binding such as <askingInstance, req, servingInstance>
-     * @param askingInstance node instance asking for the requirement r
-     * @param req requirement that is being asked by n
-     * @param servingInstance node istanc that satisfy r with the correct capability
+     * @param askingInstance node instance asking for the requirement req
+     * @param req requirement that is being asked by askingInstance
+     * @param servingInstance node istance that satisfy req with the correct capability
      * @throws NullPointerException
      */
     public void addBinding(NodeInstance askingInstance, Requirement req, NodeInstance servingInstance){
@@ -144,7 +144,7 @@ public class GlobalState {
 
     /**
      * remove a runtime binding such as <n, r, *>
-     * @param incance node instance that was asking for the requirement r
+     * @param instance node instance that was asking for the requirement req
      * @param req requirement that was required
      * @throws NullPointerException
      */
@@ -157,16 +157,38 @@ public class GlobalState {
         //we are already in a situation such as <n, ., .>
         for (RuntimeBinding runBinding : instanceRunBindings) {
             if(runBinding.getReq().equals(req) == true)
-                //we have <n, r, x> so we remove it
+                //we have <instanze, req, *> so we remove it
+                //it is ok to remove just from instanceRunBindings since it is the ref to the real data structure 
                 instanceRunBindings.remove(runBinding);   
         }
     }
 
     /**
-     * @param n node instance whose bindings are to be deleted. delete all bindings of n
+     * given a node instance n this remove all the binding such as <n, *, *> and <*, *, n>
+     * @param target node instance whose bindings are to be deleted. delete all bindings of the target
      */
-    public void removeAllBindingsBothWays(NodeInstance instance){
-        //TODO
+    public void removeAllBindingsBothWays(NodeInstance targetInstance){
+        assert targetInstance != null;
+        ArrayList<NodeInstance> activeInstances = (ArrayList<NodeInstance>) this.activeNodeInstances.values();
+
+        for(NodeInstance activeInstance : activeInstances){
+            ArrayList<RuntimeBinding> activeInstanceRunBindings = (ArrayList<RuntimeBinding>) this.runtimeBindings.get(activeInstance.getId());
+
+            for(RuntimeBinding runBinding : activeInstanceRunBindings){
+
+                //if the target instance is the requirement asking instance in runBinding
+                //we remove the binding <activeInstance, *, *>
+                if(activeInstance.getId().equals(targetInstance.getId()))
+                    this.removeRuntimeBinding(activeInstance, runBinding.getReq());
+
+                //if the target instance is the capability giver instance in runbinding
+                //ve remove the runtime binding <activeInstance, *, targetInstance>
+                if(runBinding.getNodeInstanceID().equals(targetInstance.getId())){
+                    activeInstanceRunBindings.remove(runBinding);
+                }
+            }
+        }        
+
     }
 
     /**
