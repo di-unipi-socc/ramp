@@ -48,23 +48,6 @@ NOTE
    altrimenti il tradeoff leggibilita'/efficienza potrebbe non convenire (?) 
 
 Da validare
-- ho modificato il metodo removeBinding che era errato: rimuoveva completamente l' istanza
-    - serve per i cambi di stato
-  mentre deve solo rimuovere una tripla
-- ho modificato il set T in una mappa: stringa -> nodo (prima era una lista di Nodi statici)
-- ho modificato il metodo addNewBingings e removeOldBindings
-- ho modificato opEnd
-- ho modificato il metodo getSatisfiedReq
-- ho modificato il metodo defaultPi
-- ho spostato getNeededReqs e getOfferedCaps in NodeInstance
-- implementato il metodo fault
-- implementato il metodo autoreconnect
-- implementato il metodo scaeOut1
-    - modificato, prima tornava null e ora torna il ref all'istanza ap1ena creata
-- implementato il metodo scaleOut2
-- come gestire la classe Tmp (non so come chiamarla e come fare refactoring)
-- modificato metdo getBrokenInstances, ora torna una lista di istanze e non una lista di id di istanze
-- non so se il java functional support sia adatto, chiedi chiarimenti
 
-//todo: pi prende insieme di nodi che soddisfano r e lui sceglie
-//vedi minuta
+
+

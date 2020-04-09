@@ -22,4 +22,18 @@ public class Fault {
         return this.req;
     }
 
+    @Override
+    /**
+     * two fault are equal when they are about the same insance and requirement
+     */
+    public boolean equals(Object f){
+        Fault toCheck = (Fault) f;
+        boolean ret = false;
+
+        if(toCheck.instanceID.equals(this.instanceID) && toCheck.req.getName().equals(this.req.getName()))
+            ret = true;
+        
+        return ret;
+    }
+
 }

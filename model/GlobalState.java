@@ -113,6 +113,7 @@ public class GlobalState {
         //we remove the satisfied reqs from the needed reqs, so what remains are the unsatisfied reqs of instance
         if(instanceNeededReqs.removeAll(this.getSatisfiedReqs(instance)) == true){
             for(Requirement req : instanceNeededReqs){
+                //this methods does not add binding for the containment requirement. that is done explicitly
                 if(req.isContainment() == false){
                     NodeInstance capableInstance = this.app.defaultPi(instance, req);
                     this.addBinding(instance, req, capableInstance);
