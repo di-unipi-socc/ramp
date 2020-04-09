@@ -28,22 +28,22 @@ public class Node {
      * @throws NullPointerException
      * @throws IllegalArgumentException
      */
-    public Node(String n, String initialState, ManagementProtocol m, List<Requirement> r, List<String> c,
-            List<String> s, List<String> o) {
-        assert n.length() > 0;
+    public Node(String name, String initialState, ManagementProtocol manProtocol, List<Requirement> reqs, List<String> caps,
+            List<String> states, List<String> ops) {
+        assert name.length() > 0;
         assert initialState.length() > 0;
-        assert m != null;
-        assert r != null;
-        assert c != null;
-        assert s != null;
-        assert o != null;
+        assert manProtocol != null;
+        assert reqs != null;
+        assert caps != null;
+        assert states != null;
+        assert ops != null;
 
-        this.name = n;
-        this.caps = c;
-        this.mp = m;
-        this.ops = o;
-        this.reqs = r;
-        this.states = s;
+        this.name = name;
+        this.caps = caps;
+        this.mp = manProtocol;
+        this.ops = ops;
+        this.reqs = reqs;
+        this.states = states;
         this.initialState = initialState;
     }
 

@@ -73,12 +73,12 @@ public class NodeInstance {
         return possibleTransitions;
     }
 
-    public Transition getTransitionByOp(String op){
+    public Transition getTransitionByOp(String op, String currentState){
         Transition ret = null;
         ArrayList<Transition> possibleTransitions = (ArrayList<Transition>) this.getPossibleTransitions();
-        for (Transition t : possibleTransitions){
-            if(t.getOp().equals(op) == true)
-               ret = t;   
+        for (Transition transition : possibleTransitions){
+            if(transition.getOp().equals(op) == true && transition.getStartingState().equals(currentState))
+               ret = transition;   
         }
         return ret;
     }

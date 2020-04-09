@@ -48,6 +48,8 @@ NOTE
    altrimenti il tradeoff leggibilita'/efficienza potrebbe non convenire (?) 
 
 Da validare
-
+- ho modificato getTransitionByOp. questo perche' ci sono transizioni con nomi diversi
+  ma con stessa op, quindi le distinguiamo con <op, stato iniziale>
+    - hashmap non permette doppioni, o facevo cosi' o una mappa <nome transizione, list<Transition>>
 
 

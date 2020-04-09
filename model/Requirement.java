@@ -1,13 +1,11 @@
 package model;
-enum Sort {
-    REPLICA_AWARE, REPLICA_UNAWARE, CONTAINMENT
-}
+
 
 //represent the requirement that a node need to work properly
 public class Requirement {
 
     private final String name;
-    private final Sort reqSort;
+    private final RequirementSort reqSort;
 
     /**
      * @param name of the requirement
@@ -15,8 +13,8 @@ public class Requirement {
      * @throws InvalidArgumentException
      * @throws NullPointerException
      */
-    public Requirement(String name, Sort reqSort) {
-        assert name.length() > 4;
+    public Requirement(String name, RequirementSort reqSort) {
+        assert name.length() > 0;
         assert reqSort != null;
 
         this.name = name;
@@ -34,20 +32,20 @@ public class Requirement {
      * @return true if this is a replica aware requirement
      */
     public boolean isReplicaAware(){
-    return this.reqSort == Sort.REPLICA_AWARE;
+    return this.reqSort == RequirementSort.REPLICA_AWARE;
     }
 
     /**
      * @return true if this is a replica unaware requirement 
      */
     public boolean isReplicaUnaware(){
-       return this.reqSort == Sort.REPLICA_UNAWARE;
+       return this.reqSort == RequirementSort.REPLICA_UNAWARE;
     }
 
     /**
      * @return true if this is a containemnt requirement
      */
     public boolean isContainment(){
-       return this.reqSort == Sort.CONTAINMENT;
+       return this.reqSort == RequirementSort.CONTAINMENT;
     }
 }

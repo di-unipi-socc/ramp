@@ -149,7 +149,7 @@ public class Application {
         assert instance != null;
         assert op.length() != 0;
 
-        Transition transitionToHappen = instance.getTransitionByOp(op);
+        Transition transitionToHappen = instance.getTransitionByOp(op, instance.getCurrenState());
         if(transitionToHappen == null)
             //if op it's not bound to any transition it means that op is not available
             throw new OperationNotAvailableException();

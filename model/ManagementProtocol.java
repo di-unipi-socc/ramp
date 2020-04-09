@@ -5,7 +5,7 @@ import java.util.Map;
 //represents the protocol of a Node
 public class ManagementProtocol {
 
-    private final String initialState;
+    //private final String initialState;
     // transition name -> Transition
     private final Map<String, Transition> transition;
     /**
@@ -14,36 +14,32 @@ public class ManagementProtocol {
      * even represent a Transition
      */
     private final Map<String, List<Requirement>> rho;
-    // gamma: state -> cpas offred in that state
+    
+    // gamma: state -> caps offred in that state
     private final Map<String, List<String>> gamma;
 
     // phi: state -> list of states for fault
     private final Map<String, List<String>> phi;
     
     /**
-     * @param initialState initial state of the node
      * @param transition transition model: all the possible transitions
      * @param rho map the state with the needed requirements
      * @param gamma map the state with the offered capabilities
      * @param phi fault handling
      * @throws NullPonterException
-     * @throws InvalidArgumentException
      */
     public ManagementProtocol(
-        String initialState, 
         Map<String, Transition> transition, 
         Map<String, List<Requirement>> rho,
         Map<String, List<String>> gamma, 
         Map<String, List<String>> phi
     ){
-        assert initialState.length() > 0;
         assert transition != null;
         assert rho != null;
         assert gamma != null;
         assert phi != null;
 
         this.transition = transition;
-        this.initialState = initialState;
         this.gamma = gamma;
         this.rho = rho;
         this.phi = phi;
@@ -75,12 +71,5 @@ public class ManagementProtocol {
      */
     public Map<String, Transition> getTransition() {
         return this.transition;
-    }
-
-    /**
-     * @return first state of the node
-     */
-    public String getInitialState() {
-        return this.initialState;
     }
 }
