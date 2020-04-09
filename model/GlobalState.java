@@ -47,7 +47,7 @@ public class GlobalState {
      * @return list of the satisfied requirement of instance
      * @throws NullPointerException
      */
-    public List<Requirement> getSatisfiedReqs(NodeInstance instance){
+    public List<Requirement> getSatisfiedReqs(NodeInstance instance) throws NullPointerException{
         assert instance != null;
         List<Requirement> satisfiedReqs = new ArrayList<>();
         
@@ -84,8 +84,9 @@ public class GlobalState {
 
     /**
      * @param instance node instance of which we want to remove the old bindings
+     * @throws NullPointerException
      */
-    public void removeOldBindings(NodeInstance instance){
+    public void removeOldBindings(NodeInstance instance) throws NullPointerException{
         assert instance != null;
 
         //now this is a list of the satisfied reqs of instance
@@ -104,7 +105,7 @@ public class GlobalState {
      * @param instance node instance that needs new bindings since it had a change of state
      * @throws NullPointerException
      */
-    public void addNewBindings(NodeInstance instance){
+    public void addNewBindings(NodeInstance instance) throws NullPointerException{
         assert instance != null;
 
         //list of requirement that instance needs
@@ -129,7 +130,7 @@ public class GlobalState {
      * @param servingInstance node istance that satisfy req with the correct capability
      * @throws NullPointerException
      */
-    public void addBinding(NodeInstance askingInstance, Requirement req, NodeInstance servingInstance){
+    public void addBinding(NodeInstance askingInstance, Requirement req, NodeInstance servingInstance) throws NullPointerException{
         assert askingInstance != null;
         assert req != null;
         assert servingInstance != null;
@@ -149,7 +150,7 @@ public class GlobalState {
      * @param req requirement that was required
      * @throws NullPointerException
      */
-    public void removeRuntimeBinding(NodeInstance instance, Requirement req){
+    public void removeRuntimeBinding(NodeInstance instance, Requirement req) throws NullPointerException{
         assert instance != null;
         assert req != null;
         
@@ -167,8 +168,9 @@ public class GlobalState {
     /**
      * given a node instance n this remove all the binding such as <n, *, *> and <*, *, n>
      * @param target node instance whose bindings are to be deleted. delete all bindings of the target
+     * @throws NullPoninterException
      */
-    public void removeAllBindingsBothWays(NodeInstance targetInstance){
+    public void removeAllBindingsBothWays(NodeInstance targetInstance) throws NullPointerException{
         assert targetInstance != null;
         ArrayList<NodeInstance> activeInstances = (ArrayList<NodeInstance>) this.activeNodeInstances.values();
 
@@ -176,20 +178,16 @@ public class GlobalState {
             ArrayList<RuntimeBinding> activeInstanceRunBindings = (ArrayList<RuntimeBinding>) this.runtimeBindings.get(activeInstance.getId());
 
             for(RuntimeBinding runBinding : activeInstanceRunBindings){
-
-                //if the target instance is the requirement asking instance in runBinding
-                //we remove the binding <activeInstance, *, *>
+                //if the target instance is the requirement-asking instance we remove the binding <activeInstance, *, *>
                 if(activeInstance.getId().equals(targetInstance.getId()))
                     this.removeRuntimeBinding(activeInstance, runBinding.getReq());
 
-                //if the target instance is the capability giver instance in runbinding
-                //ve remove the runtime binding <activeInstance, *, targetInstance>
+                //if the target instance is the capability-giver instance we remove the runtime binding <activeInstance, *, targetInstance>
                 if(runBinding.getNodeInstanceID().equals(targetInstance.getId())){
                     activeInstanceRunBindings.remove(runBinding);
                 }
             }
         }        
-
     }
 
     /**
@@ -199,7 +197,7 @@ public class GlobalState {
      * @return list of requirement of instance that are not met 
      * @throws NullPointerException
      */
-    public List<Fault> getPendingFaults(NodeInstance instance){
+    public List<Fault> getPendingFaults(NodeInstance instance) throws NullPointerException{
         assert instance != null;
         List<Fault> faults = new ArrayList<>();
 
@@ -243,7 +241,7 @@ public class GlobalState {
      * @return true if instance is a broken instance, false otherwise
      * @throws NullPointerException
      */
-    public boolean isBrokeninstance(NodeInstance instance){
+    public boolean isBrokeninstance(NodeInstance instance) throws NullPointerException{
         assert instance != null;
         boolean res = false;
 
@@ -276,33 +274,32 @@ public class GlobalState {
             if(this.isBrokeninstance(instance) == true)
                 brokeninstances.add(instance);
         }
-
         return brokeninstances;    
     }
 
     /**
-     * @param f fault of which we want to know if it is resolvable
-     * @return true if f is resolvable
+     * @param fault fault of which we want to know if it is resolvable
+     * @return true if fault is resolvable
+     * @throws NullPointerException
      */
-    public boolean isResolvableFault(Fault f){
-        assert f != null;
+    public boolean isResolvableFault(Fault fault) throws NullPointerException{
+        assert fault != null;
         boolean res = false;
 
         //all active node instances
         ArrayList<NodeInstance> activeInstances = (ArrayList<NodeInstance>) this.activeNodeInstances.values();
         
-        //data extracted from f
-        NodeInstance faultedNodeInstance = this.activeNodeInstances.get(f.getInstanceID());
-        Node faultedNodeInstanceType = faultedNodeInstance.getNodeType();
-        Requirement faultedReq = f.getReq();
+        //data extracted from fault
+        NodeInstance faultedInstance = this.activeNodeInstances.get(fault.getInstanceID());
+        Node faultedNodeInstanceType = faultedInstance.getNodeType();
+        Requirement faultedReq = fault.getReq();
 
         StaticBinding reqStaticBinding = new StaticBinding(faultedNodeInstanceType.getName(), faultedReq.getName());
         StaticBinding capStaticBinding = null;
 
         //a fault can be resolvable only if it is replica unware
         if(faultedReq.isReplicaUnaware() == true){
-            //for each active node instance we check if it offer the right capability 
-            //to resolve the fault
+            //for each active node instance we check if it offer the right capability to resolve the fault
             for(NodeInstance instance : activeInstances){
                 capStaticBinding = this.app.getBindingFunction().get(reqStaticBinding);
 
@@ -326,7 +323,7 @@ public class GlobalState {
      * @return list of resolvable faults of n
      * @throws NullPointerException
      */
-    public List<Fault> getResolvableFaults(NodeInstance instance){
+    public List<Fault> getResolvableFaults(NodeInstance instance) throws NullPointerException{
         assert instance != null;
         List<Fault> resolvableFaults = new ArrayList<>();
 
