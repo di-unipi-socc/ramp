@@ -4,11 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import model.utils.RandomID;
-import model.exceptions.FailedFaultHandlingExecption;
-import model.exceptions.FailedOperationException;
-import model.exceptions.OperationNotAvailableException;
-import model.exceptions.RuleNotApplicableException;
+import model.exceptions.*;
+import model.utils.*;
 
 //represents the whole application
 public class Application {
@@ -292,8 +289,8 @@ public class Application {
         //add the new instance in the G set
         this.globalState.activeNodeInstances.put(newNodeInstance.getId(), newNodeInstance);
         //add the bindings needed for the initial state of the instance
+        this.globalState.runtimeBindings.put(newNodeInstance.getId(), new ArrayList<RuntimeBinding>());
         this.globalState.addNewBindings(newNodeInstance);
-
         return newNodeInstance;
     }
 
@@ -326,7 +323,7 @@ public class Application {
         StaticBinding capStaticBinding = this.bindingFunction.get(reqStaticBinding);
         
         NodeInstance newNodeInstance = null;
-
+        
         //here we check if the container is the right type of node
         if(container.getNodeType().getName().equals(capStaticBinding.getNodeName()) == false)
             throw new RuleNotApplicableException("wrong kind of node");
@@ -338,6 +335,7 @@ public class Application {
             this.globalState.activeNodeInstances.put(newNodeInstance.getId(), newNodeInstance);
 
             //add the non-containemnt bindings needed for the initial state of the new instance
+            this.globalState.runtimeBindings.put(newNodeInstance.getId(), new ArrayList<RuntimeBinding>());
             this.globalState.addNewBindings(newNodeInstance);
 
             //explicitly add the containment binding

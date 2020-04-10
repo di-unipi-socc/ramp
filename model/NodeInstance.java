@@ -1,6 +1,7 @@
 package model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 //represent the runtime istances of a Node
@@ -62,8 +63,9 @@ public class NodeInstance {
         List<Transition> possibleTransitions = new ArrayList<>();
 
         //list of all the transitions of the this node instance
-        ArrayList<Transition> transitions = (ArrayList<Transition>) this.getNodeType().getMp().getTransition().values();
+        Collection<Transition> transitionsCollection = this.getNodeType().getMp().getTransition().values();
 
+        ArrayList<Transition> transitions = new ArrayList<Transition>(transitionsCollection);
         //for each transistion we check if it starts in the current state, if so it is a 
         //(theorically) possible transition
         for(Transition t : transitions){

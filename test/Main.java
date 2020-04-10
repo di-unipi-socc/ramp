@@ -1,12 +1,16 @@
 package test;
+
 import model.*;
+import model.exceptions.RuleNotApplicableException;
+
 import java.util.*;
+
 public class Main {
 
     public static void main(String[] args) {
-        
-//~~~~~~~~~~~~~~ FRONTEND NODE ~~~~~~~~~~~~~~~~
-        //remember that a transition is also a state
+
+        // ~~~~~~~~~~~~~~ FRONTEND NODE ~~~~~~~~~~~~~~~~
+        // remember that a transition is also a state
         List<String> frontendStates = new ArrayList<>();
         frontendStates.add("not-installed");
         frontendStates.add("installed");
@@ -35,10 +39,9 @@ public class Main {
         frontendReqs.add(conn);
         List<String> frontendCaps = new ArrayList<>();
 
-
         Map<String, List<Requirement>> frontendRho = new HashMap<>();
 
-        //for each state we create the list of requirement needed in that state
+        // for each state we create the list of requirement needed in that state
         List<Requirement> requirementsOfNotIntalled = new ArrayList<>();
 
         List<Requirement> requirementsOfInstall = new ArrayList<>();
@@ -66,7 +69,7 @@ public class Main {
         List<Requirement> requirementsOfInstalled = new ArrayList<>();
         List<Requirement> requirementsOfDamaged = new ArrayList<>();
 
-        //remember that a transition is also a state
+        // remember that a transition is also a state
         frontendRho.put("not-installed", requirementsOfNotIntalled);
         frontendRho.put("t_install", requirementsOfInstall);
         frontendRho.put("installed", requirementsOfInstalled);
@@ -79,7 +82,6 @@ public class Main {
         frontendRho.put("t_uninstall", requirementsOfUninstall);
         frontendRho.put("t_uninstall1", requirementsOfUninstall);
         frontendRho.put("damaged", requirementsOfDamaged);
-
 
         Map<String, Transition> frontendAllTranstitions = new HashMap<>();
 
@@ -98,14 +100,13 @@ public class Main {
         frontendAllTranstitions.put("t_uninstall", t_uninstall);
         frontendAllTranstitions.put("t_uninstall1", t_uninstall1);
 
-        //frontendGamma: state -> caps offered in that state 
+        // frontendGamma: state -> caps offered in that state
         Map<String, List<String>> frontendGamma = new HashMap<>();
-        //frontend do not offer any caps
-        for(String state : frontendStates)
+        // frontend do not offer any caps
+        for (String state : frontendStates)
             frontendGamma.put(state, new ArrayList<String>());
-        
 
-        //frontendPhi: state -> list<stat> for fault handling
+        // frontendPhi: state -> list<stat> for fault handling
         Map<String, List<String>> frontendPhi = new HashMap<>();
 
         List<String> damagedList = new ArrayList<>();
@@ -126,26 +127,14 @@ public class Main {
         frontendPhi.put("t_stop", configuredList);
         frontendPhi.put("working", configuredList);
 
-        ManagementProtocol frontendMP = new ManagementProtocol(
-            frontendAllTranstitions, 
-            frontendRho, 
-            frontendGamma, 
-            frontendPhi
-        );
+        ManagementProtocol frontendMP = new ManagementProtocol(frontendAllTranstitions, frontendRho, frontendGamma,
+                frontendPhi);
 
-        Node frontend = new Node(
-            "frontend", 
-            "not-installed", 
-            frontendMP, 
-            frontendReqs, 
-            frontendCaps, 
-            frontendStates,
-            frontendOps
-        );
+        Node frontend = new Node("frontend", "not-installed", frontendMP, frontendReqs, frontendCaps, frontendStates,
+                frontendOps);
 
-
-// ~~~~~~~~~~~~~~~~ BACKEND NODE ~~~~~~~~~~~~~~~~~~~~~~~
-        List<String> backendStates = new ArrayList<>();                                                             
+        // ~~~~~~~~~~~~~~~~ BACKEND NODE ~~~~~~~~~~~~~~~~~~~~~~~
+        List<String> backendStates = new ArrayList<>();
         backendStates.add("unavailable");
         backendStates.add("available");
         backendStates.add("running");
@@ -158,19 +147,21 @@ public class Main {
 
         List<String> backendOps = new ArrayList<>();
         backendOps.add("install");
-        backendOps.add("uninstall");                
+        backendOps.add("uninstall");
         backendOps.add("start");
         backendOps.add("stop");
         backendOps.add("config");
-        
+
         List<Requirement> backendReqs = new ArrayList<>();
         Requirement host1 = new Requirement("host", RequirementSort.CONTAINMENT);
         Requirement db = new Requirement("db", RequirementSort.REPLICA_AWARE);
-        
+        backendReqs.add(host1);
+        backendReqs.add(db);
+
         List<String> backendCaps = new ArrayList<>();
         backendCaps.add("conn");
 
-        //frontendRho: state -> reqs for that state
+        // frontendRho: state -> reqs for that state
         Map<String, List<Requirement>> backendRho = new HashMap<>();
         List<Requirement> requirementsOfUnavailable1 = new ArrayList<>();
 
@@ -220,15 +211,15 @@ public class Main {
         backendAllTransitions.put("t_config", t_config2);
         backendAllTransitions.put("t_stop", t_stop1);
 
-        //gamma: state -> caps offered
+        // gamma: state -> caps offered
         Map<String, List<String>> backendGamma = new HashMap<>();
-        for(String state : backendStates)
+        for (String state : backendStates)
             backendGamma.put(state, new ArrayList<String>());
         List<String> capsOfRunning = (ArrayList<String>) backendGamma.get("running");
         capsOfRunning.add("conn");
         backendGamma.put("running", capsOfRunning);
 
-        //phi: state -> list of states for fault handling
+        // phi: state -> list of states for fault handling
         Map<String, List<String>> backendPhi = new HashMap<>();
 
         List<String> damagedList1 = new ArrayList<>();
@@ -243,24 +234,13 @@ public class Main {
         backendPhi.put("t_stop", availableList1);
         backendPhi.put("running", availableList1);
 
-        ManagementProtocol backendMP = new ManagementProtocol(
-            backendAllTransitions, 
-            backendRho, 
-            backendGamma, 
-            backendPhi
-        );
+        ManagementProtocol backendMP = new ManagementProtocol(backendAllTransitions, backendRho, backendGamma,
+                backendPhi);
 
-        Node backend = new Node(
-            "backend",
-            "unavailable", 
-            backendMP, 
-            backendReqs, 
-            backendCaps, 
-            backendStates, 
-            backendOps
-        );
+        Node backend = new Node("backend", "unavailable", backendMP, backendReqs, backendCaps, backendStates,
+                backendOps);
 
-//~~~~~~~~~~~~~~~~~ NODE ~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~ NODE ~~~~~~~~~~~~~~~~~~~~~
         List<String> nodeStates = new ArrayList<>();
         nodeStates.add("stopped");
         nodeStates.add("running");
@@ -277,7 +257,7 @@ public class Main {
         nodeAllCaps.add("host");
 
         Map<String, List<Requirement>> nodeRho = new HashMap<>();
-        for(String state : nodeStates){
+        for (String state : nodeStates) {
             nodeRho.put(state, new ArrayList<Requirement>());
         }
 
@@ -287,41 +267,27 @@ public class Main {
         nodeAllTransitions.put("t_start", t_start2);
         nodeAllTransitions.put("t_stop", t_stop2);
 
-        //gamma: state -> list of caps offered
+        // gamma: state -> list of caps offered
         Map<String, List<String>> nodeGamma = new HashMap<>();
-        for(String state : nodeStates){
+        for (String state : nodeStates) {
             nodeGamma.put(state, new ArrayList<String>());
         }
         List<String> runningCaps = nodeGamma.get("running");
         runningCaps.add("host");
-        //might be useless, the ref should do it automatically
+        // might be useless, the ref should do it automatically
         nodeGamma.put("running", runningCaps);
 
-        //phi: state -> list of states for fault handling 
+        // phi: state -> list of states for fault handling
         Map<String, List<String>> nodePhi = new HashMap<>();
-        for(String state : nodeStates){
+        for (String state : nodeStates) {
             nodePhi.put(state, new ArrayList<String>());
         }
 
-        ManagementProtocol nodeMP = new ManagementProtocol(
-            nodeAllTransitions, 
-            nodeRho, 
-            nodeGamma, 
-            nodePhi
-        );
+        ManagementProtocol nodeMP = new ManagementProtocol(nodeAllTransitions, nodeRho, nodeGamma, nodePhi);
 
-        Node node = new Node(
-            "node",
-            "stopped",
-            nodeMP, 
-            nodeAllReqs, 
-            nodeAllCaps, 
-            nodeStates, 
-            nodeOps
-        );
+        Node node = new Node("node", "stopped", nodeMP, nodeAllReqs, nodeAllCaps, nodeStates, nodeOps);
 
-
-//~~~~~~~~~~~~~~~ MONGO NODE ~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~ MONGO NODE ~~~~~~~~~~~~~~~~~~~~
         List<String> mongoStates = new ArrayList<>();
         mongoStates.add("stopped");
         mongoStates.add("running");
@@ -337,9 +303,9 @@ public class Main {
         List<String> mongoAllCaps = new ArrayList<>();
         mongoAllCaps.add("db");
 
-        //rho: state -> reqs
+        // rho: state -> reqs
         Map<String, List<Requirement>> mongoRho = new HashMap<>();
-        for(String state : mongoStates){
+        for (String state : mongoStates) {
             mongoRho.put(state, new ArrayList<Requirement>());
         }
 
@@ -349,42 +315,29 @@ public class Main {
         mongoAllTransitions.put("t_start", t_start3);
         mongoAllTransitions.put("t_stop", t_stop3);
 
-        //gamma: state -> caps offered
+        // gamma: state -> caps offered
         Map<String, List<String>> mongoGamma = new HashMap<>();
-        for(String state : mongoStates){
+        for (String state : mongoStates) {
             mongoGamma.put(state, new ArrayList<String>());
         }
         List<String> runningCaps1 = mongoGamma.get("running");
         runningCaps1.add("db");
         mongoGamma.put("running", runningCaps1);
 
-        //phi: state -> list of states for fault handling
+        // phi: state -> list of states for fault handling
         Map<String, List<String>> mongoPhi = new HashMap<>();
-        for(String state : mongoStates){
+        for (String state : mongoStates) {
             mongoPhi.put(state, new ArrayList<String>());
         }
 
-        ManagementProtocol mongoMP = new ManagementProtocol(
-            mongoAllTransitions, 
-            mongoRho, 
-            mongoGamma, 
-            mongoPhi
-        );
+        ManagementProtocol mongoMP = new ManagementProtocol(mongoAllTransitions, mongoRho, mongoGamma, mongoPhi);
 
-        Node mongo = new Node(
-            "mongo", 
-            "stopped", 
-            mongoMP, 
-            mongoAllReqs, 
-            mongoAllCaps, 
-            mongoStates, 
-            mongoAllOps
-        );
+        Node mongo = new Node("mongo", "stopped", mongoMP, mongoAllReqs, mongoAllCaps, mongoStates, mongoAllOps);
 
-        //now we setup the binding function
+        // now we setup the binding function
         Map<StaticBinding, StaticBinding> bindingFunction = new HashMap<>();
 
-        //frontend
+        // frontend
         StaticBinding frontendAskingHost = new StaticBinding("frontend", "host");
         StaticBinding frontendHostServer = new StaticBinding("node", "host");
         bindingFunction.put(frontendAskingHost, frontendHostServer);
@@ -393,7 +346,7 @@ public class Main {
         StaticBinding frontendConnServer = new StaticBinding("backend", "conn");
         bindingFunction.put(frontendAskingConn, frontendConnServer);
 
-        //backend
+        // backend
         StaticBinding backendAskingHost = new StaticBinding("backend", "host");
         StaticBinding backendHostServer = new StaticBinding("node", "host");
         bindingFunction.put(backendAskingHost, backendHostServer);
@@ -409,5 +362,51 @@ public class Main {
         applicationNodes.put("node", node);
 
         Application testApp = new Application("demo", applicationNodes, bindingFunction);
+
+
+        NodeInstance instanceOfNode1 = null;
+        NodeInstance instanceOfNode2 = null;
+        NodeInstance instanceOfNode3 = null;
+
+        try {
+            instanceOfNode1 = testApp.scaleOut1(node);
+            instanceOfNode2 = testApp.scaleOut1(node);
+            instanceOfNode3 = testApp.scaleOut1(node);
+        } catch (NullPointerException | RuleNotApplicableException e) {
+            e.printStackTrace();
+        }
+
+        NodeInstance instanceOfMongo = null;
+        try {
+            instanceOfMongo = testApp.scaleOut1(mongo);
+        } catch (NullPointerException | RuleNotApplicableException e) {
+            e.printStackTrace();
+        }
+
+        NodeInstance instanceOfBackend2 = null;
+        try {
+            instanceOfBackend2 = testApp.scaleOut2(backend, instanceOfNode2);
+        } catch (NullPointerException | RuleNotApplicableException e) {
+            e.printStackTrace();
+        }
+
+        NodeInstance instanceOfBackend1 = null;
+        try {
+            instanceOfBackend1 = testApp.scaleOut2(backend, instanceOfNode1);
+        } catch (NullPointerException | RuleNotApplicableException e) {
+            e.printStackTrace();
+        }
+
+        NodeInstance instanceOfFrontend = null;
+        try {
+            instanceOfFrontend = testApp.scaleOut2(frontend, instanceOfNode3);
+        } catch (NullPointerException | RuleNotApplicableException e) {
+            e.printStackTrace();
+        }
+        
+        for(Transition t : instanceOfFrontend.getPossibleTransitions()){
+            System.out.println("transizione possibile: " + t.getName());
+        }
+
     }                       
 }                               
