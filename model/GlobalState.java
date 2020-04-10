@@ -113,7 +113,7 @@ public class GlobalState {
 
         //we remove the satisfied reqs from the needed reqs, so what remains are the unsatisfied reqs of instance
         //TODO: che succede se getSatisfiedReqs e' vuoto perche' l'istanza e' appena creata?
-        if(instanceNeededReqs.removeAll(this.getSatisfiedReqs(instance)) == true){
+        if(instanceNeededReqs.removeAll(this.getSatisfiedReqs(instance)) == true || this.getSatisfiedReqs(instance).isEmpty() == true){
             for(Requirement req : instanceNeededReqs){
                 //this methods does not add binding for the containment requirement. that is done explicitly
                 if(req.isContainment() == false){

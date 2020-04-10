@@ -1,6 +1,7 @@
 package model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -110,8 +111,8 @@ public class Application {
         assert askingInstance != null;
         assert req != null;
         NodeInstance ret = null;
-        ArrayList<NodeInstance> activeInstances = (ArrayList<NodeInstance>) this.globalState.activeNodeInstances.values();
-        
+        Collection<NodeInstance> activeInstancesCollection =  this.globalState.activeNodeInstances.values();
+        ArrayList<NodeInstance> activeInstances = new ArrayList<>(activeInstancesCollection);
         StaticBinding reqStaticBinding = new StaticBinding(askingInstance.getNodeType().getName(), req.getName());
         StaticBinding capStaticBinding = this.bindingFunction.get(reqStaticBinding); 
 
@@ -323,7 +324,7 @@ public class Application {
         StaticBinding capStaticBinding = this.bindingFunction.get(reqStaticBinding);
         
         NodeInstance newNodeInstance = null;
-        
+
         //here we check if the container is the right type of node
         if(container.getNodeType().getName().equals(capStaticBinding.getNodeName()) == false)
             throw new RuleNotApplicableException("wrong kind of node");

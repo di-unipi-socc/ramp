@@ -1,6 +1,8 @@
 package test;
 
 import model.*;
+import model.exceptions.FailedOperationException;
+import model.exceptions.OperationNotAvailableException;
 import model.exceptions.RuleNotApplicableException;
 
 import java.util.*;
@@ -363,7 +365,6 @@ public class Main {
 
         Application testApp = new Application("demo", applicationNodes, bindingFunction);
 
-
         NodeInstance instanceOfNode1 = null;
         NodeInstance instanceOfNode2 = null;
         NodeInstance instanceOfNode3 = null;
@@ -403,10 +404,29 @@ public class Main {
         } catch (NullPointerException | RuleNotApplicableException e) {
             e.printStackTrace();
         }
-        
-        for(Transition t : instanceOfFrontend.getPossibleTransitions()){
+
+        for (Transition t : instanceOfFrontend.getPossibleTransitions()) {
             System.out.println("transizione possibile: " + t.getName());
         }
+        System.out.println(instanceOfFrontend.getCurrenState());
 
+        try {
+            testApp.opStart(instanceOfFrontend, "install");
+        } catch (NullPointerException | OperationNotAvailableException e) {
+            e.printStackTrace();
+        }
+        System.out.println(instanceOfFrontend.getCurrenState());
+
+        for(Requirement req : instanceOfFrontend.getNeededReqs()){
+            System.out.println("requisito necessario durante t_install: " + req.getName());
+        }
+        
+        try {
+            testApp.opEnd(instanceOfFrontend, "install");
+        } catch (NullPointerException | FailedOperationException e) {
+            e.printStackTrace();
+        }
+
+        //todo verificare neededReqs e satisfiedReqs ecc
     }                       
 }                               
