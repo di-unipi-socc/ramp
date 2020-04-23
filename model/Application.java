@@ -67,7 +67,7 @@ public class Application {
     /**
      * @return current GlobalState
      */
-    public GlobalState getglobalState() {
+    public GlobalState getGlobalState() {
         return globalState;
     }
 
@@ -382,5 +382,13 @@ public class Application {
             newNodeInstanceID = RandomID.generateRandomString(12);
         
         return new NodeInstance(node, node.getInitialState(), newNodeInstanceID);
+    }
+
+    public void addNode(Node node){
+        this.nodes.put(node.getName(), node);
+    }
+
+    public void addStaticBinding(StaticBinding source, StaticBinding target){
+        this.bindingFunction.put(source, target);
     }
 }

@@ -1,7 +1,7 @@
 package model;
 
 import java.util.List;
-
+import java.util.ArrayList;
 //represents a component of the application
 public class Node {
 
@@ -45,6 +45,16 @@ public class Node {
         this.reqs = reqs;
         this.states = states;
         this.initialState = initialState;
+    }
+
+    public Node(String name, String initialState, ManagementProtocol mp){
+        this.name = name;
+        this.initialState = initialState;
+        this.mp = mp;
+        this.caps = new ArrayList<>();
+        this.reqs = new ArrayList<>();
+        this.ops = new ArrayList<>();
+        this.states = new ArrayList<>();
     }
 
     /**
@@ -94,5 +104,21 @@ public class Node {
      */
     public String getName() {
         return name;
+    }
+
+    public void addState(String state){
+        this.states.add(state);
+    }
+
+    public void addOperation(String op){
+        this.ops.add(op);
+    }
+
+    public void addRequirement(Requirement req){
+        this.reqs.add(req);
+    }
+
+    public void addCapability(String cap){
+        this.caps.add(cap);
     }
 }

@@ -1,4 +1,6 @@
 package model;
+
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -45,6 +47,13 @@ public class ManagementProtocol {
         this.phi = phi;
     }
 
+    public ManagementProtocol(){
+        this.transition = new HashMap<String, Transition>();
+        this.phi = new HashMap<String, List<String>>();
+        this.gamma = new HashMap<String, List<String>>();
+        this.rho = new HashMap<String, List<Requirement>>();
+    }
+
     /**
      * @return map a state (which can be a transition) to a list of state for the fault handling
      */
@@ -72,4 +81,21 @@ public class ManagementProtocol {
     public Map<String, Transition> getTransition() {
         return this.transition;
     }
+
+    public void addRhoEntry(String stateOrTransition, List<Requirement> reqs){
+        this.rho.put(stateOrTransition, reqs);
+    }
+
+    public void addGammaEntry(String stateOrTransition, List<String> caps){
+        this.gamma.put(stateOrTransition, caps);
+    }
+
+    public void addPhiEntry(String stateOrTransition, List<String> faultHandlingStates){
+        this.phi.put(stateOrTransition, faultHandlingStates);
+    }
+
+    public void addTransition(String source, String op, String target){
+        this.transition.put(source+op+target, new Transition(source+op+target, source, op, target));
+    }
+
 }

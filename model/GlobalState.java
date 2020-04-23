@@ -72,11 +72,11 @@ public class GlobalState {
                 //the serving instance is the right kind of Node?
                 boolean servingInsRightNodeType = servingInstance.getNodeType().getName().equals(capStaticBinding.getNodeName());
                 //the serving instance is currently offering the right cap of instance?
+                
                 boolean servingInsOfferingRightCap = servingInstance.getOfferedCaps().contains(capStaticBinding.getCapOrReq());
 
                 if(servingInsOfferingRightCap == servingInsRightNodeType == true)
                     satisfiedReqs.add(runBinding.getReq());
-
             }
         }
         return satisfiedReqs;
@@ -93,10 +93,11 @@ public class GlobalState {
         ArrayList<Requirement> instanceUnneededReqs = (ArrayList<Requirement>) this.getSatisfiedReqs(instance);
 
         //we remove the needed reqs from the satisfied reqs, so what remains are the unnecessary reqs of instance
-        if(instanceUnneededReqs.removeAll(instance.getNeededReqs()) == true){
+        if(instanceUnneededReqs.removeAll(instance.getNeededReqs()) == true || instance.getNeededReqs().isEmpty() == true){
             for(Requirement req : instanceUnneededReqs){
-                if(req.isContainment() == false)
-                    this.removeRuntimeBinding(instance, req);
+                //TODO: perche' controllo che fosse di containment? non ha senso
+                //if(req.isContainment() == false)
+                this.removeRuntimeBinding(instance, req);
             }
         }
     }
@@ -115,11 +116,10 @@ public class GlobalState {
         //TODO: che succede se getSatisfiedReqs e' vuoto perche' l'istanza e' appena creata?
         if(instanceNeededReqs.removeAll(this.getSatisfiedReqs(instance)) == true || this.getSatisfiedReqs(instance).isEmpty() == true){
             for(Requirement req : instanceNeededReqs){
-                //this methods does not add binding for the containment requirement. that is done explicitly
-                if(req.isContainment() == false){
-                    NodeInstance capableInstance = this.app.defaultPi(instance, req);
-                    this.addBinding(instance, req, capableInstance);
-                }
+                //TODO: qui c'era il controllo in cui si verifica che req non fosse di containment
+                //ma che secondo me era inutile
+                NodeInstance capableInstance = this.app.defaultPi(instance, req);
+                this.addBinding(instance, req, capableInstance);
             }
         }
     }
@@ -154,16 +154,19 @@ public class GlobalState {
     public void removeRuntimeBinding(NodeInstance instance, Requirement req) throws NullPointerException{
         assert instance != null;
         assert req != null;
-        
+        System.out.println("DENTRO removeRuntimeBinding");
         ArrayList<RuntimeBinding> instanceRunBindings = (ArrayList<RuntimeBinding>) this.runtimeBindings.get(instance.getId());
-
+        System.out.println("numero di bindings: " + instanceRunBindings.size());
         //we are already in a situation such as <n, ., .>
         for (RuntimeBinding runBinding : instanceRunBindings) {
-            if(runBinding.getReq().equals(req) == true)
+            if(runBinding.getReq().equals(req) == true){
                 //we have <instanze, req, *> so we remove it
                 //it is ok to remove just from instanceRunBindings since it is the ref to the real data structure 
-                instanceRunBindings.remove(runBinding);   
+                instanceRunBindings.remove(runBinding);  
+            }
         }
+        System.out.println("post: numero di bindings: " + this.runtimeBindings.get(instance.getId()).size());
+
     }
 
     /**
