@@ -1,15 +1,11 @@
 package test;
 
 import model.*;
-import model.exceptions.FailedOperationException;
-import model.exceptions.OperationNotAvailableException;
-import model.exceptions.RuleNotApplicableException;
-
 import java.util.*;
 
-public class Main {
-    public static void main(String[] args) throws NullPointerException, RuleNotApplicableException,
-        OperationNotAvailableException, FailedOperationException {
+public class ApplicationFactory {
+
+    public static Application createApplication(){
         //static setup of the application
         Node frontend = createFrontend();
         Node backend = createBackend();
@@ -42,6 +38,7 @@ public class Main {
 
         //now the static "composition" (nodes and static bindings) are ready
         //ready for unit testing
+        return demo;
     }
     
     public static Node createFrontend(){
@@ -57,7 +54,7 @@ public class Main {
         frontend.addOperation("install");
         frontend.addOperation("config");
         frontend.addOperation("start");
-        frontend.addOperation("unistall");
+        frontend.addOperation("uninstall");
         frontend.addOperation("stop");
 
         Requirement host = new Requirement("host", RequirementSort.CONTAINMENT);
@@ -78,25 +75,28 @@ public class Main {
 
         List<Requirement> requirementsOfInstall = new ArrayList<>();
         requirementsOfInstall.add(host);
-        frontendMP.addRhoEntry("install", requirementsOfInstall);
+        frontendMP.addRhoEntry("not-installedinstallinstalled", requirementsOfInstall);
 
         List<Requirement> requirementsOfConfig = new ArrayList<>();
         requirementsOfConfig.add(host);
         requirementsOfConfig.add(conn);
-        frontendMP.addRhoEntry("config", requirementsOfConfig);
+        frontendMP.addRhoEntry("installedconfigconfigured", requirementsOfConfig);
+        frontendMP.addRhoEntry("configuredconfigconfigured", requirementsOfConfig);
+
 
         List<Requirement> requirementsOfStart = new ArrayList<>();
         requirementsOfStart.add(host);
         requirementsOfStart.add(conn);
-        frontendMP.addRhoEntry("start", requirementsOfStart);
+        frontendMP.addRhoEntry("configuredstartworking", requirementsOfStart);
 
         List<Requirement> requirementsOfUninstall = new ArrayList<>();
         requirementsOfUninstall.add(host);
-        frontendMP.addRhoEntry("uninstall", requirementsOfUninstall);
+        frontendMP.addRhoEntry("installeduninstallnot-installed", requirementsOfUninstall);
+        frontendMP.addRhoEntry("configureduninstallnot-installed", requirementsOfUninstall);
 
         List<Requirement> requirementsOfStop = new ArrayList<>();
         requirementsOfStop.add(host);
-        frontendMP.addRhoEntry("stop", requirementsOfStop);
+        frontendMP.addRhoEntry("workingstopconfigured", requirementsOfStop);
 
         List<Requirement> requirementsOfWorking = new ArrayList<>();
         requirementsOfWorking.add(host);
@@ -136,10 +136,9 @@ public class Main {
         frontendMP.addPhiEntry("working"+"stop"+"configured", configuredList);
         frontendMP.addPhiEntry("working", configuredList);
 
-
         frontendMP.addPhiEntry("installed"+"config"+"configured", installedList);
         frontendMP.addPhiEntry("configured"+"config"+"configured", installedList);
-       return frontend;
+        return frontend;
     }
 
     public static Node createBackend(){
@@ -175,22 +174,22 @@ public class Main {
 
         List<Requirement> requirementsOfInstall = new ArrayList<>();
         requirementsOfInstall.add(host);
-        backendMP.addRhoEntry("install", requirementsOfInstall);
+        backendMP.addRhoEntry("unavailableinstallavailable", requirementsOfInstall);
 
         List<Requirement> requirementsOfUninstall = new ArrayList<>();
         requirementsOfUninstall.add(host);
-        backendMP.addRhoEntry("uninstall", requirementsOfUninstall);
+        backendMP.addRhoEntry("availableuninstallunavailable", requirementsOfUninstall);
 
         backendMP.addRhoEntry("available", new ArrayList<Requirement>());
 
         List<Requirement> requirementsOfStart = new ArrayList<>();
         requirementsOfStart.add(host);
         requirementsOfStart.add(db);
-        backendMP.addRhoEntry("start", requirementsOfStart);
+        backendMP.addRhoEntry("availablestartrunning", requirementsOfStart);
 
         List<Requirement> requirementsOfStop = new ArrayList<>();
         requirementsOfStop.add(host);
-        backendMP.addRhoEntry("stop", requirementsOfStop);
+        backendMP.addRhoEntry("runningstopavailable", requirementsOfStop);
 
         List<Requirement> requirementsOfRunning = new ArrayList<>();
         requirementsOfRunning.add(host);
@@ -202,7 +201,7 @@ public class Main {
         List<Requirement> requirementsOfConfig = new ArrayList<>();
         requirementsOfConfig.add(host);
         requirementsOfConfig.add(db);
-        backendMP.addRhoEntry("config", requirementsOfConfig);
+        backendMP.addRhoEntry("runningconfigrunning", requirementsOfConfig);
 
         // gamma: state -> caps offered
         ArrayList<String> tmp; 
@@ -223,8 +222,8 @@ public class Main {
 
         backendMP.addPhiEntry("unavailable"+"install"+"available", damagedList);
         backendMP.addPhiEntry("available"+"uninstall"+"unavailable", damagedList);
-        backendMP.addPhiEntry("running"+"confing"+"running", damagedList);
-
+        backendMP.addPhiEntry("running"+"config"+"running", damagedList);
+        backendMP.addPhiEntry("running", availableList);
         backendMP.addPhiEntry("available"+"start"+"running", availableList);
         backendMP.addPhiEntry("running"+"stop"+"available", availableList);
 
@@ -301,4 +300,4 @@ public class Main {
             mongoMP.addPhiEntry(state, new ArrayList<String>());
         return mongo; 
     }
-}                               
+}

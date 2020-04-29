@@ -112,14 +112,13 @@ public class GlobalState {
         //list of requirement that instance needs
         ArrayList<Requirement> instanceNeededReqs = (ArrayList<Requirement>) instance.getNeededReqs();
 
-        //we remove the satisfied reqs from the needed reqs, so what remains are the unsatisfied reqs of instance
-        //TODO: che succede se getSatisfiedReqs e' vuoto perche' l'istanza e' appena creata?
+        //if instance has not a single satisfied reqs OR it has some needed reqs that are not satisfied we create the binding       
         if(instanceNeededReqs.removeAll(this.getSatisfiedReqs(instance)) == true || this.getSatisfiedReqs(instance).isEmpty() == true){
             for(Requirement req : instanceNeededReqs){
-                //TODO: qui c'era il controllo in cui si verifica che req non fosse di containment
-                //ma che secondo me era inutile
-                NodeInstance capableInstance = this.app.defaultPi(instance, req);
-                this.addBinding(instance, req, capableInstance);
+                if(req.isContainment() == false){
+                    NodeInstance capableInstance = this.app.defaultPi(instance, req);
+                    this.addBinding(instance, req, capableInstance);
+                }
             }
         }
     }

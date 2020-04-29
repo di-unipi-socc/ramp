@@ -48,8 +48,15 @@ NOTE
    altrimenti il tradeoff leggibilita'/efficienza potrebbe non convenire (?) 
 
 Da validare
-- ho modificato getTransitionByOp. questo perche' ci sono transizioni con nomi diversi
-  ma con stessa op, quindi le distinguiamo con <op, stato iniziale>
-    - hashmap non permette doppioni, o facevo cosi' o una mappa <nome transizione, list<Transition>>
+- un'operazione avra' sempre quel set di reqs (esempio config, che parte da due stati diversi) ?
+    - per ora assumo di si
 
+RICORDA 
 
+tu vuoi fare un op: prendi quella operazione e cerchi la relativa transizione. E' LA TRANSIZIONE A RICHIEDERE REQS
+- devi modificare la factory mettendo i requirement delle transizioni 
+    - tipo op install: not-installed -> install -> installed ha i seguenti reqs, quindi in rho ci deve essere la coppia <not-installedinstallinstalled, reqs>
+        - io sparo l'o, il codice si prende la transizione per quell'op e ragione sui reqs necessari 
+
+- a questo punto pero' sarebbe meglio organizzare le transizioni come una mappa: <op, transizioni di quella op> (che magari partono da roba diversa)
+    - piu' efficiente

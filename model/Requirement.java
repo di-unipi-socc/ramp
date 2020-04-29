@@ -48,4 +48,30 @@ public class Requirement {
     public boolean isContainment(){
        return this.reqSort == RequirementSort.CONTAINMENT;
     }
+
+    public RequirementSort getRequirementSort(){
+        return this.reqSort;
+    }
+
+    @Override
+    /**
+     * two fault are equal when they are about the same insance and requirement
+     */
+    public boolean equals(Object f){
+        Requirement toCheck = (Requirement) f;
+        boolean ret = false;
+
+        if(toCheck.getName().equals(this.name) && toCheck.getRequirementSort().equals(this.reqSort))
+            ret = true;
+        
+        return ret;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 17;
+        result = 31 * result + this.name.hashCode();
+        result = 31 * result + this.reqSort.hashCode();
+        return result;
+    }
 }

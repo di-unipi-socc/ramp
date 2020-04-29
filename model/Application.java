@@ -112,7 +112,9 @@ public class Application {
         assert req != null;
         NodeInstance ret = null;
         Collection<NodeInstance> activeInstancesCollection =  this.globalState.activeNodeInstances.values();
+
         ArrayList<NodeInstance> activeInstances = new ArrayList<>(activeInstancesCollection);
+        
         StaticBinding reqStaticBinding = new StaticBinding(askingInstance.getNodeType().getName(), req.getName());
         StaticBinding capStaticBinding = this.bindingFunction.get(reqStaticBinding); 
 
@@ -335,12 +337,14 @@ public class Application {
             //add the new instance in the G set
             this.globalState.activeNodeInstances.put(newNodeInstance.getId(), newNodeInstance);
 
+            //explicitly add the containment binding
+            this.globalState.addBinding(newNodeInstance, containmentRequirement, container);
+
             //add the non-containemnt bindings needed for the initial state of the new instance
             this.globalState.runtimeBindings.put(newNodeInstance.getId(), new ArrayList<RuntimeBinding>());
             this.globalState.addNewBindings(newNodeInstance);
 
-            //explicitly add the containment binding
-            this.globalState.addBinding(newNodeInstance, containmentRequirement, container);
+            
         }
 
         return newNodeInstance;
