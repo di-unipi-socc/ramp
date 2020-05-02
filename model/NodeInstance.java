@@ -38,7 +38,7 @@ public class NodeInstance {
     /**
      * @return unique identifier of NodeIstance
      */
-    public String getId() {
+    public String getID() {
         return this.id;
     }
 
@@ -97,5 +97,28 @@ public class NodeInstance {
      */
     public List<String> getOfferedCaps(){
         return this.getNodeType().getMp().getGamma().get(this.getCurrenState());
+    }
+
+    @Override
+    /**
+     * two fault are equal when they are about the same insance and requirement
+     */
+    public boolean equals(Object n){
+        NodeInstance toCheck = (NodeInstance) n;
+        boolean ret = false;
+
+        if(toCheck.getID().equals(this.id))
+            ret = true;
+        
+        return ret;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 17;
+        result = 31 * result + this.id.hashCode();
+        result = 31 * result + this.currenState.hashCode();
+        result = 31 * result + this.nodeType.getName().hashCode();
+        return result;
     }
 }

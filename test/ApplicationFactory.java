@@ -12,33 +12,33 @@ public class ApplicationFactory {
         Node node = createNode();
         Node mongo = createMongo();
         
-        Application demo = new Application("demo");
-        demo.addNode(frontend);
-        demo.addNode(backend);
-        demo.addNode(node);
-        demo.addNode(mongo);
+        Application testApp = new Application("testApp");
+        testApp.addNode(frontend);
+        testApp.addNode(backend);
+        testApp.addNode(node);
+        testApp.addNode(mongo);
 
         // frontend
         StaticBinding frontendAskingHost = new StaticBinding("frontend", "host");
         StaticBinding frontendHostServer = new StaticBinding("node", "host");
-        demo.addStaticBinding(frontendAskingHost, frontendHostServer);
+        testApp.addStaticBinding(frontendAskingHost, frontendHostServer);
 
         StaticBinding frontendAskingConn = new StaticBinding("frontend", "conn");
         StaticBinding frontendConnServer = new StaticBinding("backend", "conn");
-        demo.addStaticBinding(frontendAskingConn, frontendConnServer);
+        testApp.addStaticBinding(frontendAskingConn, frontendConnServer);
 
         // backend
         StaticBinding backendAskingHost = new StaticBinding("backend", "host");
         StaticBinding backendHostServer = new StaticBinding("node", "host");
-        demo.addStaticBinding(backendAskingHost, backendHostServer);
+        testApp.addStaticBinding(backendAskingHost, backendHostServer);
 
         StaticBinding backendAskingDB = new StaticBinding("backend", "db");
         StaticBinding backendDBServer = new StaticBinding("mongo", "db");
-        demo.addStaticBinding(backendAskingDB, backendDBServer);
+        testApp.addStaticBinding(backendAskingDB, backendDBServer);
 
         //now the static "composition" (nodes and static bindings) are ready
         //ready for unit testing
-        return demo;
+        return testApp;
     }
     
     public static Node createFrontend(){
@@ -120,6 +120,9 @@ public class ApplicationFactory {
             frontendMP.addGammaEntry(state, tmp);
         }
 
+        for (Transition t : frontend.getMp().getTransition().values())
+            frontendMP.addGammaEntry(t.getName(), new ArrayList<String>());
+
         //phi: state -> list of states for fault handling
         List<String> damagedList = new ArrayList<>();
         damagedList.add("damaged");
@@ -170,11 +173,11 @@ public class ApplicationFactory {
         backendMP.addTransition("running", "stop", "available");
 
         // frontendRho: state (or transition) -> reqs for that state
-        backendMP.addRhoEntry("unavailable", new ArrayList<Requirement>());
+        backendMP.addRhoEntry("unavailable", new ArrayList<>());
 
-        List<Requirement> requirementsOfInstall = new ArrayList<>();
-        requirementsOfInstall.add(host);
-        backendMP.addRhoEntry("unavailableinstallavailable", requirementsOfInstall);
+        List<Requirement> requirementOfInstall = new ArrayList<>();
+        requirementOfInstall.add(host);
+        backendMP.addRhoEntry("unavailableinstallavailable", requirementOfInstall);
 
         List<Requirement> requirementsOfUninstall = new ArrayList<>();
         requirementsOfUninstall.add(host);
@@ -209,10 +212,13 @@ public class ApplicationFactory {
             tmp = new ArrayList<>();
             backendMP.addGammaEntry(state, tmp);
         }
+
+        for (Transition t : backend.getMp().getTransition().values())
+            backendMP.addGammaEntry(t.getName(), new ArrayList<String>());
+        
         List<String> capsOfRunning = (ArrayList<String>) backendMP.getGamma().get("running");
         capsOfRunning.add("conn");
         backendMP.addGammaEntry("running", capsOfRunning);
-
 
         // phi: state -> list of states for fault handling
         List<String> damagedList = new ArrayList<>();
@@ -249,6 +255,8 @@ public class ApplicationFactory {
         for (String state : node.getStates())
             nodeMP.addRhoEntry(state, new ArrayList<Requirement>());
         
+        nodeMP.addRhoEntry("stoppedstartrunning", new ArrayList<Requirement>());
+        nodeMP.addRhoEntry("runningstopstopped", new ArrayList<Requirement>());
 
         //gamma: state -> caps offered in that state
         ArrayList<String> tmp; 
@@ -256,6 +264,10 @@ public class ApplicationFactory {
             tmp = new ArrayList<>();
             nodeMP.addGammaEntry(state, tmp);
         }
+
+        nodeMP.addGammaEntry("stoppedstartrunning", new ArrayList<String>());
+        nodeMP.addGammaEntry("runningstopstopped", new ArrayList<String>());
+
         List<String> runningCaps = (ArrayList<String>) nodeMP.getGamma().get("running");
         runningCaps.add("host");
         nodeMP.addGammaEntry("host", runningCaps);
@@ -286,11 +298,16 @@ public class ApplicationFactory {
         for (String state : mongo.getStates())
             mongoMP.addRhoEntry(state, new ArrayList<Requirement>());
         
+        mongoMP.addRhoEntry("stoppedstartrunning", new ArrayList<Requirement>());
+        mongoMP.addRhoEntry("runningstopstopped", new ArrayList<Requirement>());
 
         // gamma: state -> caps offered
-        for (String state : mongo.getStates()) {
+        for (String state : mongo.getStates()) 
             mongoMP.addGammaEntry(state, new ArrayList<String>());
-        }
+        
+        mongoMP.addGammaEntry("stoppedstartrunning", new ArrayList<String>());
+        mongoMP.addGammaEntry("runningstopstopped", new ArrayList<String>());
+
         List<String> runningCaps = mongoMP.getGamma().get("running");
         runningCaps.add("db");
         mongoMP.addGammaEntry("running", runningCaps);

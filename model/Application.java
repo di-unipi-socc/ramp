@@ -120,14 +120,15 @@ public class Application {
 
         if(capStaticBinding != null){
             //for each instance among the active instances we check if it can take care of <askingInstance, req>
-            for(NodeInstance instance : activeInstances){
+            for(NodeInstance server : activeInstances){
                 //instance is the right kind of Node?
-                boolean instanceRightType = instance.getNodeType().getName().equals(capStaticBinding.getNodeName());
-                //instance is currently offering the right cap of instance?
-                boolean instanceOfferingRightCap = instance.getOfferedCaps().contains(capStaticBinding.getCapOrReq());
+                boolean serverRightType = server.getNodeType().getName().equals(capStaticBinding.getNodeName());
 
-                if(instanceRightType == instanceOfferingRightCap == true){
-                    ret = instance;
+                //instance is currently offering the right cap of instance?
+                boolean serverOfferingRightCap = server.getOfferedCaps().contains(capStaticBinding.getCapOrReq());
+
+                if(serverRightType == true && serverOfferingRightCap == true){
+                    ret = server;
                     break;
                 }
             }
@@ -175,9 +176,12 @@ public class Application {
         assert instance != null;
         assert op.length() != 0;
 
-        ArrayList<Fault> faults = (ArrayList<Fault>) this.globalState.getPendingFaults(instance);
-        if(faults.isEmpty() == false)
-            throw new FailedOperationException();
+        ArrayList<Fault> pendingFaults = (ArrayList<Fault>) this.globalState.getPendingFaults(instance);
+        if(pendingFaults.isEmpty() == false)
+            throw new FailedOperationException("pending faults to be handled");
+
+        if(this.globalState.isBrokenInstance(instance) == true)
+            throw new FailedOperationException("this instance has no container");
 
         //we get the transition by it's name (which is stored in the current state, since it is transient)
         Transition transitionToComplete = instance.getNodeType().getMp().getTransition().get(instance.getCurrenState());
@@ -202,7 +206,7 @@ public class Application {
                RuleNotApplicableException 
     {
         
-        Fault fault = new Fault(instance.getId(), req);
+        Fault fault = new Fault(instance.getID(), req);
         ArrayList<String> faultHandlinglobalStates = new ArrayList<>();
 
         if(this.globalState.getPendingFaults().contains(fault) == false || this.globalState.isResolvableFault(fault) == false)
@@ -254,7 +258,7 @@ public class Application {
     {
         assert askingInstance != null;
         assert req != null;
-        Fault fault = new Fault(askingInstance.getId(), req);
+        Fault fault = new Fault(askingInstance.getID(), req);
 
         if(this.globalState.isResolvableFault(fault) == false)
             throw new RuleNotApplicableException("fault not resolvable");
@@ -290,9 +294,9 @@ public class Application {
 
         NodeInstance newNodeInstance = this.createNewNodeInstance(node);
         //add the new instance in the G set
-        this.globalState.activeNodeInstances.put(newNodeInstance.getId(), newNodeInstance);
+        this.globalState.activeNodeInstances.put(newNodeInstance.getID(), newNodeInstance);
         //add the bindings needed for the initial state of the instance
-        this.globalState.runtimeBindings.put(newNodeInstance.getId(), new ArrayList<RuntimeBinding>());
+        this.globalState.runtimeBindings.put(newNodeInstance.getID(), new ArrayList<RuntimeBinding>());
         this.globalState.addNewBindings(newNodeInstance);
         return newNodeInstance;
     }
@@ -335,16 +339,14 @@ public class Application {
             newNodeInstance = this.createNewNodeInstance(node);
 
             //add the new instance in the G set
-            this.globalState.activeNodeInstances.put(newNodeInstance.getId(), newNodeInstance);
+            this.globalState.activeNodeInstances.put(newNodeInstance.getID(), newNodeInstance);
 
             //explicitly add the containment binding
             this.globalState.addBinding(newNodeInstance, containmentRequirement, container);
 
             //add the non-containemnt bindings needed for the initial state of the new instance
-            this.globalState.runtimeBindings.put(newNodeInstance.getId(), new ArrayList<RuntimeBinding>());
+            //TODO check this.globalState.runtimeBindings.put(newNodeInstance.getID(), new ArrayList<RuntimeBinding>());
             this.globalState.addNewBindings(newNodeInstance);
-
-            
         }
 
         return newNodeInstance;
@@ -364,7 +366,7 @@ public class Application {
             throw new RuleNotApplicableException();
         else{
             //we remove i from the G set
-            this.globalState.activeNodeInstances.remove(instance.getId());
+            this.globalState.activeNodeInstances.remove(instance.getID());
             this.globalState.removeAllBindingsBothWays(instance);
             this.autodestroy();
         }
