@@ -16,9 +16,14 @@ public class RuntimeBinding {
      * @throws NullPointerException
      */
     public RuntimeBinding(Requirement req, String instanceID) {
-        assert instanceID != null;
-        assert req != null;
-
+        
+        if(instanceID == null)
+            throw new NullPointerException("instanceID null");
+        if(instanceID.isEmpty() == true)
+            throw new IllegalArgumentException("instanceID empty");
+        if(req == null)
+            throw new NullPointerException("req null");
+        
         this.instanceID = instanceID;
         this.req = req;
     }

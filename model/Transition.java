@@ -22,11 +22,28 @@ public class Transition {
         String startingState, 
         String op, 
         String endingState
-    ){
-        assert name.length() > 0;
-        assert startingState != null && startingState.length() > 0;
-        assert op.length() > 0;
-        assert endingState.length() > 0;
+    ) throws
+        NullPointerException, 
+        IllegalArgumentException
+    {
+
+        if(name == null)
+            throw new NullPointerException("name null");
+        if(startingState == null)
+            throw new NullPointerException("startingState null");
+        if(op == null)
+            throw new NullPointerException("op null");
+        if(endingState == null)
+            throw new NullPointerException("endingState null");
+        
+        if(name.isEmpty() == true)
+            throw new IllegalArgumentException("name empty");
+        if(startingState.isEmpty() == true)
+            throw new IllegalArgumentException("startingState empty");
+        if(op.isEmpty() == true)
+            throw new IllegalArgumentException("op empty");
+        if(endingState.isEmpty() == true)
+            throw new IllegalArgumentException("endingState empty");
 
         this.name = name;
         this.startingState = startingState;

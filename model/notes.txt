@@ -70,6 +70,9 @@ Importanti
       in questo momento stia offrendo la giusta cap
         - questo forse va contro la tesi ma non vedo come altro verificare che il requisito di containment valga
 
+        - NO, pending faults sbagliato. il caso in cui host non e' offerto e' un pending fault, broken instance e' SOLO quando il container
+          mi crepa e mi ammazza anche l'istanza sopra. aggiusta
+
 - problema con removeAll
     - siccome funziona con i ref mi sovrascrive il protocollo. esempio: nel metodo addNewBindings faccio neededReqs.removeAll(satisfiedReqs)
       cosi da ottenere la lista di requisiti necessari ma non soddisfatti
@@ -83,4 +86,6 @@ Importanti
   che aggiornano i runtime binding non toccano i requirement di containment (quindi in pratica la roba funziona, i runtime binding di containment sono
   gestiti esplicitamente) ma questi runtime binding "invisibili" potrebbero essere poco comprensibili
 
-- aggiunto controllo != null capableInstance su add new bingins (globalSTate)
+- aggiunto controllo != null capableInstance su addNewbindings (globalSTate)
+
+

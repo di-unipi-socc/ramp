@@ -22,7 +22,9 @@ public class GlobalState {
      * @throws NullPointerException
      */
     public GlobalState(Application app) {
-        assert app != null;
+        if(app == null)
+            throw new NullPointerException("app null");
+
         this.app = app;
 
         this.activeNodeInstances = new HashMap<>();
@@ -49,7 +51,9 @@ public class GlobalState {
      * @throws NullPointerException
      */
     public List<Requirement> getSatisfiedReqs(NodeInstance instance) throws NullPointerException {
-        assert instance != null;
+        if(instance == null)
+            throw new NullPointerException("instance null");
+
         List<Requirement> satisfiedReqs = new ArrayList<>();
 
         // runtime bindings of instance
@@ -93,7 +97,9 @@ public class GlobalState {
      * @throws NullPointerException
      */
     public void removeOldBindings(NodeInstance instance) throws NullPointerException {
-        assert instance != null;
+        if(instance == null)
+            throw new NullPointerException("instance null");
+
         // if a req is satisfied but not needed it has to be removed
         for (Requirement satisfiedReq : this.getSatisfiedReqs(instance)) {
             if (satisfiedReq.isContainment() == false && instance.getNeededReqs().contains(satisfiedReq) == false)
@@ -102,12 +108,13 @@ public class GlobalState {
     }
 
     /**
-     * @param instance node instance that needs new bindings since it had a change
-     *                 of state
+     * @param instance node instance that needs new bindings since it had a change of state
      * @throws NullPointerException
      */
     public void addNewBindings(NodeInstance instance) throws NullPointerException {
-        assert instance != null;
+        if(instance == null)
+            throw new NullPointerException("instance null");
+        
         // for each neededReq (not containment) we check if that is satisfied, if it is
         // not satisfied we try to we create a binding
         for (Requirement neededReq : instance.getNeededReqs()) {
@@ -126,10 +133,15 @@ public class GlobalState {
      * @param servingInstance node istance that satisfy req with the correct capability
      * @throws NullPointerException
      */
-    public void addBinding(NodeInstance askingInstance, Requirement req, NodeInstance servingInstance) throws NullPointerException{
-        assert askingInstance != null;
-        assert req != null;
-        assert servingInstance != null;
+    public void addBinding(NodeInstance askingInstance, Requirement req, NodeInstance servingInstance) 
+        throws NullPointerException
+    {
+        if(askingInstance == null)
+            throw new NullPointerException("askingInstance null");
+        if(req == null)
+            throw new NullPointerException("req null");
+        if(servingInstance == null)
+            throw new NullPointerException("servingInstance null");
 
         if(this.runtimeBindings.get(askingInstance.getID()) == null){ 
             //means that asking instance has not yet a single binding, hence has not an entry in the runtimeBindings
@@ -146,8 +158,12 @@ public class GlobalState {
      * @throws NullPointerException
      */
     public void removeRuntimeBinding(NodeInstance instance, Requirement req) throws NullPointerException{
-        assert instance != null;
-        assert req != null;
+        if(instance == null)
+            throw new NullPointerException("instance null");
+        
+        if(req == null)
+            throw new NullPointerException("req null");
+
         ArrayList<RuntimeBinding> instanceRunBindings = (ArrayList<RuntimeBinding>) this.runtimeBindings.get(instance.getID());
         //we are already in a situation such as <n, ., .>
         for (RuntimeBinding runBinding : instanceRunBindings) {
@@ -156,7 +172,6 @@ public class GlobalState {
                 instanceRunBindings.remove(runBinding);  
             }
         }
-
     }
 
     /**
@@ -165,7 +180,9 @@ public class GlobalState {
      * @throws NullPoninterException
      */
     public void removeAllBindingsBothWays(NodeInstance targetInstance) throws NullPointerException{
-        assert targetInstance != null;
+        if(targetInstance == null)
+            throw new NullPointerException("targetInstance null");
+        
         ArrayList<NodeInstance> activeInstances = (ArrayList<NodeInstance>) this.activeNodeInstances.values();
 
         for(NodeInstance activeInstance : activeInstances){
@@ -192,7 +209,9 @@ public class GlobalState {
      * @throws NullPointerException
      */
     public List<Fault> getPendingFaults(NodeInstance instance) throws NullPointerException{
-        assert instance != null;
+        if(instance == null)
+            throw new NullPointerException("instance null");
+
         List<Fault> faults = new ArrayList<>();
 
         //for each neededReq we check that it is also satisfied, if a needed requirement is not satisfied we have a fault
@@ -227,7 +246,9 @@ public class GlobalState {
      * @throws NullPointerException
      */
     public boolean isBrokenInstance(NodeInstance instance) throws NullPointerException{
-        assert instance != null;
+        if(instance == null)
+            throw new NullPointerException("instance null");
+
         boolean res = false;
         List<RuntimeBinding> instanceRunBindings = this.runtimeBindings.get(instance.getID());
 
@@ -285,7 +306,8 @@ public class GlobalState {
      * @throws NullPointerException
      */
     public boolean isResolvableFault(Fault fault) throws NullPointerException{
-        assert fault != null;
+        if(fault == null)
+            throw new NullPointerException("fault null");
         boolean res = false;
 
         //all active node instances
@@ -315,8 +337,7 @@ public class GlobalState {
                     break;
                 }
             }
-        }
-        
+        }   
         return res;
     }
 
@@ -326,9 +347,10 @@ public class GlobalState {
      * @throws NullPointerException
      */
     public List<Fault> getResolvableFaults(NodeInstance instance) throws NullPointerException{
-        assert instance != null;
-        List<Fault> resolvableFaults = new ArrayList<>();
+        if(instance == null)
+            throw new NullPointerException("instance null");
 
+        List<Fault> resolvableFaults = new ArrayList<>();
         ArrayList<Fault> pendingFaults = (ArrayList<Fault>) this.getPendingFaults(instance);
 
         for(Fault f : pendingFaults){

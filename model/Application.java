@@ -13,7 +13,7 @@ public class Application {
 
     // name of the application
     private final String name;
-    // set T: all the application's component
+    // set T: all the application's component: node's name -> node
     private Map<String, Node> nodes;
     private GlobalState globalState;
 
@@ -23,15 +23,21 @@ public class Application {
     private Map<StaticBinding, StaticBinding> bindingFunction;
 
     /**
+     * @param name application's name
      * @throws NullPointerException
      * @throws IllegalArgumentException
-     * @param name application's name
      */
-    public Application(String name) {
-        // this assert is just to check that name is not null nor empty
-        // used many more times in this project, it is just a reminder for
-        // a real exception handling
-        assert name.length() > 0;
+    public Application(String name) 
+        throws 
+            NullPointerException, 
+            IllegalArgumentException 
+    {
+        if(name == null)
+            throw new NullPointerException("name null");
+
+        if(name.isEmpty() == true)
+            throw new IllegalArgumentException("name empty");
+
         this.name = name;
         this.nodes = new HashMap<>();
         this.globalState = new GlobalState(this);
@@ -44,20 +50,35 @@ public class Application {
         return this.bindingFunction;
     }
 
-    public void setBindingFunction(Map<StaticBinding, StaticBinding> bf){
+    public void setBindingFunction(Map<StaticBinding, StaticBinding> bf) throws NullPointerException{
+        if(bf == null)
+            throw new NullPointerException("bf null");
         this.bindingFunction = bf;
     }
 
     /**
+     * @param name application's name
+     * @param nodes map of applicaton's Node, by name
      * @throws NullPointerException
      * @throws IllegalArgumentException
-     * @param name  application's name
-     * @param nodes map of applicaton's Node, by name
      */
-    public Application(String name, Map<String, Node> nodes, Map<StaticBinding, StaticBinding> bf){
-        assert name.length() > 0;
-        assert nodes != null;
-        assert bf != null;
+    public Application(String name, Map<String, Node> nodes, Map<StaticBinding, StaticBinding> bf)
+        throws 
+            NullPointerException, 
+            IllegalArgumentException
+    {    
+        if(name == null)
+            throw new NullPointerException("name null");
+
+        if(name.isEmpty() == true)
+            throw new IllegalArgumentException("name empty");
+        
+        if(nodes == null)
+            throw new NullPointerException("nodes null");
+
+        if(bf == null)
+            throw new NullPointerException("bf null");
+
         this.name = name; 
         this.nodes = nodes;
         this.globalState = new GlobalState(this);
@@ -74,7 +95,9 @@ public class Application {
     /**
      * @param gs given GlobalState 
      */
-    public void setglobalState(GlobalState gs) {
+    public void setGlobalState(GlobalState gs) throws NullPointerException{
+        if(gs == null)
+            throw new NullPointerException("gs null");
         this.globalState = gs;
     }
 
@@ -89,8 +112,9 @@ public class Application {
      * @param nodes list of Node to bet set to the applicaton
      * @throws NullPointerException
      */
-    public void setNodes(Map<String, Node> nodes) {
-        assert nodes != null;
+    public void setNodes(Map<String, Node> nodes) throws NullPointerException {
+        if(nodes == null)
+            throw new NullPointerException("nodes null");
         this.nodes = (HashMap<String, Node>) nodes;
     }
 
@@ -102,14 +126,18 @@ public class Application {
     }
 
     /**
-     * @param instance node isntance that requires req
+     * @param instance node instance that requires req
      * @param req requirement that needs to be handled
      * @return the first node instance that can take care of <askingInstance, req>
      * @throws NullPointerException
      */
     public NodeInstance defaultPi(NodeInstance askingInstance, Requirement req) throws NullPointerException{
-        assert askingInstance != null;
-        assert req != null;
+        
+        if(askingInstance == null)
+            throw new NullPointerException("askingInstance null");
+        if(req == null)
+            throw new NullPointerException("req null");
+        
         NodeInstance ret = null;
         Collection<NodeInstance> activeInstancesCollection =  this.globalState.activeNodeInstances.values();
 
@@ -121,9 +149,9 @@ public class Application {
         if(capStaticBinding != null){
             //for each instance among the active instances we check if it can take care of <askingInstance, req>
             for(NodeInstance server : activeInstances){
+
                 //instance is the right kind of Node?
                 boolean serverRightType = server.getNodeType().getName().equals(capStaticBinding.getNodeName());
-
                 //instance is currently offering the right cap of instance?
                 boolean serverOfferingRightCap = server.getOfferedCaps().contains(capStaticBinding.getCapOrReq());
 
@@ -141,22 +169,28 @@ public class Application {
      * @param op management operation to execute
      * @throws NullPointerException
      * @throws OperationNotAvailableException
-     * @throws NullPointerExcption
      */
     public void opStart(NodeInstance instance, String op)
-        throws  OperationNotAvailableException, 
-                NullPointerException 
+        throws  
+            OperationNotAvailableException, 
+            IllegalArgumentException,
+            NullPointerException 
     {
-        assert instance != null;
-        assert op.length() != 0;
+        
+        if(instance == null)
+            throw new NullPointerException("instance null");
+        if(op == null)
+            throw new NullPointerException("op null");
+        if(op.isEmpty() == true)
+            throw new IllegalArgumentException("op empty");
 
-        Transition transitionToHappen = instance.getTransitionByOp(op, instance.getCurrenState());
+        Transition transitionToHappen = instance.getTransitionByOp(op, instance.getCurrentState());
         if(transitionToHappen == null)
             //if op it's not bound to any transition it means that op is not available
             throw new OperationNotAvailableException();
         
         //instance goes in a new transient state
-        instance.setCurrenState(transitionToHappen.getName());
+        instance.setCurrentState(transitionToHappen.getName());
         //we kill old bindings (the ones that were about the old state)
         this.globalState.removeOldBindings(instance);
         //we add the new bindings (the ones that are about the new transient state)
@@ -170,11 +204,15 @@ public class Application {
      * @throws NullPonterException
      */
     public void opEnd(NodeInstance instance, String op) 
-        throws FailedOperationException, 
-               NullPointerException 
+        throws 
+            FailedOperationException, 
+            IllegalArgumentException,
+            NullPointerException 
     {
-        assert instance != null;
-        assert op.length() != 0;
+        if(instance == null)
+            throw new NullPointerException("instance null");
+        if(op.isEmpty() == true)
+            throw new IllegalArgumentException("op empty");
 
         ArrayList<Fault> pendingFaults = (ArrayList<Fault>) this.globalState.getPendingFaults(instance);
         if(pendingFaults.isEmpty() == false)
@@ -184,10 +222,10 @@ public class Application {
             throw new FailedOperationException("this instance has no container");
 
         //we get the transition by it's name (which is stored in the current state, since it is transient)
-        Transition transitionToComplete = instance.getNodeType().getMp().getTransition().get(instance.getCurrenState());
+        Transition transitionToComplete = instance.getNodeType().getMp().getTransition().get(instance.getCurrentState());
         //instance goes in a new final state
         
-        instance.setCurrenState(transitionToComplete.getEndingState());
+        instance.setCurrentState(transitionToComplete.getEndingState());
         //we kill old bindings (the ones that were about the old state)
         this.globalState.removeOldBindings(instance);
         //we add the new bindings (the ones that are about the new transient state)
@@ -202,10 +240,16 @@ public class Application {
      * @throws RuleNotAplicableException
      */
     public void fault(NodeInstance instance, Requirement req) 
-        throws FailedFaultHandlingExecption, 
-               RuleNotApplicableException 
+        throws  
+            FailedFaultHandlingExecption, 
+            NullPointerException, 
+            RuleNotApplicableException 
     {
-        
+        if(instance == null)
+            throw new NullPointerException("instance null");
+        if(req == null)
+            throw new NullPointerException("req null");
+
         Fault fault = new Fault(instance.getID(), req);
         ArrayList<String> faultHandlinglobalStates = new ArrayList<>();
 
@@ -214,13 +258,13 @@ public class Application {
         else{
             //phi: failed state -> states to go
             ArrayList<String> phiStates = 
-                        (ArrayList<String>) instance.getNodeType().getMp().getPhi().get(instance.getCurrenState());
+                (ArrayList<String>) instance.getNodeType().getMp().getPhi().get(instance.getCurrentState());
             
-            //for each state in phiStates we check if req it's needed in that state, if it is usable for the fault handling 
+            //for each state in phiStates we check if req is needed in that state, if the state is usable for the fault handling 
             for(String state : phiStates){
                 //rho: state s -> list of requirement needed in s
                 if(instance.getNodeType().getMp().getRho().get(state).contains(req) == false)
-                    //since req it's not required when instance is in state we can use state
+                    //since req it's not required when instance is in this state we can use it for fault handling
                     faultHandlinglobalStates.add(state);
             }
 
@@ -240,7 +284,7 @@ public class Application {
                 throw new FailedFaultHandlingExecption("no state to go for fault handling");
 
             //we apply the rule
-            instance.setCurrenState(rightState);
+            instance.setCurrentState(rightState);
             this.globalState.removeOldBindings(instance);
             this.globalState.addNewBindings(instance);
         }
@@ -253,11 +297,16 @@ public class Application {
      * @throws NullPointerException
      */
     public void autoreconnect(NodeInstance askingInstance, Requirement req) 
-        throws RuleNotApplicableException,
-               NullPointerException
+        throws 
+            RuleNotApplicableException,
+            NullPointerException
     {
-        assert askingInstance != null;
-        assert req != null;
+
+        if(askingInstance == null)
+            throw new NullPointerException("instance null");
+        if(req == null)
+            throw new NullPointerException("req null");
+
         Fault fault = new Fault(askingInstance.getID(), req);
 
         if(this.globalState.isResolvableFault(fault) == false)
@@ -277,16 +326,23 @@ public class Application {
      * @param node node of which we want create a new instance
      * @throws RuleNotApplicableException
      * @throws NullPointerException
+     * @throws NodeUnkownExcception
      * @return the newly created instance
      */
     public NodeInstance scaleOut1(Node node) 
-        throws RuleNotApplicableException,
-               NullPointerException
+        throws 
+            RuleNotApplicableException,
+            NullPointerException,
+            NodeUnknownException
     {
-        assert node != null;
-
+        if(node == null)
+            throw new NullPointerException("node null");
+        
+        if(this.nodes.containsKey(node.getName()) == false)
+            throw new NodeUnknownException("node unknown");
+        
         ArrayList<Requirement> nodeRequirements = (ArrayList<Requirement>) node.getReqs();
-        //scaleOut not handle the containement requirements 
+        //scaleOut1 not handle the containement requirements 
         for(Requirement req : nodeRequirements){
             if(req.isContainment() == true)
                 throw new RuleNotApplicableException();
@@ -312,8 +368,11 @@ public class Application {
         throws RuleNotApplicableException,
                NullPointerException 
     {
-        assert node != null;
-        assert container != null;
+
+        if(container == null)
+            throw new NullPointerException("container null");
+        if(node == null)
+            throw new NullPointerException("node null");
 
         ArrayList<Requirement> nodeRequirements = (ArrayList<Requirement>) node.getReqs();
         Requirement containmentRequirement = null;
@@ -358,10 +417,12 @@ public class Application {
      * @throws RuleNotApplicableException
      */
     public void scaleIn(NodeInstance instance) 
-        throws RuleNotApplicableException, 
-               NullPointerException 
+        throws 
+            RuleNotApplicableException, 
+            NullPointerException 
     {
-        assert instance != null;
+        if(instance == null)
+            throw new NullPointerException("instance null");
         if(this.globalState.activeNodeInstances.containsValue(instance) == false)
             throw new RuleNotApplicableException();
         else{
@@ -381,20 +442,30 @@ public class Application {
             this.scaleIn(brokenInstances.get(0));     
     }
 
-    private NodeInstance createNewNodeInstance(Node node){
-        String newNodeInstanceID = RandomID.generateRandomString(12);
+    private NodeInstance createNewNodeInstance(Node node) throws NullPointerException{
+        if(node == null)
+            throw new NullPointerException("node null");
+
+        String newNodeInstanceID = RandomID.generateRandomString(8);
         //node instance's id must be unique among all node instances
         while(this.globalState.activeNodeInstances.keySet().contains(newNodeInstanceID) == true)
-            newNodeInstanceID = RandomID.generateRandomString(12);
+            newNodeInstanceID = RandomID.generateRandomString(8);
         
         return new NodeInstance(node, node.getInitialState(), newNodeInstanceID);
     }
 
-    public void addNode(Node node){
+    public void addNode(Node node) throws NullPointerException{
+        if(node == null)
+            throw new NullPointerException("node null");
         this.nodes.put(node.getName(), node);
     }
 
     public void addStaticBinding(StaticBinding source, StaticBinding target){
+        if(source == null)
+            throw new NullPointerException("source null");
+
+        if(target == null)
+            throw new NullPointerException("target null");
         this.bindingFunction.put(source, target);
     }
 }

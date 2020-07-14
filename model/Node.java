@@ -28,15 +28,36 @@ public class Node {
      * @throws NullPointerException
      * @throws IllegalArgumentException
      */
-    public Node(String name, String initialState, ManagementProtocol manProtocol, List<Requirement> reqs, List<String> caps,
-            List<String> states, List<String> ops) {
-        assert name.length() > 0;
-        assert initialState.length() > 0;
-        assert manProtocol != null;
-        assert reqs != null;
-        assert caps != null;
-        assert states != null;
-        assert ops != null;
+    public Node(
+            String name, 
+            String initialState, 
+            ManagementProtocol manProtocol, 
+            List<Requirement> reqs, 
+            List<String> caps,
+            List<String> states, 
+            List<String> ops)
+        throws
+            NullPointerException, 
+            IllegalArgumentException
+    {
+        
+        if(name == null)
+            throw new NullPointerException("name null");
+        if(initialState == null)
+            throw new NullPointerException("initialState null");
+        if(reqs == null)
+            throw new NullPointerException("reqs null");
+        if(caps == null)
+            throw new NullPointerException("caps null");
+        if(states == null)
+            throw new NullPointerException("states null");
+        if(ops == null)
+            throw new NullPointerException("ops null");
+        
+        if(name.isEmpty() == true)
+            throw new IllegalArgumentException("name empty");
+        if(initialState.isEmpty() == true)
+            throw new IllegalArgumentException("initialState empty");
 
         this.name = name;
         this.caps = caps;
@@ -47,7 +68,21 @@ public class Node {
         this.initialState = initialState;
     }
 
-    public Node(String name, String initialState, ManagementProtocol mp){
+    public Node(String name, String initialState, ManagementProtocol mp)
+        throws 
+            NullPointerException, 
+            IllegalArgumentException
+    {
+        if(name == null)
+            throw new NullPointerException("name null");
+        if(initialState == null)
+            throw new NullPointerException("initialState null");
+
+        if(name.isEmpty() == true)
+            throw new IllegalArgumentException("name empty");
+        if(initialState.isEmpty() == true)
+            throw new IllegalArgumentException("initialState empty");
+        
         this.name = name;
         this.initialState = initialState;
         this.mp = mp;
@@ -106,19 +141,45 @@ public class Node {
         return name;
     }
 
-    public void addState(String state){
+    public void addState(String state) 
+        throws
+            NullPointerException, 
+            IllegalArgumentException
+    {
+        if(state == null)
+            throw new NullPointerException("state null");
+        if(state.isEmpty() == true)
+            throw new IllegalArgumentException("state empty");
+
         this.states.add(state);
     }
 
-    public void addOperation(String op){
+    public void addOperation(String op)
+        throws
+            NullPointerException, 
+            IllegalArgumentException
+    {
+        if(op == null)
+            throw new NullPointerException("op null");
+        if(op.isEmpty() == true)
+            throw new IllegalArgumentException("op empty");
+
         this.ops.add(op);
     }
 
-    public void addRequirement(Requirement req){
+    public void addRequirement(Requirement req) throws NullPointerException{
+        if(req == null)
+            throw new NullPointerException("req null");
+            
         this.reqs.add(req);
     }
 
     public void addCapability(String cap){
+        if(cap == null)
+            throw new NullPointerException("cap null");
+        if(cap.isEmpty() == true)
+            throw new IllegalArgumentException("cap empty");
+
         this.caps.add(cap);
     }
 }

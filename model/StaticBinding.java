@@ -5,7 +5,21 @@ public class StaticBinding {
     private final String node;
     private final String capOrReq;
 
-    public StaticBinding(String node, String capOrReq) {
+    public StaticBinding(String node, String capOrReq) 
+        throws 
+            NullPointerException, 
+            IllegalArgumentException
+    {
+        if(node == null)
+            throw new NullPointerException("node null");
+        if(capOrReq == null)
+            throw new NullPointerException("capOrReq null");
+       
+        if(node.isEmpty() == true)
+            throw new IllegalArgumentException("node empty"); 
+        if(capOrReq.isEmpty() == true)
+            throw new IllegalArgumentException("capOrReq empty");
+        
         this.capOrReq = capOrReq;
         this.node = node;
     }

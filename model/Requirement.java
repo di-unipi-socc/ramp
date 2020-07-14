@@ -13,9 +13,18 @@ public class Requirement {
      * @throws InvalidArgumentException
      * @throws NullPointerException
      */
-    public Requirement(String name, RequirementSort reqSort) {
-        assert name.length() > 0;
-        assert reqSort != null;
+    public Requirement(String name, RequirementSort reqSort) 
+        throws 
+            NullPointerException, 
+            IllegalArgumentException
+    {
+        if(name == null)
+            throw new NullPointerException("name null");
+        if(name.isEmpty() == true)
+            throw new IllegalArgumentException("name empty");
+
+        if(reqSort == null)
+            throw new NullPointerException("reqSort null");
 
         this.name = name;
         this.reqSort = reqSort;

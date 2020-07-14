@@ -1,14 +1,25 @@
 package model;
 
 //this is a couple (tuple). we do not use Map.Entry for readibility.
-//this is a fault such as <instanceID, failed requirement>
+//this is a fault such as <node instance ID, failed requirement of the instance>
 public class Fault {
     private final String instanceID;
     private final Requirement req;
 
-    public Fault(String instanceID, Requirement req) {
-        assert instanceID != null;
-        assert req != null;
+    public Fault(String instanceID, Requirement req) 
+        throws
+            NullPointerException, 
+            IllegalArgumentException
+    {
+        if(instanceID == null)
+            throw new NullPointerException("instanceID null");
+        
+        if(instanceID.length() != 8)
+            throw new IllegalArgumentException("instanceID wrong length");
+    
+        if(req == null)
+            throw new NullPointerException("req null");
+      
 
         this.instanceID = instanceID;
         this.req = req;

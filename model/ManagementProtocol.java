@@ -34,12 +34,17 @@ public class ManagementProtocol {
         Map<String, Transition> transition, 
         Map<String, List<Requirement>> rho,
         Map<String, List<String>> gamma, 
-        Map<String, List<String>> phi
-    ){
-        assert transition != null;
-        assert rho != null;
-        assert gamma != null;
-        assert phi != null;
+        Map<String, List<String>> phi) 
+        throws NullPointerException
+    {
+        if(transition == null)
+            throw new NullPointerException("transition null");
+        if(rho == null)
+            throw new NullPointerException("rho null");
+        if(gamma == null)
+            throw new NullPointerException("gamma null");
+        if(phi == null)
+            throw new NullPointerException("phi null");
 
         this.transition = transition;
         this.gamma = gamma;
@@ -82,19 +87,66 @@ public class ManagementProtocol {
         return this.transition;
     }
 
-    public void addRhoEntry(String stateOrTransition, List<Requirement> reqs){
+    public void addRhoEntry(String stateOrTransition, List<Requirement> reqs)
+        throws 
+            NullPointerException, 
+            IllegalArgumentException
+    {
+        if(reqs == null)
+            throw new NullPointerException("reqs null");
+        if(stateOrTransition == null)
+            throw new NullPointerException("stateOrTransition null");
+        if(stateOrTransition.isEmpty() == true)
+            throw new IllegalArgumentException("stateOrTransition empty");
+
         this.rho.put(stateOrTransition, reqs);
     }
 
-    public void addGammaEntry(String stateOrTransition, List<String> caps){
+    public void addGammaEntry(String stateOrTransition, List<String> caps)
+        throws 
+            NullPointerException, 
+            IllegalArgumentException
+    {
+        if(stateOrTransition == null)
+            throw new NullPointerException("stateOrTransition null");
+        if(stateOrTransition.isEmpty() == true)
+            throw new IllegalArgumentException("stateOrTransition empty");
+        if(caps == null)
+            throw new NullPointerException("caps null");
+
         this.gamma.put(stateOrTransition, caps);
     }
 
-    public void addPhiEntry(String stateOrTransition, List<String> faultHandlingStates){
+    public void addPhiEntry(String stateOrTransition, List<String> faultHandlingStates)
+        throws 
+            NullPointerException, 
+            IllegalArgumentException
+    {
+        if(stateOrTransition == null)
+            throw new NullPointerException("stateOrTransition null");
+        if(stateOrTransition.isEmpty() == true)
+            throw new IllegalArgumentException("stateOrTransition empty");
+        if(faultHandlingStates == null)
+            throw new NullPointerException("faultHandlingStates");
+
         this.phi.put(stateOrTransition, faultHandlingStates);
     }
 
     public void addTransition(String source, String op, String target){
+        if(source == null)
+            throw new NullPointerException("source null");
+        if(op == null)
+            throw new NullPointerException("op null");
+        if(target == null)
+            throw new NullPointerException("target null");
+
+        if(source.isEmpty() == true)
+            throw new IllegalArgumentException("source empty");
+        if(op.isEmpty() == true)
+            throw new IllegalArgumentException("op empty");
+        if(target.isEmpty() == true)
+            throw new IllegalArgumentException("target empty");
+        
         this.transition.put(source+op+target, new Transition(source+op+target, source, op, target));
     }
 

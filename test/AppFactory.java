@@ -3,7 +3,7 @@ package test;
 import model.*;
 import java.util.*;
 
-public class ApplicationFactory {
+public class AppFactory {
 
     public static Application createApplication(){
         //static setup of the application
@@ -82,7 +82,6 @@ public class ApplicationFactory {
         requirementsOfConfig.add(conn);
         frontendMP.addRhoEntry("installedconfigconfigured", requirementsOfConfig);
         frontendMP.addRhoEntry("configuredconfigconfigured", requirementsOfConfig);
-
 
         List<Requirement> requirementsOfStart = new ArrayList<>();
         requirementsOfStart.add(host);
