@@ -132,15 +132,14 @@ public class Application {
      * @throws NullPointerException
      */
     public NodeInstance defaultPi(NodeInstance askingInstance, Requirement req) throws NullPointerException{
-        
         if(askingInstance == null)
             throw new NullPointerException("askingInstance null");
         if(req == null)
             throw new NullPointerException("req null");
         
         NodeInstance ret = null;
-        Collection<NodeInstance> activeInstancesCollection =  this.globalState.activeNodeInstances.values();
 
+        Collection<NodeInstance> activeInstancesCollection =  this.globalState.activeNodeInstances.values();
         ArrayList<NodeInstance> activeInstances = new ArrayList<>(activeInstancesCollection);
         
         StaticBinding reqStaticBinding = new StaticBinding(askingInstance.getNodeType().getName(), req.getName());
@@ -176,7 +175,7 @@ public class Application {
             IllegalArgumentException,
             NullPointerException 
     {
-        
+
         if(instance == null)
             throw new NullPointerException("instance null");
         if(op == null)
@@ -211,6 +210,8 @@ public class Application {
     {
         if(instance == null)
             throw new NullPointerException("instance null");
+        if(op == null)
+            throw new NullPointerException("op null");
         if(op.isEmpty() == true)
             throw new IllegalArgumentException("op empty");
 
@@ -251,9 +252,9 @@ public class Application {
             throw new NullPointerException("req null");
 
         Fault fault = new Fault(instance.getID(), req);
-        ArrayList<String> faultHandlinglobalStates = new ArrayList<>();
+        ArrayList<String> faultHandlinGlobalStates = new ArrayList<>();
 
-        if(this.globalState.getPendingFaults().contains(fault) == false || this.globalState.isResolvableFault(fault) == false)
+        if(this.globalState.getPendingFaults().contains(fault) == false || this.globalState.isResolvableFault(fault) == true)
             throw new RuleNotApplicableException("not a pending fault");
         else{
             //phi: failed state -> states to go
@@ -265,13 +266,13 @@ public class Application {
                 //rho: state s -> list of requirement needed in s
                 if(instance.getNodeType().getMp().getRho().get(state).contains(req) == false)
                     //since req it's not required when instance is in this state we can use it for fault handling
-                    faultHandlinglobalStates.add(state);
+                    faultHandlinGlobalStates.add(state);
             }
 
             //we have to choose to go to the state that have the most reqs needed (to mantein the deterministic of mp)
             String rightState = null;
             int max = -1;
-            for(String s : faultHandlinglobalStates){
+            for(String s : faultHandlinGlobalStates){
                 //might not be right. to test
                 int tmp = instance.getNodeType().getMp().getRho().get(s).size();
                 if(tmp > max){

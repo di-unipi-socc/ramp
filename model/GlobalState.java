@@ -1,6 +1,7 @@
 package model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -228,12 +229,12 @@ public class GlobalState {
     public List<Fault> getPendingFaults(){
        List<Fault> faults = new ArrayList<>();
 
-        //all the currently active node instances
-        ArrayList<NodeInstance> allInstances = (ArrayList<NodeInstance>) this.activeNodeInstances.values();
+        Collection<NodeInstance> activeInstancesCollection =  this.activeNodeInstances.values();
+        ArrayList<NodeInstance> activeInstances = new ArrayList<>(activeInstancesCollection);
         
         //for each instance we get the list of failed requirement and then we add <instance, failed req> 
         //to the list of all faults
-        for(NodeInstance instance : allInstances){
+        for(NodeInstance instance : activeInstances){
             ArrayList<Fault> instancePendingFaults = (ArrayList<Fault>) this.getPendingFaults(instance);
             faults.addAll(instancePendingFaults);
         }
@@ -311,7 +312,8 @@ public class GlobalState {
         boolean res = false;
 
         //all active node instances
-        ArrayList<NodeInstance> activeInstances = (ArrayList<NodeInstance>) this.activeNodeInstances.values();
+        Collection<NodeInstance> activeInstancesCollection =  this.activeNodeInstances.values();
+        ArrayList<NodeInstance> activeInstances = new ArrayList<>(activeInstancesCollection);
         
         //data extracted from fault
         NodeInstance faultedInstance = this.activeNodeInstances.get(fault.getInstanceID());
@@ -327,14 +329,17 @@ public class GlobalState {
             for(NodeInstance instance : activeInstances){
                 capStaticBinding = this.app.getBindingFunction().get(reqStaticBinding);
 
-                //instance is the right kind of Node?
-                boolean instanceRightType = instance.getNodeType().getName().equals(capStaticBinding.getNodeName());
-                //instance is currently offering the right cap of instance?
-                boolean instanceOfferingRightCap = instance.getOfferedCaps().contains(capStaticBinding.getCapOrReq()); 
+                //a static binding might not be defined
+                if(capStaticBinding != null){
+                    //instance is the right kind of Node?
+                    boolean instanceRightType = instance.getNodeType().getName().equals(capStaticBinding.getNodeName());
+                    //instance is currently offering the right cap of instance?
+                    boolean instanceOfferingRightCap = instance.getOfferedCaps().contains(capStaticBinding.getCapOrReq()); 
 
-                if(instanceOfferingRightCap == instanceRightType == true){
-                    res = true;
-                    break;
+                    if(instanceOfferingRightCap == instanceRightType == true){
+                        res = true;
+                        break;
+                    }
                 }
             }
         }   

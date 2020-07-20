@@ -7,10 +7,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 import model.*;
+import model.exceptions.NodeUnknownException;
 import model.exceptions.RuleNotApplicableException;
-import test.AppFactory;
+import test.ThesisAppFactory;
 
-public class ScaleOut2SimpleTest {
+public class ScaleOut2Test {
 
     public Application testApp;
     public NodeInstance n1;
@@ -19,8 +20,13 @@ public class ScaleOut2SimpleTest {
     public NodeInstance m1;
 
     @Before
-    public void setUp() throws Exception {
-        this.testApp = AppFactory.createApplication();
+    public void setUp() 
+        throws 
+            NullPointerException, 
+            RuleNotApplicableException, 
+            NodeUnknownException 
+    {
+        this.testApp = ThesisAppFactory.createApplication();
         Node node = testApp.getNodes().get("node");
         Node mongo = testApp.getNodes().get("mongo");
 
@@ -31,32 +37,52 @@ public class ScaleOut2SimpleTest {
     }
 
     @Test(expected = NullPointerException.class)
-    public void scaleOut2NullNodeTest() throws Exception {
+    public void scaleOut2NullNodeTest() 
+        throws 
+            NullPointerException, 
+            RuleNotApplicableException 
+    {
         testApp.scaleOut2(null, this.n3);
     }
 
     @Test(expected = NullPointerException.class)
-    public void scaleOut2NullContainerTest() throws Exception {
+    public void scaleOut2NullContainerTest() 
+        throws 
+            NullPointerException, 
+            RuleNotApplicableException 
+    {
         Node frontend = testApp.getNodes().get("frontend");
         testApp.scaleOut2(frontend, null);
     }
 
     //want RuleNotApplicable because the node has not a containament requirement
     @Test(expected = RuleNotApplicableException.class)
-    public void scaleOut2NoContainReq() throws Exception{
+    public void scaleOut2NoContainReq() 
+        throws 
+            NullPointerException, 
+            RuleNotApplicableException 
+    {
         //node has not a containment requirement
         testApp.scaleOut2(this.n1.getNodeType(), this.n1);
     }
 
     @Test(expected = RuleNotApplicableException.class)
-    public void scaleOut2WrongServantNode() throws Exception{
+    public void scaleOut2WrongServantNode() 
+        throws 
+            NullPointerException, 
+            RuleNotApplicableException 
+    {
         Node frontend = testApp.getNodes().get("frontend");
         //m1 is instance of mongo and do not offer the right cap for frontend
         testApp.scaleOut2(frontend, this.m1);
     }
 
     @Test
-    public void scaleOut2Test() throws Exception{
+    public void scaleOut2Test() 
+        throws 
+            NullPointerException, 
+            RuleNotApplicableException 
+    {
         Node frontend = testApp.getNodes().get("frontend");
         NodeInstance frontendInstance = testApp.scaleOut2(frontend, this.n3);
 

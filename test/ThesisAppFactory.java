@@ -3,7 +3,7 @@ package test;
 import model.*;
 import java.util.*;
 
-public class AppFactory {
+public class ThesisAppFactory {
 
     public static Application createApplication(){
         //static setup of the application
@@ -258,16 +258,14 @@ public class AppFactory {
         nodeMP.addRhoEntry("runningstopstopped", new ArrayList<Requirement>());
 
         //gamma: state -> caps offered in that state
-        ArrayList<String> tmp; 
-        for (String state : node.getStates()){
-            tmp = new ArrayList<>();
-            nodeMP.addGammaEntry(state, tmp);
-        }
+        for (String state : node.getStates())
+            nodeMP.addGammaEntry(state, new ArrayList<String>());
+        
 
         nodeMP.addGammaEntry("stoppedstartrunning", new ArrayList<String>());
         nodeMP.addGammaEntry("runningstopstopped", new ArrayList<String>());
 
-        List<String> runningCaps = (ArrayList<String>) nodeMP.getGamma().get("running");
+        List<String> runningCaps = new ArrayList<>();
         runningCaps.add("host");
         nodeMP.addGammaEntry("host", runningCaps);
 
@@ -307,7 +305,7 @@ public class AppFactory {
         mongoMP.addGammaEntry("stoppedstartrunning", new ArrayList<String>());
         mongoMP.addGammaEntry("runningstopstopped", new ArrayList<String>());
 
-        List<String> runningCaps = mongoMP.getGamma().get("running");
+        List<String> runningCaps = new ArrayList<>();
         runningCaps.add("db");
         mongoMP.addGammaEntry("running", runningCaps);
 
