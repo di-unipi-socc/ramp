@@ -58,6 +58,7 @@ public class FaultMethodTest {
         ret.addState("faultHandlingStatte");
 
         ret.addRequirement(this.testReq);
+        
         List<Requirement> testReqs = new ArrayList<>();
         testReqs.add(this.testReq);
         mp.addRhoEntry("state1", testReqs);

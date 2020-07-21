@@ -89,6 +89,7 @@ public class GlobalState {
                 if (servingInsOfferingRightCap == servingInsRightNodeType == true)
                     satisfiedReqs.add(runBinding.getReq());
             }
+            // TODO else ?
         }
         return satisfiedReqs;
     }
@@ -165,14 +166,19 @@ public class GlobalState {
         if(req == null)
             throw new NullPointerException("req null");
 
+        ArrayList<RuntimeBinding> badBindings = new ArrayList<>();
+
         ArrayList<RuntimeBinding> instanceRunBindings = (ArrayList<RuntimeBinding>) this.runtimeBindings.get(instance.getID());
         //we are already in a situation such as <n, ., .>
         for (RuntimeBinding runBinding : instanceRunBindings) {
-            if(runBinding.getReq().equals(req) == true){
+            if(runBinding.getReq().equals(req) == true)
                 //we have <instance, req, *> so we remove it
-                instanceRunBindings.remove(runBinding);  
-            }
+                badBindings.add(runBinding); 
         }
+
+        for(RuntimeBinding b : badBindings)
+            instanceRunBindings.remove(b);  
+
     }
 
     /**
@@ -183,8 +189,12 @@ public class GlobalState {
     public void removeAllBindingsBothWays(NodeInstance targetInstance) throws NullPointerException{
         if(targetInstance == null)
             throw new NullPointerException("targetInstance null");
+    
+        Collection<NodeInstance> activeInstancesCollection =  this.activeNodeInstances.values();
+        ArrayList<NodeInstance> activeInstances = new ArrayList<>(activeInstancesCollection);
         
-        ArrayList<NodeInstance> activeInstances = (ArrayList<NodeInstance>) this.activeNodeInstances.values();
+        ArrayList<RuntimeBinding> badBindings = new ArrayList<>();
+        ArrayList<RuntimeBinding> otherWayBadBindings = new ArrayList<>();
 
         for(NodeInstance activeInstance : activeInstances){
             ArrayList<RuntimeBinding> activeInstanceRunBindings = (ArrayList<RuntimeBinding>) this.runtimeBindings.get(activeInstance.getID());
@@ -192,13 +202,22 @@ public class GlobalState {
             for(RuntimeBinding runBinding : activeInstanceRunBindings){
                 //if the target instance is the requirement-asking instance we remove the binding <activeInstance, *, *>
                 if(activeInstance.getID().equals(targetInstance.getID()))
-                    this.removeRuntimeBinding(activeInstance, runBinding.getReq());
+                    badBindings.add(runBinding);
 
-                //if the target instance is the capability-giver instance we remove the runtime binding <activeInstance, *, targetInstance>
-                if(runBinding.getNodeInstanceID().equals(targetInstance.getID())){
-                    activeInstanceRunBindings.remove(runBinding);
-                }
+                //if the target instance is the capability-giver instance we remove (later) the runtime binding <activeInstance, *, targetInstance>
+                if(runBinding.getNodeInstanceID().equals(targetInstance.getID()))
+                    otherWayBadBindings.add(runBinding);
+                
             }
+
+            //this cant be done in the previous for because you would touch activeInstanceRunBindings which is
+            //used in the for and mess up the iterator 
+            for(RuntimeBinding binding : badBindings)
+                this.removeRuntimeBinding(activeInstance, binding.getReq());
+
+            for(RuntimeBinding binding : otherWayBadBindings)
+                activeInstanceRunBindings.remove(binding);
+
         }        
     }
 
@@ -253,7 +272,7 @@ public class GlobalState {
         boolean res = false;
         List<RuntimeBinding> instanceRunBindings = this.runtimeBindings.get(instance.getID());
 
-        //for each runtime binding of insttance we check if it is a containment relation
+        //for each runtime binding of instance we check if it is a containment relation
         for(RuntimeBinding runBinding : instanceRunBindings){
             if(runBinding.getReq().isContainment() == true){
                 
