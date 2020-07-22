@@ -167,7 +167,7 @@ public class ScaleInTest {
         assertNull(this.testApp.getGlobalState().getActiveNodeInstances().get(this.instanceOfC.getID()));
     
         assertTrue(this.testApp.getGlobalState().isBrokenInstance(this.instanceOfA) + "", false);
-        //assertFalse(this.testApp.getGlobalState().getActiveNodeInstances().containsValue(this.instanceOfA));
+        assertFalse(this.testApp.getGlobalState().getActiveNodeInstances().containsValue(this.instanceOfA));
         
         //the are no more binding for the destroyed instances
         assertNull(this.testApp.getGlobalState().getRuntimeBindings().get(this.instanceOfA.getID()));

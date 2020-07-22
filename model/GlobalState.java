@@ -142,6 +142,7 @@ public class GlobalState {
         //serving instance offra la giusta cap, che askingInstance richieda req
         //controlli saltati? Questo crea binding anche sbagliati se gli si passa
         //roba a caso
+        //OPPURE questi controlli li faccio da altre parti?
 
         if(askingInstance == null)
             throw new NullPointerException("askingInstance null");
@@ -195,27 +196,6 @@ public class GlobalState {
         if(targetInstance == null)
             throw new NullPointerException("targetInstance null");
     
-        // //qui voglio un set di TUTTI i binding
-        // ArrayList<RuntimeBinding> allRuntimeBindings  = new ArrayList<>();
-        // ArrayList<RuntimeBinding> badBinding  = new ArrayList<>();
-
-
-        // Collection<List<RuntimeBinding>> allListsRunBindings =  this.runtimeBindings.values();
-        // for(List<RuntimeBinding> l : allListsRunBindings){
-        //     l.addAll(allRuntimeBindings);
-        // }
-
-        // for(RuntimeBinding binding : allRuntimeBindings){
-        //     if(binding.getNodeInstanceID().equals(targetInstance.getID()) == true)
-        //         badBinding.add(binding);
-        // }
- 
-        // for (RuntimeBinding binding : badBinding) {
-        //     this.removeRuntimeBinding(binding., req);
-        // }
- 
-        //TODO;
-
         Collection<NodeInstance> activeInstancesCollection =  this.activeNodeInstances.values();
         ArrayList<NodeInstance> activeInstances = new ArrayList<>(activeInstancesCollection);
         
@@ -296,7 +276,6 @@ public class GlobalState {
             throw new NullPointerException("instance null");
     
         boolean res = false;
-
         List<RuntimeBinding> instanceRunBindings = this.runtimeBindings.get(instance.getID());
         //for each runtime binding of instance we check if it is a containment relation
         for(RuntimeBinding runBinding : instanceRunBindings){
