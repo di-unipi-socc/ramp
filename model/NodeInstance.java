@@ -85,14 +85,18 @@ public class NodeInstance {
 
         //list of all the transitions of the this node instance
         Collection<Transition> transitionsCollection = this.getNodeType().getMp().getTransition().values();
-
         ArrayList<Transition> transitions = new ArrayList<Transition>(transitionsCollection);
-        //for each transistion we check if it starts in the current state, if so it is a 
+
+        //for each transition we check if it starts in the current state, if so it is a 
         //(theorically) possible transition
         for(Transition t : transitions){
             if(t.getStartingState().equals(this.currentState))
                 possibleTransitions.add(t);
         }
+
+        if(possibleTransitions.isEmpty() == true)
+            possibleTransitions = null;
+
         return possibleTransitions;
     }
 
@@ -101,17 +105,23 @@ public class NodeInstance {
             throw new NullPointerException("currentState null");
         if(currentState.isEmpty() == true)
             throw new IllegalArgumentException("currentState empty");
-        
         if(op == null)
             throw new NullPointerException("op null");
         if(op.isEmpty() == true)
             throw new IllegalArgumentException("op empty");
         
+        //TOOD: here we do not check if the op is doable by the instance
+        //or if the currentState is right. 
+        //this method is called by opStart and if it return null that 
+        //method throws an exception
+    
         Transition ret = null;
         ArrayList<Transition> possibleTransitions = (ArrayList<Transition>) this.getPossibleTransitions();
-        for (Transition transition : possibleTransitions){
-            if(transition.getOp().equals(op) == true && transition.getStartingState().equals(currentState))
-               ret = transition;   
+        if(possibleTransitions != null){
+            for (Transition transition : possibleTransitions){
+                if(transition.getOp().equals(op) == true && transition.getStartingState().equals(currentState))
+                ret = transition;   
+            }
         }
         return ret;
     }
