@@ -172,7 +172,6 @@ public class RemoveAllBindingsBothWaysTest {
     }
 
     @Test
-    //global state riga 213 spiega
     public void removeAllBindingsBothWaysTest(){
         assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get(this.instanceOfA.getID()).size() == 3);
         assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get(this.instanceOfC.getID()).size() == 3);

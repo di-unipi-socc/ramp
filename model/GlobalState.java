@@ -138,6 +138,11 @@ public class GlobalState {
     public void addBinding(NodeInstance askingInstance, Requirement req, NodeInstance servingInstance) 
         throws NullPointerException
     {
+        //TODO: questo e' pubblico ma non viene controllato che 
+        //serving instance offra la giusta cap, che askingInstance richieda req
+        //controlli saltati? Questo crea binding anche sbagliati se gli si passa
+        //roba a caso
+
         if(askingInstance == null)
             throw new NullPointerException("askingInstance null");
         if(req == null)

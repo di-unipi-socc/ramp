@@ -21,7 +21,6 @@ public class DefaultPiTest {
     public NodeInstance instanceOfB;
     public Requirement testReq;  
 
-
     @Before
     public void setUp() throws NullPointerException, RuleNotApplicableException, NodeUnknownException {
         this.testReq = new Requirement("testReq", RequirementSort.REPLICA_UNAWARE);

@@ -405,7 +405,6 @@ public class Application {
             this.globalState.addBinding(newNodeInstance, containmentRequirement, container);
 
             //add the non-containemnt bindings needed for the initial state of the new instance
-            //TODO check this.globalState.runtimeBindings.put(newNodeInstance.getID(), new ArrayList<RuntimeBinding>());
             this.globalState.addNewBindings(newNodeInstance);
         }
 
