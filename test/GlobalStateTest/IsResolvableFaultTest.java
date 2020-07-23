@@ -1,0 +1,150 @@
+package test.GlobalStateTest;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import model.*;
+import model.exceptions.FailedOperationException;
+import model.exceptions.NodeUnknownException;
+import model.exceptions.OperationNotAvailableException;
+import model.exceptions.RuleNotApplicableException;
+
+public class IsResolvableFaultTest {
+
+    public Application testApp;
+    public Node nodeA;
+    public Node nodeB;
+
+    public NodeInstance instanceOfA;
+    public NodeInstance instanceOfB;
+    public NodeInstance secondInstanceOfB;
+
+    @Before
+    public void setUp() throws NullPointerException, RuleNotApplicableException, NodeUnknownException {
+        this.nodeA = this.createNodeA();
+        this.nodeB = this.createNodeB();
+
+        this.testApp = new Application("testApp");
+        this.testApp.addNode(this.nodeA);
+        this.testApp.addNode(this.nodeB);
+
+        StaticBinding firstHalf = new StaticBinding("nodeA", "req");
+        StaticBinding secondHalf = new StaticBinding("nodeB", "cap");
+        this.testApp.addStaticBinding(firstHalf, secondHalf);
+
+        this.instanceOfB = this.testApp.scaleOut1(this.nodeB);
+        this.instanceOfA = this.testApp.scaleOut1(this.nodeA);
+        this.secondInstanceOfB = this.testApp.scaleOut1(this.nodeB);
+    }
+
+    public Node createNodeA() {
+        Node ret = new Node("nodeA", "state1", new ManagementProtocol());
+        ManagementProtocol mp = ret.getMp();
+        
+        ret.addState("state1");
+        ret.addState("state2");
+        ret.addState("state1goToState2state2");
+
+        ret.addOperation("goToState2");
+
+        mp.addTransition("state1", "goToState2", "state2");
+
+        Requirement req = new Requirement("req", RequirementSort.REPLICA_UNAWARE);
+        ret.addRequirement(req);
+
+        Requirement req2 = new Requirement("req2", RequirementSort.REPLICA_UNAWARE);
+        ret.addRequirement(req2);
+
+        List<Requirement> reqs = new ArrayList<>();
+        reqs.add(req);
+
+        List<Requirement> reqs2 = new ArrayList<>();
+        reqs2.add(req2);
+
+        mp.addRhoEntry("state1", reqs);
+        mp.addRhoEntry("state2", reqs2);
+        mp.addRhoEntry("state1goToState2state2", new ArrayList<>());
+
+        mp.addGammaEntry("state1", new ArrayList<>());
+        mp.addPhiEntry("state1", new ArrayList<>());
+
+        return ret;
+    }
+
+    public Node createNodeB() {
+        Node ret = new Node("nodeB", "state1", new ManagementProtocol());
+        ManagementProtocol mp = ret.getMp();
+
+        ret.addState("state1");
+
+        ret.addCapability("cap");
+
+        List<String> caps = new ArrayList<>();
+        caps.add("cap");
+
+        mp.addRhoEntry("state1", new ArrayList<>());
+        mp.addGammaEntry("state1", caps);
+        mp.addPhiEntry("state1", new ArrayList<>());
+
+        return ret;
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void isResolvableFaultNullFaultTest() {
+        this.testApp.getGlobalState().isResolvableFault(null);
+    }
+
+    @Test
+    public void isResolvableFaultTest() throws NullPointerException, RuleNotApplicableException,
+            IllegalArgumentException, FailedOperationException, OperationNotAvailableException {
+
+        //now there is no fault
+        assertTrue(this.testApp.getGlobalState().getPendingFaults().isEmpty());
+        assertTrue(this.testApp.getGlobalState().getResolvableFaults().isEmpty());
+
+        //A has a binding with B
+        assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get(this.instanceOfA.getID()).size() == 1);
+        assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get(this.instanceOfA.getID()).get(0).getReq().getName().equals("req"));
+        //the binding is with the first instance of b
+        assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get(this.instanceOfA.getID()).get(0).getNodeInstanceID().equals(this.instanceOfB.getID()));
+
+        //now we kill instanceOfB and we get a fault (resolvable)
+        this.testApp.scaleIn(this.instanceOfB);
+        assertTrue(this.testApp.getGlobalState().getPendingFaults(this.instanceOfA).size() == 1);
+        Fault f = this.testApp.getGlobalState().getResolvableFaults(this.instanceOfA).get(0);
+        assertTrue(this.testApp.getGlobalState().isResolvableFault(f));
+
+        //this now ricreate the binding of AreqB with secondInstanceOfB
+        this.testApp.autoreconnect(this.instanceOfA, f.getReq());
+
+        //now there is no fault (once again, as before)
+        assertTrue(this.testApp.getGlobalState().getPendingFaults().isEmpty());
+        assertTrue(this.testApp.getGlobalState().getResolvableFaults().isEmpty());
+
+        //A has a binding with B
+        assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get(this.instanceOfA.getID()).size() == 1);
+        assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get(this.instanceOfA.getID()).get(0).getReq().getName().equals("req"));
+        //the binding is with the second instance of b
+        assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get(this.instanceOfA.getID()).get(0).getNodeInstanceID().equals(this.secondInstanceOfB.getID()));
+
+        //now we move A to state2 where there will be a fault not resolvable
+        this.testApp.opStart(this.instanceOfA, "goToState2");
+        this.testApp.opEnd(this.instanceOfA, "goToState2");
+
+        //there is now a pending fault 
+        assertTrue(this.testApp.getGlobalState().getPendingFaults().size() == 1);
+
+        //the pending fault is not resolvable
+        Fault f1 = this.testApp.getGlobalState().getPendingFaults(this.instanceOfA).get(0);
+        assertFalse(this.testApp.getGlobalState().isResolvableFault(f1));
+
+        assertTrue(this.testApp.getGlobalState().getResolvableFaults().size() == 0);
+
+    }
+}

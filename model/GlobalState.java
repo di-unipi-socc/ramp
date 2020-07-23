@@ -63,10 +63,8 @@ public class GlobalState {
         for (RuntimeBinding runBinding : instanceRunBindings) {
             Node instanceType = instance.getNodeType();
 
-            // needed for the binding function b: static binding <node, req> -> static
-            // binding <node, cap for req>
+            // needed for the binding function b: static binding <node, req> -> static binding <node, cap for req>
             StaticBinding reqStaticBinding = new StaticBinding(instanceType.getName(), runBinding.getReq().getName());
-
             // <node, capabiliity that satisfy the requirement of instance>
             StaticBinding capStaticBinding = this.app.getBindingFunction().get(reqStaticBinding);
 
@@ -74,13 +72,11 @@ public class GlobalState {
                 // it's defined a static binding such as <node, req> -> <node, cap> and the
                 // latter is the capStaticBinding
 
-                // the serving instance that is currently helding the runtime binding with
-                // instance
+                // the serving instance that is currently helding the runtime binding with instance
                 NodeInstance servingInstance = this.activeNodeInstances.get(runBinding.getNodeInstanceID());
 
                 // the serving instance is the right kind of Node?
-                boolean servingInsRightNodeType = servingInstance.getNodeType().getName()
-                        .equals(capStaticBinding.getNodeName());
+                boolean servingInsRightNodeType = servingInstance.getNodeType().getName().equals(capStaticBinding.getNodeName());
                 // the serving instance is currently offering the right cap of instance?
 
                 boolean servingInsOfferingRightCap = servingInstance.getOfferedCaps()
@@ -281,7 +277,6 @@ public class GlobalState {
          */
 
         ArrayList<RuntimeBinding> instanceRunBindings = (ArrayList<RuntimeBinding>) this.runtimeBindings.get(instance.getID());
-
         int check = 0;
 
         ArrayList<Requirement> instanceReqs = (ArrayList<Requirement>) instance.getNeededReqs();
@@ -312,8 +307,7 @@ public class GlobalState {
                         
                         if(containerOfferingCap == false)
                             res = true;
-                        
-
+            
                         break;
                     } 
                 }
@@ -323,43 +317,9 @@ public class GlobalState {
                     res = true;
 
                 break;
-
             }
         }
-
         return res;
-
-        // boolean res = false;
-        // ArrayList<RuntimeBinding> instanceRunBindings = (ArrayList<RuntimeBinding>) this.runtimeBindings.get(instance.getID());
-        // //for each runtime binding of instance we check if it is a containment relation
-        // for(RuntimeBinding runBinding : instanceRunBindings){
-        //     if(runBinding.getReq().isContainment() == true){
-                
-        //         //this is a containment relation, hence we check if the container is still active and offering the right cap
-        //         StaticBinding reqStaticBinding = new StaticBinding(instance.getNodeType().getName(), runBinding.getReq().getName());
-        //         StaticBinding capStaticBinding = this.app.getBindingFunction().get(reqStaticBinding);
-        //         NodeInstance container = this.activeNodeInstances.get(runBinding.getNodeInstanceID());
-
-        //         //wrong static binding, no binding in the binding function 
-        //         if(capStaticBinding == null){
-        //             res = true;
-        //             break;
-        //         }
-        //         //container not active, error
-        //         if(container == null){
-        //             res = true;
-        //             break;
-        //         }
-
-        //         boolean containerRightKindOfNode = container.getNodeType().getName().equals(capStaticBinding.getNodeName());
-        //         boolean containerOfferingCap = container.getOfferedCaps().contains(capStaticBinding.getCapOrReq());
-                
-        //         if(containerOfferingCap == false || containerRightKindOfNode == false){
-        //             res = true;
-        //             break;
-        //         }
-        //     }
-        // }
     }
 
     /**
@@ -450,9 +410,12 @@ public class GlobalState {
      */
     public List<Fault> getResolvableFaults(){
         List<Fault> resolvableFault = new ArrayList<>();
-        ArrayList<NodeInstance> activeNodeInstances = (ArrayList<NodeInstance>) this.activeNodeInstances.values();
+
         
-        for(NodeInstance n : activeNodeInstances)
+        Collection<NodeInstance> activeInstancesCollection =  this.activeNodeInstances.values();
+        ArrayList<NodeInstance> activeInstances = new ArrayList<>(activeInstancesCollection);
+
+        for(NodeInstance n : activeInstances)
             resolvableFault.addAll(this.getResolvableFaults(n));
         
         return resolvableFault;
