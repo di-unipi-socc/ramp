@@ -193,38 +193,32 @@ public class GlobalState {
      * @throws NullPoninterException
      */
     public void removeAllBindingsBothWays(NodeInstance targetInstance) throws NullPointerException{
-        if(targetInstance == null)
-            throw new NullPointerException("targetInstance null");
-    
+
         Collection<NodeInstance> activeInstancesCollection =  this.activeNodeInstances.values();
         ArrayList<NodeInstance> activeInstances = new ArrayList<>(activeInstancesCollection);
+
+        //direct way: targetInstance -> list of runtime bindings with other instances
+        if(this.activeNodeInstances.containsKey(targetInstance.getID()) == false)
+            //targetInstance was destroyed with a scaleIn
+            this.runtimeBindings.remove(targetInstance.getID());
+        else
+            //for some reason all bindings of targetInstance must be eliminated  
+            this.runtimeBindings.replace(targetInstance.getID(), new ArrayList<>());
         
-        ArrayList<RuntimeBinding> badBindings = new ArrayList<>();
+        //other way; now we delete those runtime bindings that have targetInstance as the server of the requirement
         ArrayList<RuntimeBinding> otherWayBadBindings = new ArrayList<>();
-
-        for(NodeInstance activeInstance : activeInstances){
+        for (NodeInstance activeInstance : activeInstances) {
+            
             ArrayList<RuntimeBinding> activeInstanceRunBindings = (ArrayList<RuntimeBinding>) this.runtimeBindings.get(activeInstance.getID());
-
-            for(RuntimeBinding runBinding : activeInstanceRunBindings){
-                //if the target instance is the requirement-asking instance we remove the binding <activeInstance, *, *>
-                if(activeInstance.getID().equals(targetInstance.getID()))
-                    badBindings.add(runBinding);
-
+            for(RuntimeBinding runBinding : activeInstanceRunBindings){ 
                 //if the target instance is the capability-giver instance we remove (later) the runtime binding <activeInstance, *, targetInstance>
                 if(runBinding.getNodeInstanceID().equals(targetInstance.getID()))
-                    otherWayBadBindings.add(runBinding);
-                
+                    otherWayBadBindings.add(runBinding);   
             }
-
-            //this cant be done in the previous for because you would touch activeInstanceRunBindings which is
-            //used in the for and mess up the iterator 
-            for(RuntimeBinding binding : badBindings)
-                this.removeRuntimeBinding(activeInstance, binding.getReq());
-
             for(RuntimeBinding binding : otherWayBadBindings)
                 activeInstanceRunBindings.remove(binding);
-
-        }        
+        }   
+        
     }
 
     /**
@@ -276,37 +270,96 @@ public class GlobalState {
             throw new NullPointerException("instance null");
     
         boolean res = false;
-        List<RuntimeBinding> instanceRunBindings = this.runtimeBindings.get(instance.getID());
-        //for each runtime binding of instance we check if it is a containment relation
-        for(RuntimeBinding runBinding : instanceRunBindings){
-            if(runBinding.getReq().isContainment() == true){
-                
-                //this is a containment relation, hence we check if the container is still active and offering the right cap
-                StaticBinding reqStaticBinding = new StaticBinding(instance.getNodeType().getName(), runBinding.getReq().getName());
-                StaticBinding capStaticBinding = this.app.getBindingFunction().get(reqStaticBinding);
-                NodeInstance container = this.activeNodeInstances.get(runBinding.getNodeInstanceID());
+        
+        /**
+         * we check if instance has a containment requirement. 
+         * If so we get all the bindings of instance. 
+         *  - if there is not a binding (among the existing bindings) that involves the containment requirement we have a broken instance
+         *  - if the binding of the containment requirement involves a nodeInstance container that is no longer active 
+         *    we have a broken instance
+         *  - if there are no binding we have a broken instance
+         */
 
-                //wrong static binding, no binding in the binding function 
-                if(capStaticBinding == null){
-                    res = true;
-                    break;
-                }
-                //container not active, error
-                if(container == null){
+        ArrayList<RuntimeBinding> instanceRunBindings = (ArrayList<RuntimeBinding>) this.runtimeBindings.get(instance.getID());
+
+        int check = 0;
+
+        ArrayList<Requirement> instanceReqs = (ArrayList<Requirement>) instance.getNeededReqs();
+        for (Requirement req : instanceReqs) {
+            if(req.isContainment() == true){
+
+                if(instanceRunBindings == null){
                     res = true;
                     break;
                 }
 
-                boolean containerRightKindOfNode = container.getNodeType().getName().equals(capStaticBinding.getNodeName());
-                boolean containerOfferingCap = container.getOfferedCaps().contains(capStaticBinding.getCapOrReq());
-                
-                if(containerOfferingCap == false || containerRightKindOfNode == false){
+                if(instanceRunBindings.size() == 0)
                     res = true;
-                    break;
+
+                for(RuntimeBinding binding : instanceRunBindings){
+                    if(binding.getReq().equals(req)){
+                        check ++;
+                        //this is the binding that we have to check
+                        if(this.getActiveNodeInstances().get(binding.getNodeInstanceID()) == null)
+                            res = true;
+                        
+                        StaticBinding reqStaticBinding = new StaticBinding(instance.getNodeType().getName(), req.getName());
+                        StaticBinding capStaticBinding = this.app.getBindingFunction().get(reqStaticBinding);
+                        NodeInstance container = this.getActiveNodeInstances().get(binding.getNodeInstanceID());
+
+                        // boolean containerRightKindOfNode = container.getNodeType().getName().equals(capStaticBinding.getNodeName());
+                        boolean containerOfferingCap = container.getOfferedCaps().contains(capStaticBinding.getCapOrReq());
+                        
+                        if(containerOfferingCap == false)
+                            res = true;
+                        
+
+                        break;
+                    } 
                 }
+
+                //among bindings there is not a binding that involves the containment req
+                if(check == 0)
+                    res = true;
+
+                break;
+
             }
         }
+
         return res;
+
+        // boolean res = false;
+        // ArrayList<RuntimeBinding> instanceRunBindings = (ArrayList<RuntimeBinding>) this.runtimeBindings.get(instance.getID());
+        // //for each runtime binding of instance we check if it is a containment relation
+        // for(RuntimeBinding runBinding : instanceRunBindings){
+        //     if(runBinding.getReq().isContainment() == true){
+                
+        //         //this is a containment relation, hence we check if the container is still active and offering the right cap
+        //         StaticBinding reqStaticBinding = new StaticBinding(instance.getNodeType().getName(), runBinding.getReq().getName());
+        //         StaticBinding capStaticBinding = this.app.getBindingFunction().get(reqStaticBinding);
+        //         NodeInstance container = this.activeNodeInstances.get(runBinding.getNodeInstanceID());
+
+        //         //wrong static binding, no binding in the binding function 
+        //         if(capStaticBinding == null){
+        //             res = true;
+        //             break;
+        //         }
+        //         //container not active, error
+        //         if(container == null){
+        //             res = true;
+        //             break;
+        //         }
+
+        //         boolean containerRightKindOfNode = container.getNodeType().getName().equals(capStaticBinding.getNodeName());
+        //         boolean containerOfferingCap = container.getOfferedCaps().contains(capStaticBinding.getCapOrReq());
+                
+        //         if(containerOfferingCap == false || containerRightKindOfNode == false){
+        //             res = true;
+        //             break;
+        //         }
+        //     }
+        // }
     }
 
     /**
