@@ -168,18 +168,18 @@ public class GlobalState {
         if(req == null)
             throw new NullPointerException("req null");
 
-        ArrayList<RuntimeBinding> badBindings = new ArrayList<>();
+        RuntimeBinding badBinding = null;
 
         ArrayList<RuntimeBinding> instanceRunBindings = (ArrayList<RuntimeBinding>) this.runtimeBindings.get(instance.getID());
         //we are already in a situation such as <n, ., .>
         for (RuntimeBinding runBinding : instanceRunBindings) {
             if(runBinding.getReq().equals(req) == true)
                 //we have <instance, req, *> so we remove it
-                badBindings.add(runBinding); 
+                badBinding = runBinding;
         }
 
-        for(RuntimeBinding b : badBindings)
-            instanceRunBindings.remove(b);  
+        if(badBinding != null)
+            instanceRunBindings.remove(badBinding);  
 
     }
 

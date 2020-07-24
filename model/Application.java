@@ -307,7 +307,7 @@ public class Application {
             throw new NullPointerException("instance null");
         if(req == null)
             throw new NullPointerException("req null");
-
+        
         Fault fault = new Fault(askingInstance.getID(), req);
 
         if(this.globalState.isResolvableFault(fault) == false)
@@ -315,7 +315,6 @@ public class Application {
         else{
             //we delete the old binding (that has failed)
             this.globalState.removeRuntimeBinding(askingInstance, req);
-
             //we find a new capable instance that can take care of req
             NodeInstance servingInstance = this.defaultPi(askingInstance, req);
             //servingInstance cant be null, otherwise req wouldn't be resolvable

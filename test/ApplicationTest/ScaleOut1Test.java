@@ -137,7 +137,7 @@ public class ScaleOut1Test {
     }
 
     @Test
-    public void basicScaleOut1Test() 
+    public void scaleOut1Test() 
         throws 
             NullPointerException, 
             RuleNotApplicableException, 
@@ -154,5 +154,18 @@ public class ScaleOut1Test {
         assertTrue(this.testApp.getGlobalState().getActiveNodeInstances().size() == 2);
         assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.instanceOfA).size() == 1);
         assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get(this.instanceOfA.getID()).get(0).getReq().getName().equals("req"));
+    
+        this.testApp.scaleIn(this.instanceOfA);
+        this.testApp.scaleIn(this.instanceOfB);
+
+        //scaleOut1 first A and then B, A will have a fault
+        this.instanceOfA = this.testApp.scaleOut1(this.nodeA);
+        this.instanceOfB = this.testApp.scaleOut1(this.nodeB);
+
+        assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.instanceOfA).size() == 0);
+
+
+
+    
     }
 }
