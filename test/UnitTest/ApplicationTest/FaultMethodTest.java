@@ -1,4 +1,4 @@
-package test.ApplicationTest;
+package test.UnitTest.ApplicationTest;
 
 import static org.junit.Assert.assertTrue;
 
@@ -52,7 +52,7 @@ public class FaultMethodTest {
 
     public Node createNodeA(){
         Node ret = new Node("nodeA", "state1", new ManagementProtocol());
-        ManagementProtocol mp = ret.getMp();
+        ManagementProtocol mp = ret.getManagementProtocol();
 
         ret.addState("state1");
         ret.addState("faultHandlingStatte");
@@ -81,7 +81,7 @@ public class FaultMethodTest {
 
     public Node createNodeB(){
         Node ret = new Node("nodeB", "state1", new ManagementProtocol());
-        ManagementProtocol mp = ret.getMp();
+        ManagementProtocol mp = ret.getManagementProtocol();
 
         ret.addState("state1");
         mp.addRhoEntry("state1", new ArrayList<Requirement>());
@@ -98,7 +98,7 @@ public class FaultMethodTest {
 
     public Node createNodeC(){
         Node ret = new Node("nodeC", "state1", new ManagementProtocol());
-        ManagementProtocol mp = ret.getMp();
+        ManagementProtocol mp = ret.getManagementProtocol();
 
         ret.addState("state1");
         ret.addRequirement(this.testReq);

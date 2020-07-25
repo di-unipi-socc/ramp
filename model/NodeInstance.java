@@ -84,7 +84,7 @@ public class NodeInstance {
         List<Transition> possibleTransitions = new ArrayList<>();
 
         //list of all the transitions of the this node instance
-        Collection<Transition> transitionsCollection = this.getNodeType().getMp().getTransition().values();
+        Collection<Transition> transitionsCollection = this.getNodeType().getManagementProtocol().getTransition().values();
         ArrayList<Transition> transitions = new ArrayList<Transition>(transitionsCollection);
 
         //for each transition we check if it starts in the current state, if so it is a 
@@ -130,14 +130,14 @@ public class NodeInstance {
      * @return list of requirements that the node instance is currently asking
      */
     public List<Requirement> getNeededReqs(){
-        return this.getNodeType().getMp().getRho().get(this.getCurrentState());
+        return this.getNodeType().getManagementProtocol().getRho().get(this.getCurrentState());
     }
 
     /**
      * @return list of capabilities offred by the node instance
      */
     public List<String> getOfferedCaps(){
-        return this.getNodeType().getMp().getGamma().get(this.getCurrentState());
+        return this.getNodeType().getManagementProtocol().getGamma().get(this.getCurrentState());
     }
 
     @Override

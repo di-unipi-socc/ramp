@@ -1,4 +1,4 @@
-package test.GlobalStateTest;
+package test.UnitTest.GlobalStateTest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +40,7 @@ public class GetPendingFaultsTest {
 
     public Node createNodeA(){
         Node ret = new Node("nodeA", "state1", new ManagementProtocol());
-        ManagementProtocol mp = ret.getMp();
+        ManagementProtocol mp = ret.getManagementProtocol();
         ret.addState("state1");
 
         Requirement req1 = new Requirement("req1", RequirementSort.REPLICA_UNAWARE);

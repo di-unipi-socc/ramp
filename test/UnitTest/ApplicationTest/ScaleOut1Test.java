@@ -1,4 +1,4 @@
-package test.ApplicationTest;
+package test.UnitTest.ApplicationTest;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -42,7 +42,7 @@ public class ScaleOut1Test {
 
     public Node createNodeA(){
         Node ret = new Node("nodeA", "state1", new ManagementProtocol());
-        ManagementProtocol mp = ret.getMp();
+        ManagementProtocol mp = ret.getManagementProtocol();
 
         ret.addState("state1");
 
@@ -61,7 +61,7 @@ public class ScaleOut1Test {
 
     public Node createNodeC(){
         Node ret = new Node("nodeC", "state1", new ManagementProtocol());
-        ManagementProtocol mp = ret.getMp();
+        ManagementProtocol mp = ret.getManagementProtocol();
 
         ret.addState("state1");
 
@@ -80,7 +80,7 @@ public class ScaleOut1Test {
 
     public Node createNodeB(){
         Node ret = new Node("nodeB", "state1", new ManagementProtocol());
-        ManagementProtocol mp = ret.getMp();
+        ManagementProtocol mp = ret.getManagementProtocol();
 
         ret.addState("state1");
 

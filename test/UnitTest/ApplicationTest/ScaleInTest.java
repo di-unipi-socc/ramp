@@ -1,4 +1,4 @@
-package test.ApplicationTest;
+package test.UnitTest.ApplicationTest;
 
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -60,7 +60,7 @@ public class ScaleInTest {
 
     public Node createNodeA(){
         Node ret = new Node("nodeA", "state1", new ManagementProtocol());
-        ManagementProtocol mp = ret.getMp();
+        ManagementProtocol mp = ret.getManagementProtocol();
 
         ret.addState("state1");
         ret.addCapability("AcapB");
@@ -85,7 +85,7 @@ public class ScaleInTest {
 
     public Node createNodeB(){
         Node ret = new Node("nodeB", "state1", new ManagementProtocol());
-        ManagementProtocol mp = ret.getMp();
+        ManagementProtocol mp = ret.getManagementProtocol();
 
         ret.addState("state1");
         ret.addCapability("BcapA");
@@ -108,7 +108,7 @@ public class ScaleInTest {
 
     public Node createNodeC(){
         Node ret = new Node("nodeC", "state1", new ManagementProtocol());
-        ManagementProtocol mp = ret.getMp();
+        ManagementProtocol mp = ret.getManagementProtocol();
 
         ret.addState("state1");
         ret.addCapability("CcapA");
@@ -125,7 +125,7 @@ public class ScaleInTest {
 
     public Node createUnknownNode(){
         Node ret = new Node("unknownNode", "state1", new ManagementProtocol());
-        ManagementProtocol mp = ret.getMp();
+        ManagementProtocol mp = ret.getManagementProtocol();
         ret.addState("state1");
 
         mp.addRhoEntry("state1", new ArrayList<Requirement>());

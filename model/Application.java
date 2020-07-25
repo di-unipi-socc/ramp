@@ -131,36 +131,41 @@ public class Application {
      * @return the first node instance that can take care of <askingInstance, req>
      * @throws NullPointerException
      */
-    public NodeInstance defaultPi(NodeInstance askingInstance, Requirement req) throws NullPointerException{
+    public NodeInstance defaultPi(NodeInstance askingInstance, Requirement req) 
+        throws 
+            NullPointerException
+    {    
         if(askingInstance == null)
             throw new NullPointerException("askingInstance null");
         if(req == null)
             throw new NullPointerException("req null");
         
-        NodeInstance ret = null;
+        NodeInstance servingInstance = null;
 
         Collection<NodeInstance> activeInstancesCollection =  this.globalState.activeNodeInstances.values();
         ArrayList<NodeInstance> activeInstances = new ArrayList<>(activeInstancesCollection);
         
+        //<nodeAsking, req> -> <nodeServing, cap> at a static level, between nodes
         StaticBinding reqStaticBinding = new StaticBinding(askingInstance.getNodeType().getName(), req.getName());
         StaticBinding capStaticBinding = this.bindingFunction.get(reqStaticBinding); 
 
+        //if capStaticBinding is null means that nodeAsking's req can't be handled by any node
         if(capStaticBinding != null){
-            //for each instance among the active instances we check if it can take care of <askingInstance, req>
-            for(NodeInstance server : activeInstances){
 
-                //instance is the right kind of Node?
-                boolean serverRightType = server.getNodeType().getName().equals(capStaticBinding.getNodeName());
+            for(NodeInstance instance : activeInstances){
+
+                //instance is the right type of Node?
+                boolean instanceRightType = instance.getNodeType().getName().equals(capStaticBinding.getNodeName());
                 //instance is currently offering the right cap of instance?
-                boolean serverOfferingRightCap = server.getOfferedCaps().contains(capStaticBinding.getCapOrReq());
+                boolean instanceOfferingRightCap = instance.getOfferedCaps().contains(capStaticBinding.getCapOrReq());
 
-                if(serverRightType == true && serverOfferingRightCap == true){
-                    ret = server;
+                if(instanceRightType == true && instanceOfferingRightCap == true){
+                    servingInstance = instance;
                     break;
                 }
             }
         }
-        return ret;
+        return servingInstance;
     }
 
     /**
@@ -184,15 +189,18 @@ public class Application {
             throw new IllegalArgumentException("op empty");
 
         Transition transitionToHappen = instance.getTransitionByOp(op, instance.getCurrentState());
+
+        //if op it's not bound to any transition it means that op is not available
         if(transitionToHappen == null)
-            //if op it's not bound to any transition it means that op is not available
             throw new OperationNotAvailableException();
         
         //instance goes in a new transient state
         instance.setCurrentState(transitionToHappen.getName());
-        //we kill old bindings (the ones that were about the old state)
+
+        //kill old bindings (the ones that were about the old state)
         this.globalState.removeOldBindings(instance);
-        //we add the new bindings (the ones that are about the new transient state)
+
+        //add the new bindings (the ones that are about the new transient state)
         this.globalState.addNewBindings(instance);
     }
 
@@ -216,20 +224,23 @@ public class Application {
             throw new IllegalArgumentException("op empty");
 
         ArrayList<Fault> pendingFaults = (ArrayList<Fault>) this.globalState.getPendingFaults(instance);
+
         if(pendingFaults.isEmpty() == false)
             throw new FailedOperationException("pending faults to be handled");
 
         if(this.globalState.isBrokenInstance(instance) == true)
             throw new FailedOperationException("this instance has no container");
 
-        //we get the transition by it's name (which is stored in the current state, since it is transient)
-        Transition transitionToComplete = instance.getNodeType().getMp().getTransition().get(instance.getCurrentState());
-        //instance goes in a new final state
+        //get the transition by it's name (which is stored in the current state, since it is transient)
+        Transition transitionToComplete = instance.getNodeType().getManagementProtocol().getTransition().get(instance.getCurrentState());
         
+        //instance goes in the new (final) state
         instance.setCurrentState(transitionToComplete.getEndingState());
-        //we kill old bindings (the ones that were about the old state)
+
+        //kill old bindings (the ones that were about the old state)
         this.globalState.removeOldBindings(instance);
-        //we add the new bindings (the ones that are about the new transient state)
+
+        //add the new bindings (the ones that are about the new (final) state
         this.globalState.addNewBindings(instance);
     }
 
@@ -248,47 +259,55 @@ public class Application {
     {
         if(instance == null)
             throw new NullPointerException("instance null");
+
         if(req == null)
             throw new NullPointerException("req null");
 
         Fault fault = new Fault(instance.getID(), req);
+
         ArrayList<String> faultHandlinGlobalStates = new ArrayList<>();
 
-        if(this.globalState.getPendingFaults().contains(fault) == false || this.globalState.isResolvableFault(fault) == true)
+        //check if the pair <instance, req> does raise a fault
+        if(this.globalState.getPendingFaults().contains(fault) == false)
             throw new RuleNotApplicableException("not a pending fault");
-        else{
-            //phi: failed state -> states to go
-            ArrayList<String> phiStates = 
-                (ArrayList<String>) instance.getNodeType().getMp().getPhi().get(instance.getCurrentState());
-            
-            //for each state in phiStates we check if req is needed in that state, if the state is usable for the fault handling 
-            for(String state : phiStates){
-                //rho: state s -> list of requirement needed in s
-                if(instance.getNodeType().getMp().getRho().get(state).contains(req) == false)
-                    //since req it's not required when instance is in this state we can use it for fault handling
-                    faultHandlinGlobalStates.add(state);
-            }
+        
+        //check if the fault is not a resolvable fault
+        if( this.globalState.isResolvableFault(fault) == true)
+            throw new RuleNotApplicableException("not a pending fault");
+    
+        //phi: failed state -> states to go
+        ArrayList<String> phiStates = 
+            (ArrayList<String>) instance.getNodeType().getManagementProtocol().getPhi().get(instance.getCurrentState());
+        
+        //for each state in phiStates check if req is needed in that state
+        for(String state : phiStates){
 
-            //we have to choose to go to the state that have the most reqs needed (to mantein the deterministic of mp)
-            String rightState = null;
-            int max = -1;
-            for(String s : faultHandlinGlobalStates){
-                //might not be right. to test
-                int tmp = instance.getNodeType().getMp().getRho().get(s).size();
-                if(tmp > max){
-                    max = tmp;
-                    rightState = s;
-                }
-            }
-
-            if(rightState == null)
-                throw new FailedFaultHandlingExecption("no state to go for fault handling");
-
-            //we apply the rule
-            instance.setCurrentState(rightState);
-            this.globalState.removeOldBindings(instance);
-            this.globalState.addNewBindings(instance);
+            //rho: state s -> list of requirement needed in s
+            if(instance.getNodeType().getManagementProtocol().getRho().get(state).contains(req) == false)
+                //req it's not required when instance is in state, hence is usable for fault handlig
+                faultHandlinGlobalStates.add(state);
         }
+
+        //we have to choose to go to the state that have the most reqs needed (to mantein the deterministic of mp)
+        String rightState = null;
+        int max = -1;
+        for(String s : faultHandlinGlobalStates){
+            //TODO might not be right. to test
+            int tmp = instance.getNodeType().getManagementProtocol().getRho().get(s).size();
+            if(tmp > max){
+                max = tmp;
+                rightState = s;
+            }
+        }
+
+        if(rightState == null)
+            throw new FailedFaultHandlingExecption("no state to go for fault handling");
+
+        //we apply the rule
+        instance.setCurrentState(rightState);
+        this.globalState.removeOldBindings(instance);
+        this.globalState.addNewBindings(instance);
+    
     }
 
     /**
@@ -302,7 +321,6 @@ public class Application {
             RuleNotApplicableException,
             NullPointerException
     {
-
         if(askingInstance == null)
             throw new NullPointerException("instance null");
         if(req == null)
@@ -312,14 +330,16 @@ public class Application {
 
         if(this.globalState.isResolvableFault(fault) == false)
             throw new RuleNotApplicableException("fault not resolvable");
-        else{
-            //we delete the old binding (that has failed)
-            this.globalState.removeRuntimeBinding(askingInstance, req);
-            //we find a new capable instance that can take care of req
-            NodeInstance servingInstance = this.defaultPi(askingInstance, req);
-            //servingInstance cant be null, otherwise req wouldn't be resolvable
-            this.globalState.addBinding(askingInstance, req, servingInstance);
-        }
+        
+        //delete the old binding (that has failed)
+        this.globalState.removeRuntimeBinding(askingInstance, req);
+
+        //find a new capable instance that can take care of req
+        NodeInstance servingInstance = this.defaultPi(askingInstance, req);
+
+        //servingInstance cant be null, otherwise req wouldn't be resolvable
+        this.globalState.addBinding(askingInstance, req, servingInstance);
+        
     }
 
     /**
@@ -349,11 +369,16 @@ public class Application {
         }
 
         NodeInstance newNodeInstance = this.createNewNodeInstance(node);
+
         //add the new instance in the G set
         this.globalState.activeNodeInstances.put(newNodeInstance.getID(), newNodeInstance);
-        //add the bindings needed for the initial state of the instance
+
+        //set up the runtime binding for the new instance
         this.globalState.runtimeBindings.put(newNodeInstance.getID(), new ArrayList<RuntimeBinding>());
+        
+        //add the bindings needed for the initial state of the instance
         this.globalState.addNewBindings(newNodeInstance);
+
         return newNodeInstance;
     }
 
@@ -368,13 +393,13 @@ public class Application {
         throws RuleNotApplicableException,
                NullPointerException 
     {
-
         if(container == null)
             throw new NullPointerException("container null");
         if(node == null)
             throw new NullPointerException("node null");
 
         ArrayList<Requirement> nodeRequirements = (ArrayList<Requirement>) node.getReqs();
+
         Requirement containmentRequirement = null;
         for(Requirement req : nodeRequirements){
             if(req.isContainment() == true)
@@ -384,7 +409,7 @@ public class Application {
         if(containmentRequirement == null)
             throw new RuleNotApplicableException("no containement requirement");
 
-        //bindingFunction: (node, req) -> (node, cap) 
+        //<nodeAsking, req> -> <nodeServing, cap> at a static level, between nodes
         StaticBinding reqStaticBinding = new StaticBinding(node.getName(), containmentRequirement.getName());
         StaticBinding capStaticBinding = this.bindingFunction.get(reqStaticBinding);
         
@@ -393,20 +418,22 @@ public class Application {
         //here we check if the container is the right type of node
         if(container.getNodeType().getName().equals(capStaticBinding.getNodeName()) == false)
             throw new RuleNotApplicableException("wrong kind of node");
-        else{
-            //create the new instance
-            newNodeInstance = this.createNewNodeInstance(node);
+        
+        //create the new instance
+        newNodeInstance = this.createNewNodeInstance(node);
 
-            //add the new instance in the G set
-            this.globalState.activeNodeInstances.put(newNodeInstance.getID(), newNodeInstance);
+        //add the new instance in the G set
+        this.globalState.activeNodeInstances.put(newNodeInstance.getID(), newNodeInstance);
 
-            //explicitly add the containment binding
-            this.globalState.addBinding(newNodeInstance, containmentRequirement, container);
+        //set up the runtime binding for the new instance
+        this.globalState.runtimeBindings.put(newNodeInstance.getID(), new ArrayList<RuntimeBinding>());
 
-            //add the non-containemnt bindings needed for the initial state of the new instance
-            this.globalState.addNewBindings(newNodeInstance);
-        }
+        //explicitly add the containment binding
+        this.globalState.addBinding(newNodeInstance, containmentRequirement, container);
 
+        //add the non-containemnt bindings needed for the initial state of the new instance
+        this.globalState.addNewBindings(newNodeInstance);
+        
         return newNodeInstance;
     }
 
@@ -422,14 +449,18 @@ public class Application {
     {
         if(instance == null)
             throw new NullPointerException("instance null");
+        
         if(this.globalState.activeNodeInstances.containsValue(instance) == false)
             throw new RuleNotApplicableException();
-        else{
-            //we remove i from the G set
-            this.globalState.activeNodeInstances.remove(instance.getID());
-            this.globalState.removeAllBindingsBothWays(instance);
-            this.autodestroy();
-        }
+    
+        this.globalState.activeNodeInstances.remove(instance.getID());
+
+        //remove the bindings that took care of instance's req and the ones where instance was the server
+        this.globalState.removeAllBindingsBothWays(instance);
+
+        //if instance was a container the contained instance must be destroyed too
+        this.autodestroy();
+    
     }
     
     /**
@@ -445,8 +476,8 @@ public class Application {
         if(node == null)
             throw new NullPointerException("node null");
 
-        String newNodeInstanceID = RandomID.generateRandomString(8);
         //node instance's id must be unique among all node instances
+        String newNodeInstanceID = RandomID.generateRandomString(8);
         while(this.globalState.activeNodeInstances.keySet().contains(newNodeInstanceID) == true)
             newNodeInstanceID = RandomID.generateRandomString(8);
         
@@ -465,6 +496,7 @@ public class Application {
 
         if(target == null)
             throw new NullPointerException("target null");
+        
         this.bindingFunction.put(source, target);
     }
 }

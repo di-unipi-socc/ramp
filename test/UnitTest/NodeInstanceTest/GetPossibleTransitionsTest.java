@@ -1,4 +1,4 @@
-package test.NodeInstanceTest;
+package test.UnitTest.NodeInstanceTest;
 
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -31,7 +31,7 @@ public class GetPossibleTransitionsTest {
 
     public Node createNodeA() {
         Node ret = new Node("nodeA", "state1", new ManagementProtocol());
-        ManagementProtocol mp = ret.getMp();
+        ManagementProtocol mp = ret.getManagementProtocol();
 
         ret.addState("state1");
         ret.addState("state2");

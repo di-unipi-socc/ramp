@@ -1,4 +1,4 @@
-package test.GlobalStateTest;
+package test.UnitTest.GlobalStateTest;
 
 import static org.junit.Assert.assertTrue;
 
@@ -82,7 +82,7 @@ public class RemoveAllBindingsBothWaysTest {
 
     public Node createNodeA(){
         Node ret = new Node("nodeA", "state1", new ManagementProtocol());
-        ManagementProtocol mp = ret.getMp();
+        ManagementProtocol mp = ret.getManagementProtocol();
 
         ret.addState("state1");
 
@@ -116,7 +116,7 @@ public class RemoveAllBindingsBothWaysTest {
 
     public Node createNodeB(){
         Node ret = new Node("nodeB", "state1", new ManagementProtocol());
-        ManagementProtocol mp = ret.getMp();
+        ManagementProtocol mp = ret.getManagementProtocol();
 
         ret.addState("state1");
 
@@ -142,7 +142,7 @@ public class RemoveAllBindingsBothWaysTest {
 
     public Node createNodeC(){
         Node ret = new Node("nodeC", "state1", new ManagementProtocol());
-        ManagementProtocol mp = ret.getMp();
+        ManagementProtocol mp = ret.getManagementProtocol();
 
         ret.addState("state1");
 

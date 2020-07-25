@@ -43,7 +43,7 @@ public class ThesisAppFactory {
     
     public static Node createFrontend(){
         Node frontend = new Node("frontend", "not-installed", new ManagementProtocol());
-        ManagementProtocol frontendMP = frontend.getMp();
+        ManagementProtocol frontendMP = frontend.getManagementProtocol();
 
         frontend.addState("not-installed");
         frontend.addState("installed");
@@ -119,7 +119,7 @@ public class ThesisAppFactory {
             frontendMP.addGammaEntry(state, tmp);
         }
 
-        for (Transition t : frontend.getMp().getTransition().values())
+        for (Transition t : frontend.getManagementProtocol().getTransition().values())
             frontendMP.addGammaEntry(t.getName(), new ArrayList<String>());
 
         //phi: state -> list of states for fault handling
@@ -145,7 +145,7 @@ public class ThesisAppFactory {
 
     public static Node createBackend(){
         Node backend = new Node("backend", "unavailable", new ManagementProtocol());
-        ManagementProtocol backendMP = backend.getMp();
+        ManagementProtocol backendMP = backend.getManagementProtocol();
 
         backend.addState("unavailable");
         backend.addState("available");
@@ -212,7 +212,7 @@ public class ThesisAppFactory {
             backendMP.addGammaEntry(state, tmp);
         }
 
-        for (Transition t : backend.getMp().getTransition().values())
+        for (Transition t : backend.getManagementProtocol().getTransition().values())
             backendMP.addGammaEntry(t.getName(), new ArrayList<String>());
         
         List<String> capsOfRunning = (ArrayList<String>) backendMP.getGamma().get("running");
@@ -237,7 +237,7 @@ public class ThesisAppFactory {
     
     public static Node createNode(){
         Node node = new Node("node", "stopped", new ManagementProtocol());
-        ManagementProtocol nodeMP = node.getMp();
+        ManagementProtocol nodeMP = node.getManagementProtocol();
 
         node.addState("stopped");
         node.addState("running");
@@ -278,7 +278,7 @@ public class ThesisAppFactory {
 
     public static Node createMongo(){
         Node mongo = new Node("mongo", "stopped", new ManagementProtocol());
-        ManagementProtocol mongoMP = mongo.getMp();
+        ManagementProtocol mongoMP = mongo.getManagementProtocol();
 
         mongo.addState("stopped");
         mongo.addState("running");

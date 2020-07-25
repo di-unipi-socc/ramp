@@ -1,4 +1,4 @@
-package test.ApplicationTest;
+package test.UnitTest.ApplicationTest;
 
 import static org.junit.Assert.assertTrue;
 
@@ -47,7 +47,7 @@ public class AutoreconnectTest {
 
     public Node createNodeA(){
         Node ret = new Node("nodeA", "state1", new ManagementProtocol());
-        ManagementProtocol mp = ret.getMp();
+        ManagementProtocol mp = ret.getManagementProtocol();
 
         ret.addState("state1");
         ret.addRequirement(this.faultyReq);
@@ -66,7 +66,7 @@ public class AutoreconnectTest {
 
     public Node createNodeB(){
         Node ret = new Node("nodeB", "state1", new ManagementProtocol());
-        ManagementProtocol mp = ret.getMp();
+        ManagementProtocol mp = ret.getManagementProtocol();
 
         ret.addState("state1");
 

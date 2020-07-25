@@ -130,7 +130,7 @@ public class Node {
     /**
      * @return management protocol of Node
      */
-    public ManagementProtocol getMp() {
+    public ManagementProtocol getManagementProtocol() {
         return mp;
     }
 

@@ -1,17 +1,17 @@
-package test.ApplicationTest;
+package test.UnitTest.ApplicationTest;
 
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import model.*;
-import model.exceptions.FailedOperationException;
 import model.exceptions.NodeUnknownException;
 import model.exceptions.OperationNotAvailableException;
 import model.exceptions.RuleNotApplicableException;
 import test.ThesisAppFactory;
 
-public class OpEndTest {
+public class OpStartTest {
 
     public Application testApp;
     public NodeInstance mongoM1;
@@ -19,61 +19,63 @@ public class OpEndTest {
     @Before
     public void setUp() 
         throws 
-            IllegalArgumentException, 
             NullPointerException, 
-            OperationNotAvailableException,
             RuleNotApplicableException, 
             NodeUnknownException 
     {
         this.testApp = ThesisAppFactory.createApplication();
         this.mongoM1 = this.testApp.scaleOut1(this.testApp.getNodes().get("mongo"));
-        this.testApp.opStart(this.mongoM1, "start");
-    }
-
-    // TODO: opEnd: failedOp non testato x2
-    @Test(expected = NullPointerException.class)
-    public void opEndNullInstanceTest()
-        throws 
-            IllegalArgumentException, 
-            NullPointerException, 
-            FailedOperationException 
-    {
-        testApp.opEnd(null, "start");
     }
 
     @Test(expected = NullPointerException.class)
-    public void opEndNullOpTest() 
+    public void opStartNullInstanceTest()
         throws 
             IllegalArgumentException, 
             NullPointerException, 
-            FailedOperationException 
+            OperationNotAvailableException 
     {
-        testApp.opEnd(this.mongoM1, null);
+        testApp.opStart(null, "start");
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void opStartNullOpTest()
+        throws 
+            IllegalArgumentException, 
+            NullPointerException, 
+            OperationNotAvailableException 
+    {
+        testApp.opStart(this.mongoM1, null);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void opEndEmptyOpTest() 
+    public void opStartEmptyOpTest()
         throws 
             IllegalArgumentException, 
             NullPointerException, 
-            FailedOperationException 
+            OperationNotAvailableException 
     {
-        testApp.opEnd(this.mongoM1, "");
+        testApp.opStart(this.mongoM1, "");
+    }
+
+    @Test(expected = OperationNotAvailableException.class)
+    public void opStartOpNotAvailableTest()
+        throws 
+            IllegalArgumentException, 
+            NullPointerException, 
+            OperationNotAvailableException 
+    {
+        testApp.opStart(this.mongoM1, "notKnownOp");
     }
 
     @Test
-    public void opEndTest() 
+    public void opStartTest() 
         throws 
             IllegalArgumentException, 
             NullPointerException, 
-            FailedOperationException 
+            OperationNotAvailableException 
     {
-        testApp.opEnd(this.mongoM1, "start");
-        assertTrue("wrong current state", this.mongoM1.getCurrentState().equals("running"));
-        assertTrue("wrong number of bindings", testApp.getGlobalState().getRuntimeBindings().get(this.mongoM1.getID()).size() == 0);
-
-        //now mongoM1 offer one cap
-        assertTrue("wrong number of offered caps", this.mongoM1.getOfferedCaps().size() == 1);
-
+        testApp.opStart(this.mongoM1, "start");
+        assertTrue("wrong current state", this.mongoM1.getCurrentState().equals("stoppedstartrunning"));
+        assertTrue("wrong number of bindings", testApp.getGlobalState().getRuntimeBindings().get(this.mongoM1.getID()).size() == 0);    
     }
 }

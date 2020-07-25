@@ -1,4 +1,4 @@
-package test.GlobalStateTest;
+package test.UnitTest.GlobalStateTest;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -52,7 +52,7 @@ public class GetSatisfiedReqsTest {
 
     public Node createNodeServer(){
         Node ret = new Node("nodeServer", "state1", new ManagementProtocol());
-        ManagementProtocol mp = ret.getMp();
+        ManagementProtocol mp = ret.getManagementProtocol();
         ret.addState("state1");
         ret.addState("state2");
 
@@ -89,7 +89,7 @@ public class GetSatisfiedReqsTest {
 
     public Node createNodeAsking(){
         Node ret = new Node("nodeAsking", "state1", new ManagementProtocol());
-        ManagementProtocol mp = ret.getMp();
+        ManagementProtocol mp = ret.getManagementProtocol();
 
         ret.addState("state1");
         ret.addState("state2");
