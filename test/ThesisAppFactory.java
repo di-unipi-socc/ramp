@@ -36,8 +36,6 @@ public class ThesisAppFactory {
         StaticBinding backendDBServer = new StaticBinding("mongo", "db");
         testApp.addStaticBinding(backendAskingDB, backendDBServer);
 
-        //now the static "composition" (nodes and static bindings) are ready
-        //ready for unit testing
         return testApp;
     }
     
@@ -50,6 +48,14 @@ public class ThesisAppFactory {
         frontend.addState("configured");
         frontend.addState("working");
         frontend.addState("damaged");
+
+        frontend.addState("not-installedinstallinstalled");
+        frontend.addState("installedconfigconfigured");
+        frontend.addState("configuredconfigconfigured");
+        frontend.addState("configuredstartworking");
+        frontend.addState("workingstopconfigured");
+        frontend.addState("installeduninstallnot-installed");
+        frontend.addState("configureduninstallnot-install");
 
         frontend.addOperation("install");
         frontend.addOperation("config");
@@ -111,16 +117,9 @@ public class ThesisAppFactory {
         List<Requirement> requirementsOfDamaged = new ArrayList<>();
         frontendMP.addRhoEntry("damaged", requirementsOfDamaged);
 
-
-        ArrayList<String> tmp; 
         //frontend do not offer any caps
-        for (String state : frontend.getStates()){
-            tmp = new ArrayList<>();
-            frontendMP.addGammaEntry(state, tmp);
-        }
-
-        for (Transition t : frontend.getManagementProtocol().getTransition().values())
-            frontendMP.addGammaEntry(t.getName(), new ArrayList<String>());
+        for (String state : frontend.getStates())
+            frontendMP.addGammaEntry(state,  new ArrayList<>());
 
         //phi: state -> list of states for fault handling
         List<String> damagedList = new ArrayList<>();
@@ -151,6 +150,12 @@ public class ThesisAppFactory {
         backend.addState("available");
         backend.addState("running");
         backend.addState("damaged");
+
+        backend.addState("unavailableinstallavailable");
+        backend.addState("availableuninstallunavailable");
+        backend.addState("availablestartrunning");
+        backend.addState("runningconfigrunning");
+        backend.addState("runningstopavailable");
 
         backend.addOperation("install");
         backend.addOperation("uninstall");
@@ -241,6 +246,8 @@ public class ThesisAppFactory {
 
         node.addState("stopped");
         node.addState("running");
+        node.addState("stoppedstartrunning");
+        node.addState("runningstopstopped");
 
         node.addOperation("start");
         node.addOperation("stop");
@@ -254,20 +261,13 @@ public class ThesisAppFactory {
         for (String state : node.getStates())
             nodeMP.addRhoEntry(state, new ArrayList<Requirement>());
         
-        nodeMP.addRhoEntry("stoppedstartrunning", new ArrayList<Requirement>());
-        nodeMP.addRhoEntry("runningstopstopped", new ArrayList<Requirement>());
-
         //gamma: state -> caps offered in that state
         for (String state : node.getStates())
             nodeMP.addGammaEntry(state, new ArrayList<String>());
-        
-
-        nodeMP.addGammaEntry("stoppedstartrunning", new ArrayList<String>());
-        nodeMP.addGammaEntry("runningstopstopped", new ArrayList<String>());
 
         List<String> runningCaps = new ArrayList<>();
         runningCaps.add("host");
-        nodeMP.addGammaEntry("host", runningCaps);
+        nodeMP.addGammaEntry("running", runningCaps);
 
         // phi: state -> list of states for fault handling
         for (String state : node.getStates()) 
@@ -286,6 +286,9 @@ public class ThesisAppFactory {
         mongo.addOperation("start");
         mongo.addOperation("stop");
        
+        mongo.addState("stoppedstartrunning");
+        mongo.addState("runningstopstopped");
+
         mongo.addCapability("db");
 
         mongoMP.addTransition("stopped", "start", "running");

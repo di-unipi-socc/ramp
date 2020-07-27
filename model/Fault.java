@@ -14,8 +14,8 @@ public class Fault {
         if(instanceID == null)
             throw new NullPointerException("instanceID null");
         
-        if(instanceID.length() != 8)
-            throw new IllegalArgumentException("instanceID wrong length");
+        if(instanceID.isEmpty())
+            throw new IllegalArgumentException("instanceID is empty");
     
         if(req == null)
             throw new NullPointerException("req null");

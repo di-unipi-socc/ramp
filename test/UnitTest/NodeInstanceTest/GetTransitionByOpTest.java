@@ -62,41 +62,36 @@ public class GetTransitionByOpTest {
 
     @Test(expected = NullPointerException.class)
     public void getTransitionByOpNullOpTest() {
-        this.instanceOfA.getTransitionByOp(null, "random");
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void getTransitionByOpNullStateTest() {
-        this.instanceOfA.getTransitionByOp("random", null);
+        this.instanceOfA.getTransitionByOp(null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void getTransitionByOpEmptyStateTest() {
-        this.instanceOfA.getTransitionByOp("", "random");
+        this.instanceOfA.getTransitionByOp("");
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void getTransitionByOpEmptyOpTest() {
-        this.instanceOfA.getTransitionByOp("random", "");
+        this.instanceOfA.getTransitionByOp("");
     }
 
     @Test
     public void getTransitionByOpTest() throws IllegalArgumentException, NullPointerException,
             OperationNotAvailableException, FailedOperationException {
 
-        assertTrue(this.instanceOfA.getTransitionByOp("goToState3", this.instanceOfA.getCurrentState()).getName().equals("state1goToState3state3"));
-        assertTrue(this.instanceOfA.getTransitionByOp("goToState3Bis", this.instanceOfA.getCurrentState()).getName().equals("state1goToState3Bisstate3"));
+        assertTrue(this.instanceOfA.getTransitionByOp("goToState3").getName().equals("state1goToState3state3"));
+        assertTrue(this.instanceOfA.getTransitionByOp("goToState3Bis").getName().equals("state1goToState3Bisstate3"));
 
         this.testApp.opStart(this.instanceOfA, "goToState3");
         this.testApp.opEnd(this.instanceOfA, "goToState3");
 
-        assertTrue(this.instanceOfA.getTransitionByOp("goToState2", this.instanceOfA.getCurrentState()).getName().equals("state3goToState2state2"));
+        assertTrue(this.instanceOfA.getTransitionByOp("goToState2").getName().equals("state3goToState2state2"));
 
         this.testApp.opStart(this.instanceOfA, "goToState2");
         this.testApp.opEnd(this.instanceOfA, "goToState2");
 
         //in state 2 no op is defined so getTransitionByOp should return null
-        assertNull(this.instanceOfA.getTransitionByOp("random", this.instanceOfA.getCurrentState()));
+        assertNull(this.instanceOfA.getTransitionByOp("random"));
         
     }
 

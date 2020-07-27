@@ -111,8 +111,9 @@ public class IsBrokenInstanceTest {
         this.testApp.opEnd(this.instanceOfB, "goToState2");
 
         //in state2 instanceOfB do not offer anymore the containment capabilty
-        //hence instanceOfA is now a broken instance
-        assertTrue(this.testApp.getGlobalState().isBrokenInstance(this.instanceOfA));
+        //hence instanceOfA is not a broken instance but a pending fault
+        assertFalse(this.testApp.getGlobalState().isBrokenInstance(this.instanceOfA));
+        assertTrue(this.testApp.getGlobalState().getPendingFaults(this.instanceOfA).size() == 1);
     }
 
 }

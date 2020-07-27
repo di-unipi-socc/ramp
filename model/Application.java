@@ -188,7 +188,7 @@ public class Application {
         if(op.isEmpty() == true)
             throw new IllegalArgumentException("op empty");
 
-        Transition transitionToHappen = instance.getTransitionByOp(op, instance.getCurrentState());
+        Transition transitionToHappen = instance.getTransitionByOp(op);
 
         //if op it's not bound to any transition it means that op is not available
         if(transitionToHappen == null)
@@ -229,7 +229,7 @@ public class Application {
             throw new FailedOperationException("pending faults to be handled");
 
         if(this.globalState.isBrokenInstance(instance) == true)
-            throw new FailedOperationException("this instance has no container");
+            throw new FailedOperationException("broken instance");
 
         //get the transition by it's name (which is stored in the current state, since it is transient)
         Transition transitionToComplete = instance.getNodeType().getManagementProtocol().getTransition().get(instance.getCurrentState());
@@ -269,11 +269,11 @@ public class Application {
 
         //check if the pair <instance, req> does raise a fault
         if(this.globalState.getPendingFaults().contains(fault) == false)
-            throw new RuleNotApplicableException("not a pending fault");
+            throw new RuleNotApplicableException("not a pending fault 1");
         
         //check if the fault is not a resolvable fault
         if( this.globalState.isResolvableFault(fault) == true)
-            throw new RuleNotApplicableException("not a pending fault");
+            throw new RuleNotApplicableException("not a pending fault 2");
     
         //phi: failed state -> states to go
         ArrayList<String> phiStates = 
@@ -477,7 +477,7 @@ public class Application {
             throw new NullPointerException("node null");
 
         //node instance's id must be unique among all node instances
-        String newNodeInstanceID = RandomID.generateRandomString(8);
+        String newNodeInstanceID = RandomID.generateRandomString(3);
         while(this.globalState.activeNodeInstances.keySet().contains(newNodeInstanceID) == true)
             newNodeInstanceID = RandomID.generateRandomString(8);
         

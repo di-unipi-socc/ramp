@@ -88,4 +88,6 @@ Importanti
 
 - aggiunto controllo != null capableInstance su addNewbindings (globalSTate)
 
+- MODIFICATO IS BROKEN INSTANCE e GET PENDING FAULT
+
 

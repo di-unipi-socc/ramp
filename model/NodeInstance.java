@@ -100,17 +100,13 @@ public class NodeInstance {
         return possibleTransitions;
     }
 
-    public Transition getTransitionByOp(String op, String currentState){
-        if(currentState == null)
-            throw new NullPointerException("currentState null");
-        if(currentState.isEmpty() == true)
-            throw new IllegalArgumentException("currentState empty");
+    public Transition getTransitionByOp(String op){
         if(op == null)
             throw new NullPointerException("op null");
         if(op.isEmpty() == true)
             throw new IllegalArgumentException("op empty");
         
-        //TOOD: here we do not check if the op is doable by the instance
+        //TODO: here we do not check if the op is doable by the instance
         //or if the currentState is right. 
         //this method is called by opStart and if it return null that 
         //method throws an exception
@@ -119,8 +115,8 @@ public class NodeInstance {
         ArrayList<Transition> possibleTransitions = (ArrayList<Transition>) this.getPossibleTransitions();
         if(possibleTransitions != null){
             for (Transition transition : possibleTransitions){
-                if(transition.getOp().equals(op) == true && transition.getStartingState().equals(currentState))
-                ret = transition;   
+                if(transition.getOp().equals(op) == true && transition.getStartingState().equals(this.currentState))
+                    ret = transition;   
             }
         }
         return ret;
