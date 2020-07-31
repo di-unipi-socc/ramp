@@ -20,8 +20,19 @@ public class AddBindingTest {
 
     public Requirement req;
 
+    /**
+     * creates a custom simple application with 2 nodes, nodeA and nodeB
+     * nodeA has a requirement and nodeB has the capability to satisfy it.
+     * we add de runtime binding <instanceOfA, req> -> <instanceOfB, cap>
+     */
+    
     @Before
-    public void setUp() throws NullPointerException, RuleNotApplicableException, NodeUnknownException {
+    public void setUp() 
+        throws 
+            NullPointerException, 
+            RuleNotApplicableException, 
+            NodeUnknownException 
+    {
         this.req = new Requirement("req", RequirementSort.REPLICA_UNAWARE);
 
         this.nodeA = this.createNodeA();
@@ -76,16 +87,19 @@ public class AddBindingTest {
         return ret;
     }
 
+    //addBinding throws a NullPointerException if the passed askingInstance is null
     @Test(expected = NullPointerException.class)
     public void addBindingNullAskingInstanceTest(){
         this.testApp.getGlobalState().addBinding(null, this.req, this.instanceOfB);
     }
 
+    //addBinding throws a NullPointerException if the passed requirement is null
     @Test(expected = NullPointerException.class)
     public void addBindingNullReqTest(){
         this.testApp.getGlobalState().addBinding(this.instanceOfA, null, this.instanceOfB);
     }
 
+    //addBinding thorws a NullPointerException if the passed servingInstance is null
     @Test(expected = NullPointerException.class)
     public void addBindingNullServingInstanceTest(){
         this.testApp.getGlobalState().addBinding(this.instanceOfA, this.req, null);

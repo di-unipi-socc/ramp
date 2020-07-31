@@ -3,24 +3,38 @@ package test.UnitTest.GlobalStateTest;
 import org.junit.Before;
 import org.junit.Test;
 import model.*;
+import model.exceptions.NodeUnknownException;
+import model.exceptions.RuleNotApplicableException;
+
 import java.util.List;
 import java.util.ArrayList;
 import static org.junit.Assert.assertTrue;
 
 public class GetSatisfiedReqsTest {
-    
+
     public Application testApp;
     public Node nodeAsking;
     public Node nodeServer;
     public NodeInstance nodeAskingInstance;
     public NodeInstance nodeServerInstance;
-    public Requirement reqA; //replica unaware
-    public Requirement reqB; //replica aware
-    public Requirement reqC; //containment
-    public GlobalState testGS;
+    public Requirement reqA; // replica unaware
+    public Requirement reqB; // replica aware
+    public Requirement reqC; // containment
 
+    /**
+     * create a custom simple application with two nodes, nodeAsking and nodeServer
+     * nodeAsking has 3 requirements (reqA, reqB and reqC)
+     * nodeServer has 2 states, state1 and state2
+     * in state1 offer the caps for reqA and reqC, in state2 offer the caps for reqB and reqC
+     * we see that nodeAskingInstance has always 2 satisfied reqs when nodeServerInstance change state
+     */
     @Before
-    public void setUp() throws Exception{
+    public void setUp() 
+        throws 
+            NullPointerException, 
+            RuleNotApplicableException, 
+            NodeUnknownException 
+    {
         this.reqA = new Requirement("reqA", RequirementSort.REPLICA_UNAWARE);
         this.reqB = new Requirement("reqB", RequirementSort.REPLICA_AWARE);
         this.reqC = new Requirement("reqC", RequirementSort.CONTAINMENT);
@@ -47,7 +61,6 @@ public class GetSatisfiedReqsTest {
         this.nodeServerInstance = this.testApp.scaleOut1(this.nodeServer);
         this.nodeAskingInstance = this.testApp.scaleOut2(this.nodeAsking, this.nodeServerInstance);
 
-        this.testGS = this.testApp.getGlobalState();
     }
 
     public Node createNodeServer(){
@@ -75,9 +88,6 @@ public class GetSatisfiedReqsTest {
 
         List<String> state2Caps = new ArrayList<>();
         state2Caps.add("capB");
-        //TODO: questo serve per l'opEnd di nodeAskingInstance, altrimenti gli manca il container
-        //se l'istanza non offre la capability di containing anche nello stato 2 l'asking node diventa broken instance
-        //giusto?
         state2Caps.add("capC");
         mp.addGammaEntry("state2", state2Caps);
 
@@ -120,35 +130,30 @@ public class GetSatisfiedReqsTest {
         return ret;
     }
 
+    //getSatisfiedReqs thorws a NullPointerException if the passed instance is null
     @Test(expected = NullPointerException.class)
     public void getSatisfiedReqsNullInstanceTest(){
-        this.testGS.getSatisfiedReqs(null);
+        this.testApp.getGlobalState().getSatisfiedReqs(null);
     }
 
     @Test
     public void getSatisfiedReqsTest() throws Exception{
 
-        assertTrue(this.testGS.getSatisfiedReqs(this.nodeAskingInstance).size() == 2);
-        assertTrue(this.testGS.getSatisfiedReqs(this.nodeAskingInstance).contains(this.reqA));
-        assertTrue(this.testGS.getSatisfiedReqs(this.nodeAskingInstance).contains(this.reqC));
+        assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.nodeAskingInstance).size() == 2);
+        assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.nodeAskingInstance).contains(this.reqA));
+        assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.nodeAskingInstance).contains(this.reqC));
 
         this.testApp.opStart(this.nodeServerInstance, "goToState2");
         this.testApp.opEnd(this.nodeServerInstance, "goToState2");
 
         assertTrue(this.nodeServerInstance.getOfferedCaps().contains("capB"));
-        //TODO: qui c'e' un problema (?) il refresh dei binding non avviene globalmente
-        //i binding di nodeAsking non sono aggiornati e infatti gli assert sotto falliscono
-        //assertTrue(satisfiedReqs.size() == 2);
-        //assertTrue(satisfiedReqs.contains(this.reqB));
-        //assertTrue(satisfiedReqs.contains(this.reqC));
-
+       
         this.testApp.opStart(this.nodeAskingInstance, "goToState2");
         this.testApp.opEnd(this.nodeAskingInstance, "goToState2");
 
-        assertTrue(this.testGS.getSatisfiedReqs(this.nodeAskingInstance).size() == 2);
-        assertTrue(this.testGS.getSatisfiedReqs(this.nodeAskingInstance).contains(this.reqB));
-        assertTrue(this.testGS.getSatisfiedReqs(this.nodeAskingInstance).contains(this.reqC));
-
+        assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.nodeAskingInstance).size() == 2);
+        assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.nodeAskingInstance).contains(this.reqB));
+        assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.nodeAskingInstance).contains(this.reqC));  
     }
 
 }

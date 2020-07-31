@@ -12,7 +12,7 @@ import model.*;
 import model.exceptions.NodeUnknownException;
 import model.exceptions.RuleNotApplicableException;
 
-public class DefaultPiTest {
+public class GreedyPITest {
 
     public Application testApp;
     public Node nodeA;
@@ -21,8 +21,21 @@ public class DefaultPiTest {
     public NodeInstance instanceOfB;
     public Requirement testReq;  
 
+    /**
+     * creates a custom simple application with two nodes, nodeA and nodeB
+     * nodeA has a requirement and nodeB offer the capability to satisfies the requirement of nodeA
+     * we scale out first nodeA (instanceOfA) and then nodeB (instanceOfB)
+     * this means that instanceOfA has a prending resolvable fault.
+     * with greedyPI we get instanceOfB and create the right binding (and resolve the fault)
+     */
+
     @Before
-    public void setUp() throws NullPointerException, RuleNotApplicableException, NodeUnknownException {
+    public void setUp() 
+        throws 
+            NullPointerException, 
+            RuleNotApplicableException, 
+            NodeUnknownException 
+    {
         this.testReq = new Requirement("testReq", RequirementSort.REPLICA_UNAWARE);
         this.nodeA = this.createNodeA();
         this.nodeB = this.createNodeB();
@@ -33,9 +46,7 @@ public class DefaultPiTest {
         this.testApp.addNode(this.nodeB);
 
         //just one static binding: nodeA -> nodeB
-        //the nodeA requires the requirement testReq
         StaticBinding firstHalf = new StaticBinding("nodeA", "testReq");
-        //the nodeB offer the capability testCap
         StaticBinding secondHalf = new StaticBinding("nodeB", "testCap");
         this.testApp.addStaticBinding(firstHalf, secondHalf);
 
@@ -85,24 +96,23 @@ public class DefaultPiTest {
         return ret;
     }
 
+    //greedyPI throws a NullPointerException if the passed instance is null
     @Test(expected = NullPointerException.class)
-    public void defaultPINullAskingInstanceTest(){
+    public void greedyPINullAskingInstanceTest(){
         Requirement random = new Requirement("random", RequirementSort.REPLICA_UNAWARE);
-        this.testApp.defaultPi(null, random);
+        this.testApp.greedyPI(null, random);
     }
 
-
+    //greedyPI throws a NullPointerException if the passed req is null
     @Test(expected = NullPointerException.class)
-    public void defaultPINullRequirementTest(){
-        this.testApp.defaultPi(this.instanceOfA, null);
+    public void greedyPINullRequirementTest(){
+        this.testApp.greedyPI(this.instanceOfA, null);
     }
 
     @Test
-    public void defaultPiTest(){
-        NodeInstance returned = this.testApp.defaultPi(this.instanceOfA, this.testReq);
+    public void greedyPITest(){
+        NodeInstance returned = this.testApp.greedyPI(this.instanceOfA, this.testReq);
         assertTrue("wrong instance", returned.getID().equals(this.instanceOfB.getID()));
     }
-
-
 
 }

@@ -20,8 +20,16 @@ public class GetPossibleTransitionsTest {
     public Node nodeA;
     public NodeInstance instanceOfA;
 
+    /**
+     * create a simple custom application with one node with 3 transitions and 3 operations
+     */
     @Before
-    public void setUp() throws NullPointerException, RuleNotApplicableException, NodeUnknownException {
+    public void setUp() 
+        throws 
+        NullPointerException, 
+        RuleNotApplicableException, 
+        NodeUnknownException {
+
         this.nodeA = this.createNodeA();
         this.testApp = new Application("testApp");
         this.testApp.addNode(this.nodeA);
@@ -61,9 +69,13 @@ public class GetPossibleTransitionsTest {
     }
 
     @Test
-    public void getPossibleTransitionsTest() throws IllegalArgumentException, NullPointerException,
-            OperationNotAvailableException, FailedOperationException {
-
+    public void getPossibleTransitionsTest() 
+        throws
+            IllegalArgumentException, 
+            NullPointerException,
+            OperationNotAvailableException,
+            FailedOperationException 
+    {
         ArrayList<Transition> transitions = (ArrayList<Transition>) this.instanceOfA.getPossibleTransitions();
         ArrayList<String> transitionsNames = new ArrayList<String>();  
 
@@ -84,6 +96,5 @@ public class GetPossibleTransitionsTest {
         this.testApp.opEnd(this.instanceOfA, "goToState2");
 
         assertNull(this.instanceOfA.getPossibleTransitions());
-
     }
 }

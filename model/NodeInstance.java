@@ -105,11 +105,6 @@ public class NodeInstance {
             throw new NullPointerException("op null");
         if(op.isEmpty() == true)
             throw new IllegalArgumentException("op empty");
-        
-        //TODO: here we do not check if the op is doable by the instance
-        //or if the currentState is right. 
-        //this method is called by opStart and if it return null that 
-        //method throws an exception
     
         Transition ret = null;
         ArrayList<Transition> possibleTransitions = (ArrayList<Transition>) this.getPossibleTransitions();

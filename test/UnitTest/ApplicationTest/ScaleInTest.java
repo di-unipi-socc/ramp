@@ -20,16 +20,42 @@ public class ScaleInTest {
     public Node nodeA;
     public Node nodeB;
     public Node nodeC;
+
     public Node unkwownNode;
 
     public NodeInstance instanceOfA;
     public NodeInstance instanceOfB;
     public NodeInstance instanceOfC;
+
     public NodeInstance unknownInstance;
 
+    /**
+     * creates a custom singole application with 3 nodes, nodeA, nodeB and nodeC
+     * 
+     * nodeA has 
+     *  - two requirement
+     *     - a contaiment requirement AreqC that is satisfied by nodeC
+     *     - a replica-unaware requirement AreqB that is satisfied by nodeB
+     *  - one capability
+     *     - AcapB that satisfies the requirement of nodeB
+     * 
+     * nodeB has 
+     *   - one requirement
+     *      - a replica-unaware requirement BreqA that is satisfied by nodeA
+     *   - one capability
+     *      - BcapA that satisfies AreqB of nodeA
+     * 
+     * nodeC has only one capability (CcapA) that satisfies one requirement of nodeA (AreqC)
+     * 
+     * unkownNode is a node that is not part of the application
+     */
     @Before
-    public void setUp() throws NullPointerException, RuleNotApplicableException, NodeUnknownException {
-
+    public void setUp() 
+        throws 
+            NullPointerException, 
+            RuleNotApplicableException, 
+            NodeUnknownException 
+    {
         this.nodeA = this.createNodeA();
         this.nodeB = this.createNodeB();
         this.nodeC = this.createNodeC();
@@ -135,18 +161,34 @@ public class ScaleInTest {
         return ret;
     }
 
+    //scaleIn throws a NullPointerException when the passed instance is null
     @Test(expected = NullPointerException.class)
-    public void scaleInNullInstanceTest() throws NullPointerException, RuleNotApplicableException {
+    public void scaleInNullInstanceTest() 
+        throws 
+            NullPointerException, 
+            RuleNotApplicableException 
+    {
         this.testApp.scaleIn(null);
     }
 
+    //scaleIn throws a RuleNotApplicableException when the passed instance is an instance of an unkown node
     @Test(expected = RuleNotApplicableException.class)
-    public void scaleInUnknownInstance() throws NullPointerException, RuleNotApplicableException {
+    public void scaleInUnknownInstance() 
+        throws 
+            NullPointerException, 
+            RuleNotApplicableException 
+    {
         this.testApp.scaleIn(this.unknownInstance);
     }
 
+    //test that if we scaleIn a container instance (instanceOfC) is destroyed the container and the contained
+    //instance, and all the runtime bindings of both instances are deleted
     @Test
-    public void scaleInOnContainerTest() throws NullPointerException, RuleNotApplicableException {
+    public void scaleInOnContainerTest() 
+        throws 
+            NullPointerException, 
+            RuleNotApplicableException 
+    {
 
         //has only one binding because B is created after A, so there is resolvable fault
         assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.instanceOfA).size() == 1);
@@ -175,6 +217,7 @@ public class ScaleInTest {
         assertTrue(this.testApp.getGlobalState().getPendingFaults(this.instanceOfB).size() == 1);
     }
 
+    //test that is a non container instance is destroyed only that instance and its runtime bindings are destroyed
     @Test
     public void scaleOut1NotContainerTest() throws NullPointerException, RuleNotApplicableException {
         //has only one binding because B is created after A, so there is resolvable fault

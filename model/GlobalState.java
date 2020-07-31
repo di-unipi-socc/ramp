@@ -68,7 +68,6 @@ public class GlobalState {
             StaticBinding capStaticBinding = this.app.getBindingFunction().get(reqStaticBinding);
 
             if (capStaticBinding != null) {
-
                 // the serving instance that is currently helding the runtime binding with instance
                 NodeInstance servingInstance = this.activeNodeInstances.get(runBinding.getNodeInstanceID());
 
@@ -79,9 +78,11 @@ public class GlobalState {
                 boolean servingInsOfferingRightCap = servingInstance.getOfferedCaps().contains(capStaticBinding.getCapOrReq());
 
                 if(servingInsOfferingRightCap == true && servingInsRightNodeType == true)
+                    //the requirement is trurly satisfied
                     satisfiedReqs.add(runBinding.getReq());
             }
         }
+
         return satisfiedReqs;
     }
 
@@ -118,7 +119,7 @@ public class GlobalState {
         for (Requirement neededReq : instance.getNeededReqs()) {
 
             if (neededReq.isContainment() == false && this.getSatisfiedReqs(instance).contains(neededReq) == false) {
-                NodeInstance capableInstance = this.app.defaultPi(instance, neededReq);
+                NodeInstance capableInstance = this.app.greedyPI(instance, neededReq);
                 if(capableInstance != null)
                     this.addBinding(instance, neededReq, capableInstance);  
             }          
@@ -198,13 +199,13 @@ public class GlobalState {
             //for some reason all bindings of targetInstance must be eliminated  
             this.runtimeBindings.replace(targetInstance.getID(), new ArrayList<>());
         
-        //other way; delete those runtime bindings that have targetInstance as the server of the requirement
+        //other way; delete those runtime bindings that have targetInstance as the server of a requirement
         ArrayList<RuntimeBinding> otherWayBadBindings = new ArrayList<>();
 
         Collection<NodeInstance> activeInstancesCollection =  this.activeNodeInstances.values();
         ArrayList<NodeInstance> activeInstances = new ArrayList<>(activeInstancesCollection);
 
-        //for each active instance check if among its bindings the target instance is the server of a capability
+        //for each active instance check if among its bindings the target instance is the server 
         for (NodeInstance activeInstance : activeInstances) {
             ArrayList<RuntimeBinding> activeInstanceRunBindings = (ArrayList<RuntimeBinding>) this.runtimeBindings.get(activeInstance.getID());
             
@@ -212,8 +213,9 @@ public class GlobalState {
                 if(runBinding.getNodeInstanceID().equals(targetInstance.getID()))
                     otherWayBadBindings.add(runBinding);   
             }
-            for(RuntimeBinding binding : otherWayBadBindings)
-                activeInstanceRunBindings.remove(binding);
+            
+            for(RuntimeBinding badBinding : otherWayBadBindings)
+                activeInstanceRunBindings.remove(badBinding);
         }   
         
     }
@@ -231,33 +233,14 @@ public class GlobalState {
 
         List<Fault> faults = new ArrayList<>();
 
-        //for each neededReq check that it is also satisfied, if a needed requirement is not satisfied we have a fault
+        //for each neededReq check that it is also satisfied,
+        //if a needed requirement is not satisfied we have a fault
         for(Requirement neededReq : instance.getNeededReqs()){
-            if(this.getSatisfiedReqs(instance).contains(neededReq) == false){
 
-                if(neededReq.isContainment() == true){
-                    ArrayList<RuntimeBinding> instanceRuntimeBindings = (ArrayList<RuntimeBinding>) this.getRuntimeBindings().get(instance.getID());
-                    NodeInstance container = null;
-
-                    for (RuntimeBinding binding : instanceRuntimeBindings) {
-                        if(binding.getReq().equals(neededReq))
-                            container = this.getActiveNodeInstances().get(binding.getNodeInstanceID());
-                        
-                    }
-
-                    StaticBinding reqStaticBinding = new StaticBinding(instance.getNodeType().getName(), neededReq.getName());
-                    StaticBinding capStaticBinding = this.app.getBindingFunction().get(reqStaticBinding);
-
-                    boolean containerOfferingCap = container.getOfferedCaps().contains(capStaticBinding.getCapOrReq());
-
-                    //container is not offering the containment capability, broken instance
-                    if(containerOfferingCap == false)
-                        faults.add(new Fault(instance.getID(), neededReq));                        
-                }else
-                    faults.add(new Fault(instance.getID(), neededReq));
-
-            }            
+            if(this.getSatisfiedReqs(instance).contains(neededReq) == false)
+                faults.add(new Fault(instance.getID(), neededReq));
         }
+
         return faults;
     }
 
@@ -311,27 +294,14 @@ public class GlobalState {
                     return true;
 
                 for(RuntimeBinding binding : instanceRuntimeBindings){
-                
                     if(binding.getReq().equals(req)){
                         //this is the binding to check
                         check ++;
-        
                         NodeInstance container = this.getActiveNodeInstances().get(binding.getNodeInstanceID());
 
                         //container is null, broken instance
                         if(container == null)
                             return true;
-
-                        // StaticBinding reqStaticBinding = new StaticBinding(instance.getNodeType().getName(), req.getName());
-                        // StaticBinding capStaticBinding = this.app.getBindingFunction().get(reqStaticBinding);
-
-                        // //boolean containerOfferingCap = container.getOfferedCaps().contains(capStaticBinding.getCapOrReq());
-                        
-                        // // //container is not offering the containment capability, broken instance
-                        // // if(containerOfferingCap == false)
-                        // //     return true;
-            
-                        // break;
                     } 
                 }
 
@@ -425,6 +395,7 @@ public class GlobalState {
             if(this.isResolvableFault(f) == true)
                 resolvableFaults.add(f);
         }
+
         return resolvableFaults;
     }
 

@@ -24,6 +24,13 @@ public class ScaleOut1Test {
     public NodeInstance instanceOfA; 
     public NodeInstance instanceOfB;
 
+
+    /**
+     * create a custom simple application with 3 nodes, nodeA, nodeB and nodeC
+     * nodeA has a replica unaware requirement that is satisfied by nodeB
+     * nodeB has only the capability that is is offering
+     * nodeC has a containment requirment 
+     */
     @Before
     public void setUp() {
         this.nodeA = this.createNodeA();
@@ -70,8 +77,8 @@ public class ScaleOut1Test {
 
         List<Requirement> reqs = new ArrayList<>();
         reqs.add(req);
-
         mp.addRhoEntry("state1", reqs);
+
         mp.addGammaEntry("state1", new ArrayList<>());
         mp.addPhiEntry("state1", new ArrayList<>());
 
@@ -96,6 +103,7 @@ public class ScaleOut1Test {
         return ret;
     }
 
+    //scaleOut1 throws a NullPointerException when the passed node is null
     @Test(expected = NullPointerException.class)
     public void scaleOut1NullNodeTest() 
         throws 
@@ -106,13 +114,7 @@ public class ScaleOut1Test {
         this.testApp.scaleOut1(null);
     }
 
-    /**
-     * trying to scale out a node that is not a part of app raise an exception
-     * 
-     * @throws RuleNotApplicableException
-     * @throws NullPointerException
-     * @throws NodeUnknownException
-     */
+    //scaleOut1 throws a NodeUnknownException when the passed node is not an application's nodes 
     @Test(expected = NodeUnknownException.class)
     public void scaleOut1NodeUnknown() 
         throws 
@@ -124,7 +126,7 @@ public class ScaleOut1Test {
         this.testApp.scaleOut1(randomNode);
     }
 
-
+    //scaleOut1 throws a RuleNotAppilicableException if the passed node has a containment requirement
     @Test(expected = RuleNotApplicableException.class)
     public void scaleOut1NotApplicableTest()
         throws

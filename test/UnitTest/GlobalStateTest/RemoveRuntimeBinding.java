@@ -20,8 +20,17 @@ public class RemoveRuntimeBinding {
 
     public Requirement req;
 
+    /**
+     * create a simple custom application with two nodes, nodeA and nodeB
+     * nodeA has a requirement (req) and nodeB offer the capability needed (cap)
+     */
     @Before
-    public void setUp() throws NullPointerException, RuleNotApplicableException, NodeUnknownException {
+    public void setUp() 
+        throws 
+            NullPointerException, 
+            RuleNotApplicableException, 
+            NodeUnknownException 
+    {
         this.req = new Requirement("req", RequirementSort.REPLICA_UNAWARE);
 
         this.nodeA = this.createNodeA();
@@ -76,11 +85,13 @@ public class RemoveRuntimeBinding {
         return ret;
     }
 
+    //removeRuntimeBinding throws a NullPointerException is the passed instance is null
     @Test(expected = NullPointerException.class)
     public void removeRuntimeBindingInstanceNullTest(){
         this.testApp.getGlobalState().removeRuntimeBinding(null, this.req);
     }   
 
+    //removeRuntimeBinding throws a NullPointerException is the passed req is null
     @Test(expected = NullPointerException.class)
     public void removeRuntimeBindingReqNullTest(){
         this.testApp.getGlobalState().removeRuntimeBinding(this.instanceOfA, null);

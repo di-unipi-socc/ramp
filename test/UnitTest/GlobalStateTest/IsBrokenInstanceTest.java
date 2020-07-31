@@ -24,8 +24,18 @@ public class IsBrokenInstanceTest {
     public NodeInstance instanceOfB;
     public Requirement reqCont;
 
+    /**
+     * create a custom simple application with 2 nodes, nodeA and nodeB
+     * nodeA has only 1 state and requires one containment requirement (reqCont)
+     * nodeB has 2 state, in state1 it offer the cap that satisfy reqCont, in state2 do not offer any caps
+     */
     @Before
-    public void setUp() throws NullPointerException, RuleNotApplicableException, NodeUnknownException {
+    public void setUp() 
+        throws 
+            NullPointerException, 
+            RuleNotApplicableException, 
+            NodeUnknownException 
+    {
         this.reqCont = new Requirement("reqCont", RequirementSort.CONTAINMENT);
         this.nodeA = this.createNodeA();
         this.nodeB = this.createNodeB();
@@ -73,7 +83,6 @@ public class IsBrokenInstanceTest {
 
         mp.addTransition("state1", "goToState2", "state2");
 
-
         mp.addRhoEntry("state1", new ArrayList<>());
         mp.addRhoEntry("state2", new ArrayList<>());
         mp.addRhoEntry("state1goToState2state2", new ArrayList<>());
@@ -91,6 +100,7 @@ public class IsBrokenInstanceTest {
         return ret;
     }
 
+    //isBrokenInstance throws a NullPointerException if the passed instance is null
     @Test(expected = NullPointerException.class)
     public void isBrokenInstanceNullInstanceTest() {
         this.testApp.getGlobalState().isBrokenInstance(null);
@@ -104,16 +114,21 @@ public class IsBrokenInstanceTest {
             OperationNotAvailableException, 
             FailedOperationException 
     {
-        //now instanceOfB is offering the right cap
+        //instanceOfB is alive and offering the right cap
         assertFalse(this.testApp.getGlobalState().isBrokenInstance(this.instanceOfA));
+        assertTrue(this.testApp.getGlobalState().getPendingFaults(this.instanceOfA).size() == 0);
        
-        this.testApp.opStart(this.instanceOfB, "goToState2");
-        this.testApp.opEnd(this.instanceOfB, "goToState2");
-
         //in state2 instanceOfB do not offer anymore the containment capabilty
         //hence instanceOfA is not a broken instance but a pending fault
+        this.testApp.opStart(this.instanceOfB, "goToState2");
+        this.testApp.opEnd(this.instanceOfB, "goToState2");
+    
         assertFalse(this.testApp.getGlobalState().isBrokenInstance(this.instanceOfA));
         assertTrue(this.testApp.getGlobalState().getPendingFaults(this.instanceOfA).size() == 1);
+
+        //now we remove instanceOfB from the active nodes, instanceOfA become a broken instance
+        this.testApp.getGlobalState().getActiveNodeInstances().remove(this.instanceOfB.getID());
+        assertTrue(this.testApp.getGlobalState().isBrokenInstance(this.instanceOfA));
     }
 
 }

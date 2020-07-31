@@ -32,8 +32,20 @@ public class RemoveAllBindingsBothWaysTest {
     public Requirement req2CtoA; // rep unaw
     public Requirement req3CtoA; // cont
 
+    /**
+     * create a simple custom application with three nodes, nodeA, nodeB and nodeC
+     * nodeA has a requirement that is satisfied by nodeB and nodeC has a reuirement 
+     * that is satisfied by nodeC. 
+     * we see how removeAllBindingsBothWays remove from the global state the runtime 
+     * bindings <instanceOfA, req> -> <instanceOfB, cap> AND <instanceOfC, req> -> <instanceOfA, cap>
+     */
     @Before
-    public void setUp() throws NullPointerException, RuleNotApplicableException, NodeUnknownException {
+    public void setUp() 
+        throws 
+            NullPointerException, 
+            RuleNotApplicableException, 
+            NodeUnknownException 
+    {
         this.req1AtoB = new Requirement("req1AtoB", RequirementSort.REPLICA_AWARE);
         this.req2AtoB = new Requirement("req2AtoB", RequirementSort.REPLICA_UNAWARE);
         this.req3AtoB = new Requirement("req3AtoB", RequirementSort.CONTAINMENT);
@@ -166,6 +178,7 @@ public class RemoveAllBindingsBothWaysTest {
         return ret;
     }
 
+    //removeAllBindingsBothWays throws NullPointerException if the passed instance is null
     @Test(expected = NullPointerException.class)
     public void removeAllBindingsBothWaysNullInstanceTest(){
         this.testApp.getGlobalState().removeAllBindingsBothWays(null);
@@ -176,6 +189,9 @@ public class RemoveAllBindingsBothWaysTest {
         assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get(this.instanceOfA.getID()).size() == 3);
         assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get(this.instanceOfC.getID()).size() == 3);
         this.testApp.getGlobalState().removeAllBindingsBothWays(this.instanceOfA);
+
+        //mind that removeAllBindingsBothWays remove even the containment binding (in fact this method is 
+        //called only after the scaleIn())
         assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get(this.instanceOfA.getID()).size() == 0);
         assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get(this.instanceOfC.getID()).size() == 0);
     }

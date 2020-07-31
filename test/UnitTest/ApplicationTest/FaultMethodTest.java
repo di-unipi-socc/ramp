@@ -19,6 +19,7 @@ public class FaultMethodTest {
     public Node nodeA;
     public Node nodeB;
     public Node nodeC;
+
     //the faulty instance
     public NodeInstance instanceOfA;
 
@@ -27,7 +28,16 @@ public class FaultMethodTest {
 
     //the not having fault handling state instance
     public NodeInstance instanceOfC;
+
     public Requirement testReq;
+
+    /**
+     * creates a custom simple application with 3 nodes, nodeA, nodeB and nodeC. 
+     * nodeB do not offer any cap nor need any requirements
+     * nodeA has a requirement and has a fault handling state
+     * nodeC has a requirement but do not has a fault handling state
+     * instanceOf* and the instances of node*
+     */
 
     @Before
     public void setUp() 
@@ -37,10 +47,13 @@ public class FaultMethodTest {
             NodeUnknownException
     {
         this.testReq = new Requirement("testReq", RequirementSort.REPLICA_UNAWARE);
+
         this.nodeA = this.createNodeA();
         this.nodeB = this.createNodeB();
         this.nodeC = this.createNodeC();
+
         this.testApp = new Application("testApp");
+
         this.testApp.addNode(this.nodeA);
         this.testApp.addNode(this.nodeB);
         this.testApp.addNode(this.nodeC);
@@ -72,10 +85,6 @@ public class FaultMethodTest {
         faultHandlingStates.add("faultHandlingState");
         mp.addPhiEntry("state1", faultHandlingStates);
 
-        //TODO: the state of fault handling should have a fault handling list?
-        // for (String state : ret.getStates()) 
-        //     mp.addPhiEntry(state, new ArrayList<String>());
-        
         return ret;
     }
 
@@ -84,7 +93,9 @@ public class FaultMethodTest {
         ManagementProtocol mp = ret.getManagementProtocol();
 
         ret.addState("state1");
-        mp.addRhoEntry("state1", new ArrayList<Requirement>());
+       
+        for (String state : ret.getStates())
+            mp.addRhoEntry(state, new ArrayList<Requirement>());
 
         //gamma: state -> caps offered in that state
         for (String state : ret.getStates())
@@ -101,7 +112,9 @@ public class FaultMethodTest {
         ManagementProtocol mp = ret.getManagementProtocol();
 
         ret.addState("state1");
+
         ret.addRequirement(this.testReq);
+        
         List<Requirement> testReqs = new ArrayList<>();
         testReqs.add(this.testReq);
         mp.addRhoEntry("state1", testReqs);
@@ -116,6 +129,7 @@ public class FaultMethodTest {
         return ret;
     }
 
+    //fault throws a NullPointerException when the passed instance is null
     @Test(expected = NullPointerException.class)
     public void faultMethodNullInstanceTest()
         throws 
@@ -126,6 +140,8 @@ public class FaultMethodTest {
         this.testApp.fault(null, this.testReq);
     }
 
+
+    //fault throws a NullPointerException when the passed req is null
     @Test(expected = NullPointerException.class)
     public void faultMethodNullReqTest()
         throws 
@@ -136,6 +152,7 @@ public class FaultMethodTest {
         this.testApp.fault(this.instanceOfA, null);
     }
 
+    //fault throws a RuleNotAplicableException when the passed <instance, req> creates no fault
     @Test (expected = RuleNotApplicableException.class)
     public void faultMethodNotFaultedInstanceTest()
         throws 
@@ -143,10 +160,10 @@ public class FaultMethodTest {
         FailedFaultHandlingExecption, 
         RuleNotApplicableException 
     {
-        //RuleNotApplicableEx because there is no fault
         this.testApp.fault(this.instanceOfB, this.testReq);
     }
 
+    //fault throws a FailedFaultHanldingException if there is not found a fault handlig state to go
     @Test(expected = FailedFaultHandlingExecption.class)
     public void faultMethodNotFaultHandlingStateTest()
         throws 
@@ -154,7 +171,6 @@ public class FaultMethodTest {
             FailedFaultHandlingExecption, 
             RuleNotApplicableException 
     {
-        //instanceOfC has a fault but there is not a fault handling state build in
         this.testApp.fault(this.instanceOfC, this.testReq);
     }
 

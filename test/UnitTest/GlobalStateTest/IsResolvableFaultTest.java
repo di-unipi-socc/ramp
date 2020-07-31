@@ -25,8 +25,19 @@ public class IsResolvableFaultTest {
     public NodeInstance instanceOfB;
     public NodeInstance secondInstanceOfB;
 
+    /**
+     * create a custom simple application with 2 nodes, nodeA and nodeB
+     * nodeA has two states, state1 and state2. in state1 nodeA requires req, in state2 requires req2
+     *   req2 will be always non resolvable since there is no instance with the right cap
+     * nodeB has 1 state in which it offer one capability (that satisfy req)
+     */
     @Before
-    public void setUp() throws NullPointerException, RuleNotApplicableException, NodeUnknownException {
+    public void setUp() 
+        throws 
+            NullPointerException, 
+            RuleNotApplicableException,
+            NodeUnknownException 
+    {
         this.nodeA = this.createNodeA();
         this.nodeB = this.createNodeB();
 
@@ -95,16 +106,22 @@ public class IsResolvableFaultTest {
         return ret;
     }
 
+    //isResolvableFault throws a NullPointerException if the passed instance is null    
     @Test(expected = NullPointerException.class)
     public void isResolvableFaultNullFaultTest() {
         this.testApp.getGlobalState().isResolvableFault(null);
     }
 
     @Test
-    public void isResolvableFaultTest() throws NullPointerException, RuleNotApplicableException,
-            IllegalArgumentException, FailedOperationException, OperationNotAvailableException {
-
-        //now there is no fault
+    public void isResolvableFaultTest() 
+        throws 
+            NullPointerException, 
+            RuleNotApplicableException,
+            IllegalArgumentException, 
+            FailedOperationException, 
+            OperationNotAvailableException 
+    {
+        //now there is no fault (instanceOfA is in state1 and instanceOfB is offering the right cap)
         assertTrue(this.testApp.getGlobalState().getPendingFaults().isEmpty());
         assertTrue(this.testApp.getGlobalState().getResolvableFaults().isEmpty());
 
@@ -114,7 +131,7 @@ public class IsResolvableFaultTest {
         //the binding is with the first instance of b
         assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get(this.instanceOfA.getID()).get(0).getNodeInstanceID().equals(this.instanceOfB.getID()));
 
-        //now we kill instanceOfB and we get a fault (resolvable)
+        //now we kill instanceOfB and we get a fault (resolvable, thanks to secondInstanceOfB)
         this.testApp.scaleIn(this.instanceOfB);
         assertTrue(this.testApp.getGlobalState().getPendingFaults(this.instanceOfA).size() == 1);
         Fault f = this.testApp.getGlobalState().getResolvableFaults(this.instanceOfA).get(0);
@@ -127,7 +144,7 @@ public class IsResolvableFaultTest {
         assertTrue(this.testApp.getGlobalState().getPendingFaults().isEmpty());
         assertTrue(this.testApp.getGlobalState().getResolvableFaults().isEmpty());
 
-        //A has a binding with B
+        //A has a binding with B (secondInstanceOfB)
         assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get(this.instanceOfA.getID()).size() == 1);
         assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get(this.instanceOfA.getID()).get(0).getReq().getName().equals("req"));
         //the binding is with the second instance of b

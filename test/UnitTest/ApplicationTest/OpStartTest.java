@@ -27,6 +27,7 @@ public class OpStartTest {
         this.mongoM1 = this.testApp.scaleOut1(this.testApp.getNodes().get("mongo"));
     }
 
+    //opStart throws a NullPointerException when the passed instance is null
     @Test(expected = NullPointerException.class)
     public void opStartNullInstanceTest()
         throws 
@@ -37,6 +38,7 @@ public class OpStartTest {
         testApp.opStart(null, "start");
     }
 
+    //opStart throws a NullPointerException when the passed op is null
     @Test(expected = NullPointerException.class)
     public void opStartNullOpTest()
         throws 
@@ -47,6 +49,7 @@ public class OpStartTest {
         testApp.opStart(this.mongoM1, null);
     }
 
+    //opStart throws an IllegalArgumentException when the op is empty
     @Test(expected = IllegalArgumentException.class)
     public void opStartEmptyOpTest()
         throws 
@@ -57,6 +60,7 @@ public class OpStartTest {
         testApp.opStart(this.mongoM1, "");
     }
 
+    //opStart throws an OperationNotAvailableException when the operation is not known
     @Test(expected = OperationNotAvailableException.class)
     public void opStartOpNotAvailableTest()
         throws 

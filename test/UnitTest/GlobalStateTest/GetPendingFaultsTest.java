@@ -18,19 +18,29 @@ public class GetPendingFaultsTest {
     public Node nodeA;
     public NodeInstance instanceOfA;
 
+    /**
+     * creates a custom simple application with 1 node (nodeA)
+     * nodeA has two requirements and since there is no other nodes that leads to two pending fault
+     */
     @Before
-    public void setUp() throws NullPointerException, RuleNotApplicableException, NodeUnknownException {
+    public void setUp() 
+        throws 
+            NullPointerException, 
+            RuleNotApplicableException, 
+            NodeUnknownException 
+    {
         this.nodeA = this.createNodeA();
         this.testApp = new Application("testApp");
-        this.testApp.addNode(nodeA);
+        this.testApp.addNode(this.nodeA);
 
         this.instanceOfA = this.testApp.scaleOut1(this.nodeA);
     }
 
+    //getPendingFaults throws NullPointerException if the passed instance is null
     @Test(expected = NullPointerException.class)
     public void getPendingFaultsNullInstanceTest(){
         this.testApp.getGlobalState().getPendingFaults(null);
-    }
+    }  
 
     @Test
     public void getPendingFaultsTest(){

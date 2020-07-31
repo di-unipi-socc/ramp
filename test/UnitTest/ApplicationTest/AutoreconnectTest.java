@@ -22,8 +22,22 @@ public class AutoreconnectTest {
     public Requirement reqUnaware;
     public Requirement faultyReq;
 
+    /**
+     * creates a custom simple application that has two nodes, nodeA and nodeB. 
+     * nodeA has two requirements (reqUnaware, faultyReq), nodeB offer the capability that satisfies
+     * reqUnaware. 
+     * scaling out nodeB (instanceOfB) and then nodeA (instanceOfA). 
+     * This means that instanceOfA has two pending fault, one of them is resolvable by instanceOfB, 
+     * the other one (the one that requires faultyReq will remain non resolvable)
+     */
+
     @Before
-    public void setUp() throws NullPointerException, RuleNotApplicableException, NodeUnknownException {
+    public void setUp() 
+        throws 
+            NullPointerException, 
+            RuleNotApplicableException, 
+            NodeUnknownException 
+    {
         this.reqUnaware = new Requirement("req", RequirementSort.REPLICA_UNAWARE);
         this.faultyReq = new Requirement("faultyReq", RequirementSort.REPLICA_UNAWARE);
 
@@ -41,8 +55,7 @@ public class AutoreconnectTest {
         //scaling out nodeB so nodeA has 2 fault, 1 resolvable, 1 pending
         this.instanceOfA = this.testApp.scaleOut1(this.nodeA);
         this.instanceOfB = this.testApp.scaleOut1(this.nodeB);
-        
-
+    
     }
 
     public Node createNodeA(){
@@ -82,16 +95,20 @@ public class AutoreconnectTest {
         return ret;
     }
 
+    //autoreconnect throws a NullPointerException if the passed instance is null
     @Test(expected = NullPointerException.class)
     public void autoreconnectInstanceNullTest() throws NullPointerException, RuleNotApplicableException {
         this.testApp.autoreconnect(null, this.reqUnaware);
     }
 
+    //autoreconnect throws a NullPointerException if the passed requirement is null
     @Test(expected = NullPointerException.class)
     public void autoreconnectReqNullTest() throws NullPointerException, RuleNotApplicableException {
         this.testApp.autoreconnect(this.instanceOfA, null);
     }
 
+    //there are two pending fault, one of them is resolvable. autoreconnect fix the resolvable fault
+    //creating the necessary runtime binding between the asking instance and the instance that provides the cap
     @Test
     public void autoreconnectTest() throws NullPointerException, RuleNotApplicableException {
         //instanceOfA has 2 pending fault
