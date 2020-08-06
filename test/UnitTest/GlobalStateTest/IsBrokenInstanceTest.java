@@ -122,7 +122,7 @@ public class IsBrokenInstanceTest {
         //hence instanceOfA is not a broken instance but a pending fault
         this.testApp.opStart(this.instanceOfB, "goToState2");
         this.testApp.opEnd(this.instanceOfB, "goToState2");
-    
+
         assertFalse(this.testApp.getGlobalState().isBrokenInstance(this.instanceOfA));
         assertTrue(this.testApp.getGlobalState().getPendingFaults(this.instanceOfA).size() == 1);
 

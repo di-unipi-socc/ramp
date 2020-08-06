@@ -3,6 +3,7 @@ package model;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import model.exceptions.*;
@@ -21,6 +22,10 @@ public class Application {
     // <name of static node n, name of the requirement r of n> -> <name of static
     // node n1 that satify r, capability that satisfy r>
     private Map<StaticBinding, StaticBinding> bindingFunction;
+
+    private int randomIndex(int min, int max){
+        return (int) ((Math.random() * (max - min)) + min); 
+    }
 
     /**
      * @param name application's name
@@ -135,6 +140,29 @@ public class Application {
     }
 
     /**
+     * @param askingInstance
+     * @param req
+     * @return a random instances among those who can take care of <askingInstance, req>
+     * @throws NullPointerException
+     */
+    public NodeInstance randomPI(NodeInstance askingInstance, Requirement req)
+        throws
+            NullPointerException
+    {
+        if(askingInstance == null)
+            throw new NullPointerException("askingInstance null");
+        if(req == null)
+            throw new NullPointerException("req null");
+        
+        ArrayList<NodeInstance> capableInstances = (ArrayList<NodeInstance>) this.globalState.getCapableInstances(askingInstance, req);
+        NodeInstance servingInstance = capableInstances.get(this.randomIndex(0, capableInstances.size() - 1));
+        
+        return servingInstance;
+    }
+
+
+
+    /**
      * @param instance node instance that requires req
      * @param req requirement that needs to be handled
      * @return the first node instance that can take care of <askingInstance, req>
@@ -160,7 +188,6 @@ public class Application {
 
         //if capStaticBinding is null means that nodeAsking's req can't be handled by any node
         if(capStaticBinding != null){
-
             for(NodeInstance instance : activeInstances){
 
                 //instance is the right type of Node?
@@ -291,7 +318,6 @@ public class Application {
         
         //for each state in phiStates check if req is needed in that state
         for(String state : phiStates){
-
             //rho: state s -> list of requirement needed in s
             if(instance.getNodeType().getManagementProtocol().getRho().get(state).contains(req) == false)
                 //req it's not required when instance is in state, hence it is usable for fault handlig
@@ -469,7 +495,6 @@ public class Application {
 
         //if instance was a container the contained instance must be destroyed too
         this.autodestroy();
-    
     }
     
     /**

@@ -105,6 +105,45 @@ public class GlobalState {
     }
 
     /**
+     * @param askingInstance
+     * @param req
+     * @return list of all instances that can take care of <askingInstance, req>
+     * @throws NullPointerException
+     */
+    public List<NodeInstance> getCapableInstances(NodeInstance askingInstance, Requirement req)
+        throws
+            NullPointerException
+    {
+        if(askingInstance == null)
+            throw new NullPointerException("askingInstance null");
+        if(req == null)
+            throw new NullPointerException("req null");
+
+        List<NodeInstance> capableInstances = new ArrayList<>();
+
+        StaticBinding reqStaticBinding = new StaticBinding(askingInstance.getNodeType().getName(), req.getName());
+        StaticBinding capStaticBinding = this.app.getBindingFunction().get(reqStaticBinding);
+
+        if(capStaticBinding != null){
+            Collection<NodeInstance> activeInstancesCollection =  this.activeNodeInstances.values();
+            ArrayList<NodeInstance> activeInstances = new ArrayList<>(activeInstancesCollection);
+
+            //for each instance check if it is the right kind of node and if it currently offering
+            //the right capability for <askingInstance, req>
+            for (NodeInstance instance : activeInstances) {
+                boolean instanceRightType = instance.getNodeType().getName().equals(capStaticBinding.getNodeName());
+                boolean instanceOfferingRightCap = instance.getOfferedCaps().contains(capStaticBinding.getCapOrReq());
+
+                if(instanceRightType == true && instanceOfferingRightCap == true)
+                    capableInstances.add(instance);
+
+            }
+        }
+
+        return capableInstances;
+    }
+
+    /**
      * @param instance node instance that needs new bindings since it had a change of state
      * @throws NullPointerException
      */
