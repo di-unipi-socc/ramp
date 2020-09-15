@@ -9,9 +9,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import model.*;
-import model.exceptions.FailedFaultHandlingExecption;
-import model.exceptions.NodeUnknownException;
-import model.exceptions.RuleNotApplicableException;
+import exceptions.FailedFaultHandlingExecption;
+import exceptions.NodeUnknownException;
+import exceptions.RuleNotApplicableException;
 
 public class FaultMethodTest {
 

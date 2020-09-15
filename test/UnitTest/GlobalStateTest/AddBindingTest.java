@@ -9,7 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import model.*;
-import model.exceptions.*;
+import exceptions.*;
 
 public class AddBindingTest {
     public Application testApp;

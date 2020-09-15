@@ -1,4 +1,4 @@
-package model.utils;
+package utils;
 
 import java.security.SecureRandom;
 //credits to https://mkyong.com/java/java-how-to-generate-a-random-string/

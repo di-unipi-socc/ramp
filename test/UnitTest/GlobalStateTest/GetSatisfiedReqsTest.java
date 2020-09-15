@@ -3,8 +3,8 @@ package test.UnitTest.GlobalStateTest;
 import org.junit.Before;
 import org.junit.Test;
 import model.*;
-import model.exceptions.NodeUnknownException;
-import model.exceptions.RuleNotApplicableException;
+import exceptions.NodeUnknownException;
+import exceptions.RuleNotApplicableException;
 
 import java.util.List;
 import java.util.ArrayList;

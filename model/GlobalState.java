@@ -142,7 +142,7 @@ public class GlobalState {
 
         return capableInstances;
     }
-
+ 
     /**
      * @param instance node instance that needs new bindings since it had a change of state
      * @throws NullPointerException
@@ -451,6 +451,5 @@ public class GlobalState {
             resolvableFault.addAll(this.getResolvableFaults(n));
         
         return resolvableFault;
-    }   
-    
+    }
 }

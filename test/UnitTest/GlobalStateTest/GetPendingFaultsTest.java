@@ -9,8 +9,8 @@ import static org.junit.Assert.assertTrue;
 
 
 import model.*;
-import model.exceptions.NodeUnknownException;
-import model.exceptions.RuleNotApplicableException;
+import exceptions.NodeUnknownException;
+import exceptions.RuleNotApplicableException;
 
 public class GetPendingFaultsTest {
 

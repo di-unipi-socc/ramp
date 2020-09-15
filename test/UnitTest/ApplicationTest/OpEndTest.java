@@ -5,10 +5,10 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 import model.*;
-import model.exceptions.FailedOperationException;
-import model.exceptions.NodeUnknownException;
-import model.exceptions.OperationNotAvailableException;
-import model.exceptions.RuleNotApplicableException;
+import exceptions.FailedOperationException;
+import exceptions.NodeUnknownException;
+import exceptions.OperationNotAvailableException;
+import exceptions.RuleNotApplicableException;
 import test.ThesisAppFactory;
 
 public class OpEndTest {

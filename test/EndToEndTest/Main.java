@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import model.*;
-import model.exceptions.FailedFaultHandlingExecption;
-import model.exceptions.FailedOperationException;
-import model.exceptions.NodeUnknownException;
-import model.exceptions.OperationNotAvailableException;
-import model.exceptions.RuleNotApplicableException;
+import exceptions.FailedFaultHandlingExecption;
+import exceptions.FailedOperationException;
+import exceptions.NodeUnknownException;
+import exceptions.OperationNotAvailableException;
+import exceptions.RuleNotApplicableException;
 import test.ThesisAppFactory;
 
 public class Main {

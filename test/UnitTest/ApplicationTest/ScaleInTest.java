@@ -10,8 +10,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import model.*;
-import model.exceptions.NodeUnknownException;
-import model.exceptions.RuleNotApplicableException;
+import exceptions.NodeUnknownException;
+import exceptions.RuleNotApplicableException;
 
 public class ScaleInTest {
 

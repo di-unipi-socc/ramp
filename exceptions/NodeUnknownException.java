@@ -1,4 +1,4 @@
-package model.exceptions;
+package exceptions;
 
 public class NodeUnknownException extends Exception {
     private static final long serialVersionUID = 1L;
