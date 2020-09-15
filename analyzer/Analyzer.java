@@ -297,7 +297,7 @@ public class Analyzer {
             StaticBinding secondHalf = appBindingFunction.get(firstHalf);
 
             StaticBinding firstHalfCopy = new StaticBinding(new String(firstHalf.getNodeName()), new String(firstHalf.getCapOrReq()));
-            StaticBinding secondHalfCopy = new StaticBinding(new String(secondHalf.getNodeName()), new String(secondHalf.getCapOrReq());
+            StaticBinding secondHalfCopy = new StaticBinding(new String(secondHalf.getNodeName()), new String(secondHalf.getCapOrReq()));
             cloneBindingFunction.put(firstHalfCopy, secondHalfCopy);
         }
 
