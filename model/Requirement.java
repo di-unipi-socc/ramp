@@ -64,7 +64,6 @@ public class Requirement {
 
     @Override
     /**
-     * two fault are equal when they are about the same insance and requirement
      */
     public boolean equals(Object f){
         Requirement toCheck = (Requirement) f;

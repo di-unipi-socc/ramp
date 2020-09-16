@@ -311,6 +311,9 @@ public class Main {
             //now frontendF1 is in the "configured" state 
             printActiveNodes(app);
             printRuntimeBindings(app);
+            
+            //waring silence
+            app.scaleIn(backendB1);
         }
     }
 

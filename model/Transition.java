@@ -17,14 +17,10 @@ public class Transition {
      * @throws NullPointerException
      * @throws IllegalArgumentException
      */
-    public Transition(
-        String name, 
-        String startingState, 
-        String op, 
-        String endingState
-    ) throws
-        NullPointerException, 
-        IllegalArgumentException
+    public Transition(String name, String startingState, String op, String endingState) 
+        throws
+            NullPointerException, 
+            IllegalArgumentException
     {
 
         if(name == null)
@@ -77,6 +73,34 @@ public class Transition {
      */
     public String getEndingState() {
         return this.endingState;
+    }
+
+    @Override
+    /**
+     */
+    public boolean equals(Object f){
+        Transition toCheck = (Transition) f;
+        boolean ret = false;
+
+        if( toCheck.getName().equals(this.name) && 
+            toCheck.getEndingState().equals(this.endingState) && 
+            toCheck.getOp().equals(this.op) && 
+            toCheck.getStartingState().equals(this.startingState)
+        )
+            ret = true;
+        
+        return ret;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 17;
+        result = 31 * result + this.name.hashCode();
+        result = 31 * result + this.startingState.hashCode();
+        result = 31 * result + this.op.hashCode();
+        result = 31 * result + this.endingState.hashCode();
+
+        return result;
     }
   
 }

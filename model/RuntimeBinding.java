@@ -41,4 +41,25 @@ public class RuntimeBinding {
     public Requirement getReq() {
         return req;
     }
+
+    @Override
+    /**
+     */
+    public boolean equals(Object f){
+        RuntimeBinding toCheck = (RuntimeBinding) f;
+        boolean ret = false;
+
+        if(toCheck.getNodeInstanceID().equals(this.instanceID) && toCheck.getReq().equals(this.req))
+            ret = true;
+        
+        return ret;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 17;
+        result = 31 * result + this.instanceID.hashCode();
+        result = 31 * result + this.req.hashCode();
+        return result;
+    }
 }
