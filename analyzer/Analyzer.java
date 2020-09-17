@@ -3,6 +3,7 @@ package analyzer;
 import java.util.ArrayList;
 import java.util.List;
 
+import exceptions.FailedFaultHandlingExecption;
 import exceptions.FailedOperationException;
 import exceptions.IllegalSequenceElementException;
 import exceptions.NodeUnknownException;
@@ -12,7 +13,6 @@ import exceptions.RuleNotApplicableException;
 import model.Application;
 import model.Fault;
 import model.NodeInstance;
-
 
 /**
  * idea del metodo analisi della sequenza con /pi deterministica algoritmo
@@ -44,7 +44,13 @@ public class Analyzer {
         SequenceElement seqElement = sequence.remove(0);
         try {
             this.executeSequenceElement(app, seqElement);
-        } catch (Exception e) {
+        } catch (FailedOperationException e) {
+            //keep going, this will be handled by the fault handler or leaved as it is
+        } catch (OperationNotAvailableException e){
+            return false;
+        } catch(RuleNotApplicableException e){
+            return false;
+        } catch(NodeUnknownException e){
             return false;
         }
 
@@ -54,35 +60,35 @@ public class Analyzer {
         if(pendingFaults.isEmpty() == true && brokenInstances.isEmpty() == true)
             //there is no biforcation with a deterministic pi, proceeding
             return this.isValidSequence(app, sequence);
-
         else{
             //there are some faults. there is a biforcation and the sequence must be tested for both branches
             //the not-handled-fault branch goes frist (might fail faster)
             Application cloneApp = AppCloner.cloneApp(app);
 
-            if(this.isValidSequence(AppCloner.cloneApp(app), sequence) == false)
+            if(this.isValidSequence(cloneApp, sequence) == false)
                 return false;
             
             //now we explore the fault handled branch
             //first goes scaleIn that implies the no-broken-instances
-            cloneApp = AppCloner.cloneApp(app);
-            try{
-                cloneApp.scaleIn(brokenInstances.get(0));
-            }catch(Exception E){
-                return false;
+            if(brokenInstances.isEmpty() == false){
+                cloneApp = AppCloner.cloneApp(app);
+                try{
+                    cloneApp.scaleIn(brokenInstances.get(0));
+                } catch(RuleNotApplicableException E){
+                    return false;
+                }
+            
+                if(this.isValidSequence(cloneApp, sequence) == false)
+                    return false;
             }
-
-            if(this.isValidSequence(cloneApp, sequence) == false)
-                return false;
-
             //for each fault check both the handled and not handled branch
-            for (Fault f : pendingFaults) {
+            for (Fault f : pendingFaults) { 
                 cloneApp = AppCloner.cloneApp(app);
 
                 if(app.getGlobalState().isResolvableFault(f) == true){
                     try {
                         cloneApp.autoreconnect(cloneApp.getGlobalState().getActiveNodeInstances().get(f.getInstanceID()), f.getReq());
-                    } catch (Exception e) {
+                    } catch (RuleNotApplicableException e) {
                         return false;
                     }
                     
@@ -91,10 +97,12 @@ public class Analyzer {
                 }else{
                     try {
                         cloneApp.fault(cloneApp.getGlobalState().getActiveNodeInstances().get(f.getInstanceID()), f.getReq()); 
-                    } catch (Exception e) {
+                    } catch (FailedFaultHandlingExecption e) {
+                        return false;
+                    } catch (RuleNotApplicableException e) {
                         return false;
                     }
-                    
+
                     if(this.isValidSequence(cloneApp, sequence) == false)
                         return false;  
                 }
@@ -108,9 +116,10 @@ public class Analyzer {
         throws 
             IllegalSequenceElementException, 
             NullPointerException 
-    {
+    {  
         if (app == null)
             throw new NullPointerException();
+
         if (this.wellFormattedSequence(sequence) == false)
             throw new IllegalSequenceElementException();
 
@@ -121,34 +130,33 @@ public class Analyzer {
         try {
             this.executeSequenceElement(app, seqElement);
         } catch (Exception e) {
-            return false;
-        }
-       
+            //keep going
+        } 
+
         ArrayList<Fault> pendingFaults = (ArrayList<Fault>) app.getGlobalState().getPendingFaults();
         ArrayList<NodeInstance> brokenInstances = (ArrayList<NodeInstance>) app.getGlobalState().getBrokeninstances();
 
         if(pendingFaults.isEmpty() == true && brokenInstances.isEmpty() == true)
-            //there is no biforcation with a deterministic pi, proceeding
-            return this.isValidSequence(app, sequence);
+        //there is no biforcation with a deterministic pi, proceeding
+            return this.isWeaklyValidSequence(app, sequence);
         else{
             //there are some faults. there is a biforcation and the sequence must be tested for both branches
             //the not-handled-fault branch goes frist (might fail faster)
             Application cloneApp = AppCloner.cloneApp(app);
-
-            if(this.isValidSequence(cloneApp, sequence) == true)
+            if(this.isWeaklyValidSequence(cloneApp, sequence) == true)
                 return true;
             
             //now we explore the fault handled branch
             //first goes scaleIn that implies the no-broken-instances
-            cloneApp = AppCloner.cloneApp(app);
-            try {
-                cloneApp.scaleIn(brokenInstances.get(0));
-            } catch (Exception e) {
-                //TODO: handle exception
+            if(brokenInstances.isEmpty() == false){
+                cloneApp = AppCloner.cloneApp(app);
+                try {
+                    cloneApp.scaleIn(brokenInstances.get(0));
+                    //keep exploring the tree only if it is possible
+                    if(this.isWeaklyValidSequence(cloneApp, sequence) == true)
+                        return true;
+                } catch (RuleNotApplicableException e) {}
             }
-
-            if(this.isValidSequence(cloneApp, sequence) == true)
-                return true;
 
             //for each fault check both the handled and not handled branch
             for (Fault f : pendingFaults) {
@@ -157,22 +165,15 @@ public class Analyzer {
                 if(app.getGlobalState().isResolvableFault(f) == true){
                     try {
                         cloneApp.autoreconnect(cloneApp.getGlobalState().getActiveNodeInstances().get(f.getInstanceID()), f.getReq()); 
-                    } catch (Exception e) {
-                        //TODO: handle exception
-                    }
-                    
-                    if(this.isValidSequence(cloneApp, sequence) == true)
-                        return true;  
-
+                        if(this.isWeaklyValidSequence(cloneApp, sequence) == true)
+                            return true;  
+                    } catch (Exception e) {} 
                 }else{
                     try {
-                        cloneApp.fault(cloneApp.getGlobalState().getActiveNodeInstances().get(f.getInstanceID()), f.getReq());   
-                    } catch (Exception e) {
-                        //TODO: handle exception
-                    }
-                    
-                    if(this.isValidSequence(cloneApp, sequence) == true)
-                        return true;  
+                        cloneApp.fault(cloneApp.getGlobalState().getActiveNodeInstances().get(f.getInstanceID()), f.getReq());  
+                        if(this.isWeaklyValidSequence(cloneApp, sequence) == true)
+                            return true;   
+                    } catch (Exception e) {}
                 }
             }
         }
@@ -192,7 +193,6 @@ public class Analyzer {
         return !this.isWeaklyValidSequence(app, sequence);
     }
 
-    
     public void executeSequenceElement(Application app, SequenceElement seqElement)
         throws 
             IllegalArgumentException, 

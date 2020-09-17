@@ -37,8 +37,8 @@ public class AppCloner {
                 cloneMp.addTransition(new String(t.getStartingState()), new String(t.getOp()), new String(t.getEndingState()));
             
             //cloning rho
-            List<Requirement> clonedNodeReqs = new ArrayList<>();
             for (String s : nRho.keySet()) {
+                List<Requirement> clonedNodeReqs = new ArrayList<>();
                 for (Requirement r : nRho.get(s)) 
                     clonedNodeReqs.add(new Requirement(r.getName(), r.getRequirementSort()));
                 
@@ -46,8 +46,8 @@ public class AppCloner {
             }
 
             //cloning gamma
-            List<String> clonedNodeCaps = new ArrayList<>();
             for(String key : nGamma.keySet()){
+                List<String> clonedNodeCaps = new ArrayList<>();
                 for(String cap : nGamma.get(key))
                     clonedNodeCaps.add(new String(cap));
 
@@ -55,8 +55,8 @@ public class AppCloner {
             }
 
             //cloning phi
-            List<String> clonedNodeFStates = new ArrayList<>();
             for(String key : nPhi.keySet()){
+                List<String> clonedNodeFStates = new ArrayList<>();
                 for(String state : nPhi.get(key))
                     clonedNodeFStates.add(new String(state));
                 
@@ -72,6 +72,16 @@ public class AppCloner {
             List<String> clonedNodeStates = new ArrayList<>();
             for(String state : n.getStates())
                 clonedNodeStates.add(new String(state));
+
+            //cloning reqs
+            List<Requirement> clonedNodeReqs = new ArrayList<>();
+            for(Requirement r : n.getReqs())
+                clonedNodeReqs.add(new Requirement(new String(r.getName()), r.getRequirementSort()));
+            
+            //cloning caps
+            List<String> clonedNodeCaps = new ArrayList<>();
+            for(String nodeCap : n.getCaps())
+                clonedNodeCaps.add(new String(nodeCap));
 
             clone.addNode(
                 new Node(n.getName(), 

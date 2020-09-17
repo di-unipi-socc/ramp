@@ -132,6 +132,8 @@ public class ManagementProtocol {
         this.phi.put(stateOrTransition, faultHandlingStates);
     }
 
+
+    //TODO se questa aggiungesse anche lo stato transizionale sarebbe comodo quando crei i nodi (vedere thesis factory)
     public void addTransition(String source, String op, String target){
         if(source == null)
             throw new NullPointerException("source null");

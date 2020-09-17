@@ -275,7 +275,6 @@ public class GlobalState {
         //for each neededReq check that it is also satisfied,
         //if a needed requirement is not satisfied we have a fault
         for(Requirement neededReq : instance.getNeededReqs()){
-
             if(this.getSatisfiedReqs(instance).contains(neededReq) == false)
                 faults.add(new Fault(instance.getID(), neededReq));
         }

@@ -6,12 +6,12 @@ import model.*;
 
 public class SequenceElement {
 
-    private String rule;
+    private String rule; //opStart, opEnd, ...
     private Node targetNode;
     private Requirement req;
     private NodeInstance targetInstance;
     private NodeInstance servingInstance;
-    private String op;
+    private String op; // start, config, ...
 
     public SequenceElement(String rule) throws NullPointerException, IllegalArgumentException {
         if (rule == null)
@@ -102,19 +102,19 @@ public class SequenceElement {
     }
     
     public boolean wellFormattedOpSequence(){
-        if(this.op.equals("opStart"))
+        if(this.rule.equals("opStart"))
             return this.wellFormattedOpStart();
         
-        if(this.op.equals("opEnd"))
+        if(this.rule.equals("opEnd"))
             return this.wellFormattedOpEnd();
         
-        if(this.op.equals("scaleIn"))
+        if(this.rule.equals("scaleIn"))
             return this.wellFormattedScaleIn();
         
-        if(this.op.equals("scaleOut1"))
+        if(this.rule.equals("scaleOut1"))
             return this.wellFormattedScaleOut1();
         
-        if(this.op.equals("scaleOut2"))
+        if(this.rule.equals("scaleOut2"))
             return this.wellFormattedScaleOut2();
         
         return false;

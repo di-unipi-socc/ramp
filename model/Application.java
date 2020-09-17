@@ -271,6 +271,9 @@ public class Application {
         //get the transition by its name (which is stored in the current state, since instance is in a transient state)
         Transition transitionToComplete = instance.getNodeType().getManagementProtocol().getTransition().get(instance.getCurrentState());
         
+        if(transitionToComplete == null)
+            throw new FailedOperationException("no op");
+
         //instance goes in the new (final) state
         instance.setCurrentState(transitionToComplete.getEndingState());
 
@@ -308,13 +311,17 @@ public class Application {
             throw new RuleNotApplicableException("not a pending fault");
         
         //check if the fault is not a resolvable fault
-        if( this.globalState.isResolvableFault(fault) == true)
+        if(this.globalState.isResolvableFault(fault) == true)
             throw new RuleNotApplicableException("the fault is resolvable");
     
         //phi: failed state -> states to go
         ArrayList<String> phiStates = 
             (ArrayList<String>) instance.getNodeType().getManagementProtocol().getPhi().get(instance.getCurrentState());
         
+        //TODO: chiedi se ogni stato ha necessariamente uno stato di fault handling
+        // if(phiStates == null)
+        //     throw new FailedFaultHandlingExecption("no state to go for fault handling");
+
         //for each state in phiStates check if req is needed in that state
         for(String state : phiStates){
             //rho: state s -> list of requirement needed in s
@@ -333,7 +340,7 @@ public class Application {
                 rightState = s;
             }
         }
-
+         
         if(rightState == null)
             throw new FailedFaultHandlingExecption("no state to go for fault handling");
 
