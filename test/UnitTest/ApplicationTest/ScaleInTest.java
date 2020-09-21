@@ -12,7 +12,6 @@ import org.junit.Test;
 import model.*;
 import exceptions.AlreadyUsedIDException;
 import exceptions.InstanceUnknownException;
-import exceptions.NodeUnknownException;
 import exceptions.RuleNotApplicableException;
 
 public class ScaleInTest {
@@ -55,7 +54,6 @@ public class ScaleInTest {
         throws 
             NullPointerException, 
             RuleNotApplicableException, 
-            NodeUnknownException,
             IllegalArgumentException, 
             InstanceUnknownException, 
             AlreadyUsedIDException 
@@ -83,9 +81,9 @@ public class ScaleInTest {
         StaticBinding secondHalfBreqA = new StaticBinding("nodeA", "AcapB");
         this.testApp.addStaticBinding(firstHalfBreqA, secondHalfBreqA);
 
-        this.instanceOfC = this.testApp.scaleOut1(this.nodeC.getName(), "instanceOfC");
-        this.instanceOfA = this.testApp.scaleOut2(this.nodeA.getName(), "instanceOfA", this.instanceOfC.getID());
-        this.instanceOfB = this.testApp.scaleOut1(this.nodeB.getName(), "instanceOfB");
+        this.instanceOfC = this.testApp.scaleOut1("nodeC", "instanceOfC");
+        this.instanceOfA = this.testApp.scaleOut2("nodeA", "instanceOfA", "instanceOfC");
+        this.instanceOfB = this.testApp.scaleOut1("nodeB", "instanceOfB");
     }
 
     public Node createNodeA(){
@@ -209,7 +207,7 @@ public class ScaleInTest {
         assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.instanceOfA).size() == 1);
 
         Fault f = this.testApp.getGlobalState().getResolvableFaults(this.instanceOfA).get(0);
-        this.testApp.autoreconnect(this.instanceOfA.getID(), f.getReq());
+        this.testApp.autoreconnect(f.getInstanceID(), f.getReq());
 
         //now A has the 2 binding: 1 with C for the containment and 1 with B for the other requirement
         assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.instanceOfA).size() == 2);
@@ -219,15 +217,15 @@ public class ScaleInTest {
         assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.instanceOfC).size() == 0);
 
         //the scaleIn destroy instanceOfC so it is destroyed even instanceOfA that's contained in instanceOfC
-        this.testApp.scaleIn(this.instanceOfC.getID());
+        this.testApp.scaleIn("instanceOfC");
 
         //the destroyed instances is remove from the set of active instances
-        assertNull(this.testApp.getGlobalState().getActiveNodeInstances().get(this.instanceOfC.getID()));
-        assertNull(this.testApp.getGlobalState().getActiveNodeInstances().get(this.instanceOfA.getID()));
+        assertNull(this.testApp.getGlobalState().getActiveNodeInstances().get("instanceOfC"));
+        assertNull(this.testApp.getGlobalState().getActiveNodeInstances().get("instanceOfA"));
         
         //the are no more binding for the destroyed instances
-        assertNull(this.testApp.getGlobalState().getRuntimeBindings().get(this.instanceOfA.getID()));
-        assertNull(this.testApp.getGlobalState().getRuntimeBindings().get(this.instanceOfC.getID()));
+        assertNull(this.testApp.getGlobalState().getRuntimeBindings().get("instanceOfA"));
+        assertNull(this.testApp.getGlobalState().getRuntimeBindings().get("instanceOfC"));
 
         assertTrue(this.testApp.getGlobalState().getPendingFaults(this.instanceOfB).size() == 1);
     }
@@ -253,8 +251,8 @@ public class ScaleInTest {
 
         this.testApp.scaleIn(this.instanceOfB.getID());
 
-        assertNull(this.testApp.getGlobalState().getActiveNodeInstances().get(this.instanceOfB.getID()));
-        assertNull(this.testApp.getGlobalState().getRuntimeBindings().get(this.instanceOfB.getID()));
+        assertNull(this.testApp.getGlobalState().getActiveNodeInstances().get("instanceOfB"));
+        assertNull(this.testApp.getGlobalState().getRuntimeBindings().get("instanceOfB"));
 
         //since B is eliminated A has a fault, because B was providing a cap
         assertTrue(this.testApp.getGlobalState().getPendingFaults(this.instanceOfA).size() == 1);

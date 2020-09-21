@@ -11,7 +11,6 @@ import org.junit.Test;
 import model.*;
 import exceptions.AlreadyUsedIDException;
 import exceptions.InstanceUnknownException;
-import exceptions.NodeUnknownException;
 import exceptions.RuleNotApplicableException;
 
 public class AutoreconnectTest {
@@ -42,7 +41,6 @@ public class AutoreconnectTest {
         throws 
             NullPointerException, 
             RuleNotApplicableException, 
-            NodeUnknownException,
             IllegalArgumentException, 
             InstanceUnknownException, 
             AlreadyUsedIDException 
@@ -62,8 +60,8 @@ public class AutoreconnectTest {
         this.testApp.addStaticBinding(unawareFirstHalf, unawareSecondHalf);
 
         //scaling out nodeB so nodeA has 2 fault, 1 resolvable, 1 pending
-        this.instanceOfA = this.testApp.scaleOut1(this.nodeA.getName(), "instanceOfA");
-        this.instanceOfB = this.testApp.scaleOut1(this.nodeB.getName(), "instanceOfB");
+        this.instanceOfA = this.testApp.scaleOut1("nodeA", "instanceOfA");
+        this.instanceOfB = this.testApp.scaleOut1("nodeB", "instanceOfB");
     }
 
     public Node createNodeA(){
@@ -144,7 +142,7 @@ public class AutoreconnectTest {
             RuleNotApplicableException,
             InstanceUnknownException 
     {
-        this.testApp.autoreconnect(this.instanceOfA.getID(), null);
+        this.testApp.autoreconnect("instanceOfA", null);
     }
 
     //there are two pending fault, one of them is resolvable. autoreconnect fix the resolvable fault
@@ -162,7 +160,7 @@ public class AutoreconnectTest {
         assertTrue(this.testApp.getGlobalState().getResolvableFaults(this.instanceOfA).size() == 1);
 
         //we fix the resolvable fault
-        this.testApp.autoreconnect(this.instanceOfA.getID(), this.reqUnaware);
+        this.testApp.autoreconnect("instanceOfA", this.reqUnaware);
 
         //now instanceOfA has only one fault and a not resolvable fault (faultyReq)
         assertTrue(this.testApp.getGlobalState().getPendingFaults(this.instanceOfA).size() == 1);

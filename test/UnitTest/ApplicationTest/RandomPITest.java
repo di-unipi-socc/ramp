@@ -12,7 +12,6 @@ import org.junit.Test;
 import model.*;
 import exceptions.AlreadyUsedIDException;
 import exceptions.InstanceUnknownException;
-import exceptions.NodeUnknownException;
 import exceptions.RuleNotApplicableException;
 
 //test both randomPI and getCapableInstances
@@ -45,7 +44,6 @@ public class RandomPITest {
         throws 
             NullPointerException, 
             RuleNotApplicableException, 
-            NodeUnknownException,
             IllegalArgumentException, 
             InstanceUnknownException, 
             AlreadyUsedIDException 
@@ -121,7 +119,7 @@ public class RandomPITest {
             NullPointerException, 
             InstanceUnknownException 
     {
-        this.testApp.randomPI(this.instanceA.getID(), null);
+        this.testApp.randomPI("instanceA", null);
     }
 
     @Test(expected = IllegalArgumentException.class)

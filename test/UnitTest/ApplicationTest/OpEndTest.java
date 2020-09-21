@@ -8,10 +8,9 @@ import model.*;
 import exceptions.AlreadyUsedIDException;
 import exceptions.FailedOperationException;
 import exceptions.InstanceUnknownException;
-import exceptions.NodeUnknownException;
 import exceptions.OperationNotAvailableException;
 import exceptions.RuleNotApplicableException;
-import test.ThesisAppFactory;
+import myUtils.ThesisAppFactory;
 
 public class OpEndTest {
 
@@ -27,7 +26,6 @@ public class OpEndTest {
             NullPointerException,
             OperationNotAvailableException,
             RuleNotApplicableException, 
-            NodeUnknownException, 
             InstanceUnknownException, 
             AlreadyUsedIDException 
     {
@@ -44,7 +42,7 @@ public class OpEndTest {
     //opEnd throws FailedOperationException when there is a fault
     @Test(expected = FailedOperationException.class)
     public void opEndFailedOperationExceptionTest() throws Exception{
-        this.testApp.opEnd(this.frontendF1.getID(), "install");
+        this.testApp.opEnd("frontendF1", "install");
 
     }
 
@@ -97,7 +95,7 @@ public class OpEndTest {
             RuleNotApplicableException, 
             InstanceUnknownException 
     {
-        testApp.opEnd(this.mongoM1.getID(), null);
+        testApp.opEnd("mongoM1", null);
     }
 
     //opEnd throws a IllegalArgumentException when the op is empty
@@ -110,7 +108,7 @@ public class OpEndTest {
             RuleNotApplicableException, 
             InstanceUnknownException 
     {
-        testApp.opEnd(this.mongoM1.getID(), "");
+        testApp.opEnd("mongoM1", "");
     }
 
     @Test
@@ -122,7 +120,7 @@ public class OpEndTest {
             RuleNotApplicableException, 
             InstanceUnknownException 
     {
-        testApp.opEnd(this.mongoM1.getID(), "start");
+        testApp.opEnd("mongoM1", "start");
         assertTrue("wrong current state", this.mongoM1.getCurrentState().equals("running"));
         assertTrue("wrong number of bindings", testApp.getGlobalState().getRuntimeBindings().get(this.mongoM1.getID()).size() == 0);
 

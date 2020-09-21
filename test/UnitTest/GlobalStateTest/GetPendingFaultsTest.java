@@ -11,7 +11,6 @@ import static org.junit.Assert.assertTrue;
 import model.*;
 import exceptions.AlreadyUsedIDException;
 import exceptions.InstanceUnknownException;
-import exceptions.NodeUnknownException;
 import exceptions.RuleNotApplicableException;
 
 public class GetPendingFaultsTest {
@@ -34,7 +33,6 @@ public class GetPendingFaultsTest {
         throws 
             NullPointerException, 
             RuleNotApplicableException, 
-            NodeUnknownException,
             IllegalArgumentException, 
             InstanceUnknownException, 
             AlreadyUsedIDException 
@@ -43,7 +41,7 @@ public class GetPendingFaultsTest {
         this.testApp = new Application("testApp");
         this.testApp.addNode(this.nodeA);
 
-        this.instanceOfA = this.testApp.scaleOut1(this.nodeA.getName(), "instanceOfA");
+        this.instanceOfA = this.testApp.scaleOut1("nodeA", "instanceOfA");
     }
 
     //getPendingFaults throws NullPointerException if the passed instance is null

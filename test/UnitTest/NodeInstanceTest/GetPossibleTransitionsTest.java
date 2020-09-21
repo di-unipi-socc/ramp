@@ -12,7 +12,6 @@ import model.*;
 import exceptions.AlreadyUsedIDException;
 import exceptions.FailedOperationException;
 import exceptions.InstanceUnknownException;
-import exceptions.NodeUnknownException;
 import exceptions.OperationNotAvailableException;
 import exceptions.RuleNotApplicableException;
 
@@ -35,7 +34,6 @@ public class GetPossibleTransitionsTest {
         throws 
             NullPointerException, 
             RuleNotApplicableException, 
-            NodeUnknownException,
             IllegalArgumentException, 
             InstanceUnknownException,
             AlreadyUsedIDException 
@@ -44,7 +42,7 @@ public class GetPossibleTransitionsTest {
         this.testApp = new Application("testApp");
         this.testApp.addNode(this.nodeA);
 
-        this.instanceOfA = testApp.scaleOut1(this.nodeA.getName(), "instanceOfA");
+        this.instanceOfA = testApp.scaleOut1("nodeA", "instanceOfA");
     }
 
     public Node createNodeA() {
@@ -98,14 +96,14 @@ public class GetPossibleTransitionsTest {
         assertTrue(transitionsNames.contains("state1goToState3state3"));
         assertTrue(transitionsNames.contains("state1goToState3Bisstate3"));
 
-        this.testApp.opStart(this.instanceOfA.getID(), "goToState3");
-        this.testApp.opEnd(this.instanceOfA.getID(), "goToState3");
+        this.testApp.opStart("instanceOfA", "goToState3");
+        this.testApp.opEnd("instanceOfA", "goToState3");
 
         assertTrue(this.instanceOfA.getPossibleTransitions().size() == 1);
         assertTrue(this.instanceOfA.getPossibleTransitions().get(0).getName().equals("state3goToState2state2"));
 
-        this.testApp.opStart(this.instanceOfA.getID(), "goToState2");
-        this.testApp.opEnd(this.instanceOfA.getID(), "goToState2");
+        this.testApp.opStart("instanceOfA", "goToState2");
+        this.testApp.opEnd("instanceOfA", "goToState2");
 
         assertNull(this.instanceOfA.getPossibleTransitions());
     }

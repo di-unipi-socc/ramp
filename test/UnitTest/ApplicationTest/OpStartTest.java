@@ -8,10 +8,9 @@ import org.junit.Test;
 import model.*;
 import exceptions.AlreadyUsedIDException;
 import exceptions.InstanceUnknownException;
-import exceptions.NodeUnknownException;
 import exceptions.OperationNotAvailableException;
 import exceptions.RuleNotApplicableException;
-import test.ThesisAppFactory;
+import myUtils.ThesisAppFactory;
 
 public class OpStartTest {
 
@@ -23,7 +22,6 @@ public class OpStartTest {
         throws 
             NullPointerException, 
             RuleNotApplicableException, 
-            NodeUnknownException,
             IllegalArgumentException, 
             InstanceUnknownException, 
             AlreadyUsedIDException 
@@ -55,7 +53,7 @@ public class OpStartTest {
             RuleNotApplicableException, 
             InstanceUnknownException 
     {
-        testApp.opStart(this.mongoM1.getID(), null);
+        testApp.opStart("mongoM1", null);
     }
 
     //opStart throws an IllegalArgumentException when the op is empty
@@ -68,7 +66,7 @@ public class OpStartTest {
             RuleNotApplicableException, 
             InstanceUnknownException 
     {
-        testApp.opStart(this.mongoM1.getID(), "");
+        testApp.opStart("mongoM1", "");
     }
 
     //opStart throws an IllegalArgumentException when the instanceID is empty
@@ -108,7 +106,7 @@ public class OpStartTest {
             RuleNotApplicableException, 
             InstanceUnknownException 
     {
-        testApp.opStart(this.mongoM1.getID(), "notKnownOp");
+        testApp.opStart("mongoM1", "notKnownOp");
     }
 
     @Test
@@ -120,7 +118,7 @@ public class OpStartTest {
             RuleNotApplicableException, 
             InstanceUnknownException 
     {
-        testApp.opStart(this.mongoM1.getID(), "start");
+        testApp.opStart("mongoM1", "start");
         assertTrue("wrong current state", this.mongoM1.getCurrentState().equals("stoppedstartrunning"));
         assertTrue("wrong number of bindings", testApp.getGlobalState().getRuntimeBindings().get(this.mongoM1.getID()).size() == 0);    
     }

@@ -35,7 +35,6 @@ public class AddBindingTest {
         throws 
             NullPointerException, 
             RuleNotApplicableException, 
-            NodeUnknownException,
             IllegalArgumentException, 
             InstanceUnknownException, 
             AlreadyUsedIDException 
@@ -115,7 +114,7 @@ public class AddBindingTest {
     @Test
     public void addBindingTest(){
         //instanceOfA has a fault and no binding
-        assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get(this.instanceOfA.getID()).size() == 0);
+        assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get("instanceOfA").size() == 0);
         assertTrue(this.testApp.getGlobalState().getPendingFaults(this.instanceOfA).size() == 1);
         assertTrue(this.testApp.getGlobalState().getResolvableFaults(this.instanceOfA).size() == 1);
 
@@ -124,6 +123,6 @@ public class AddBindingTest {
         //fault is resolved
         assertTrue(this.testApp.getGlobalState().getPendingFaults(this.instanceOfA).size() == 0);
         //instanceOfA has 1 runtime 
-        assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get(this.instanceOfA.getID()).size() == 1);
+        assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get("instanceOfA").size() == 1);
     }
 }

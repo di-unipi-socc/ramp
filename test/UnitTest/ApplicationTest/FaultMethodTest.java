@@ -12,7 +12,6 @@ import model.*;
 import exceptions.AlreadyUsedIDException;
 import exceptions.FailedFaultHandlingExecption;
 import exceptions.InstanceUnknownException;
-import exceptions.NodeUnknownException;
 import exceptions.RuleNotApplicableException;
 
 public class FaultMethodTest {
@@ -49,7 +48,6 @@ public class FaultMethodTest {
         throws 
             NullPointerException, 
             RuleNotApplicableException, 
-            NodeUnknownException,
             IllegalArgumentException, 
             InstanceUnknownException, 
             AlreadyUsedIDException
@@ -66,9 +64,9 @@ public class FaultMethodTest {
         this.testApp.addNode(this.nodeB);
         this.testApp.addNode(this.nodeC);
         
-        this.instanceOfA = this.testApp.scaleOut1(this.nodeA.getName(), "instanceOfA");
-        this.instanceOfB = this.testApp.scaleOut1(this.nodeB.getName(), "instanceOfB");
-        this.instanceOfC = this.testApp.scaleOut1(this.nodeC.getName(), "instanceOfC");
+        this.instanceOfA = this.testApp.scaleOut1("nodeA", "instanceOfA");
+        this.instanceOfB = this.testApp.scaleOut1("nodeB", "instanceOfB");
+        this.instanceOfC = this.testApp.scaleOut1("nodeC", "instanceOfC");
     }
 
     public Node createNodeA(){
@@ -171,7 +169,7 @@ public class FaultMethodTest {
             RuleNotApplicableException, 
             InstanceUnknownException 
     {
-        this.testApp.fault(this.instanceOfA.getID(), null);
+        this.testApp.fault("instanceOfA", null);
     }
 
     //fault throws a RuleNotAplicableException when the passed <instance, req> creates no fault
@@ -183,7 +181,7 @@ public class FaultMethodTest {
         RuleNotApplicableException, 
         InstanceUnknownException 
     {
-        this.testApp.fault(this.instanceOfB.getID(), this.testReq);
+        this.testApp.fault("instanceOfB", this.testReq);
     }
 
     //fault throws a RuleNotAplicableException when the passed instanceID is not assciated with an instance
@@ -208,7 +206,7 @@ public class FaultMethodTest {
             RuleNotApplicableException, 
             InstanceUnknownException 
     {
-        this.testApp.fault(this.instanceOfC.getID(), this.testReq);
+        this.testApp.fault("instanceOfC", this.testReq);
     }
 
     @Test
@@ -219,7 +217,7 @@ public class FaultMethodTest {
             RuleNotApplicableException, 
             InstanceUnknownException 
     {
-        this.testApp.fault(this.instanceOfA.getID(), this.testReq);
+        this.testApp.fault("instanceOfA", this.testReq);
         assertTrue(this.instanceOfA.getCurrentState().equals("faultHandlingState"));
     }
        

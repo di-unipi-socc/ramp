@@ -13,7 +13,6 @@ import model.*;
 import exceptions.AlreadyUsedIDException;
 import exceptions.FailedOperationException;
 import exceptions.InstanceUnknownException;
-import exceptions.NodeUnknownException;
 import exceptions.OperationNotAvailableException;
 import exceptions.RuleNotApplicableException;
 
@@ -43,7 +42,6 @@ public class IsResolvableFaultTest {
         throws 
             NullPointerException, 
             RuleNotApplicableException, 
-            NodeUnknownException,
             IllegalArgumentException, 
             InstanceUnknownException, 
             AlreadyUsedIDException 
@@ -59,9 +57,9 @@ public class IsResolvableFaultTest {
         StaticBinding secondHalf = new StaticBinding("nodeB", "cap");
         this.testApp.addStaticBinding(firstHalf, secondHalf);
 
-        this.instanceOfB = this.testApp.scaleOut1(this.nodeB.getName(), "instanceOfB");
-        this.instanceOfA = this.testApp.scaleOut1(this.nodeA.getName(), "instanceOfA");
-        this.secondInstanceOfB = this.testApp.scaleOut1(this.nodeB.getName(), "instanceOfB1");
+        this.instanceOfB = this.testApp.scaleOut1("nodeB", "instanceOfB");
+        this.instanceOfA = this.testApp.scaleOut1("nodeA", "instanceOfA");
+        this.secondInstanceOfB = this.testApp.scaleOut1("nodeB", "instanceOfB1");
     }
 
     public Node createNodeA() {
@@ -137,10 +135,10 @@ public class IsResolvableFaultTest {
         assertTrue(this.testApp.getGlobalState().getResolvableFaults().isEmpty());
 
         //A has a binding with B
-        assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get(this.instanceOfA.getID()).size() == 1);
-        assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get(this.instanceOfA.getID()).get(0).getReq().getName().equals("req"));
+        assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get("instanceOfA").size() == 1);
+        assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get("instanceOfA").get(0).getReq().getName().equals("req"));
         //the binding is with the first instance of b
-        assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get(this.instanceOfA.getID()).get(0).getNodeInstanceID().equals(this.instanceOfB.getID()));
+        assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get("instanceOfA").get(0).getNodeInstanceID().equals(this.instanceOfB.getID()));
 
         //now we kill instanceOfB and we get a fault (resolvable, thanks to secondInstanceOfB)
         this.testApp.scaleIn(this.instanceOfB.getID());
@@ -149,21 +147,21 @@ public class IsResolvableFaultTest {
         assertTrue(this.testApp.getGlobalState().isResolvableFault(f));
 
         //this now ricreate the binding of AreqB with secondInstanceOfB
-        this.testApp.autoreconnect(this.instanceOfA.getID(), f.getReq());
+        this.testApp.autoreconnect(f.getInstanceID(), f.getReq());
 
         //now there is no fault (once again, as before)
         assertTrue(this.testApp.getGlobalState().getPendingFaults().isEmpty());
         assertTrue(this.testApp.getGlobalState().getResolvableFaults().isEmpty());
 
         //A has a binding with B (secondInstanceOfB)
-        assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get(this.instanceOfA.getID()).size() == 1);
-        assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get(this.instanceOfA.getID()).get(0).getReq().getName().equals("req"));
+        assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get("instanceOfA").size() == 1);
+        assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get("instanceOfA").get(0).getReq().getName().equals("req"));
         //the binding is with the second instance of b
-        assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get(this.instanceOfA.getID()).get(0).getNodeInstanceID().equals(this.secondInstanceOfB.getID()));
+        assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get("instanceOfA").get(0).getNodeInstanceID().equals(this.secondInstanceOfB.getID()));
 
         //now we move A to state2 where there will be a fault not resolvable
-        this.testApp.opStart(this.instanceOfA.getID(), "goToState2");
-        this.testApp.opEnd(this.instanceOfA.getID(), "goToState2");
+        this.testApp.opStart("instanceOfA", "goToState2");
+        this.testApp.opEnd("instanceOfA", "goToState2");
 
         //there is now a pending fault 
         assertTrue(this.testApp.getGlobalState().getPendingFaults().size() == 1);

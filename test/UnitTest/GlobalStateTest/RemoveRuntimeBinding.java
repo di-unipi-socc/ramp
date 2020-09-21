@@ -33,7 +33,6 @@ public class RemoveRuntimeBinding {
         throws 
             NullPointerException, 
             RuleNotApplicableException, 
-            NodeUnknownException,
             IllegalArgumentException,
             InstanceUnknownException, 
             AlreadyUsedIDException 
@@ -51,9 +50,9 @@ public class RemoveRuntimeBinding {
         StaticBinding unawareSecondHalf = new StaticBinding("nodeB", "cap");
         this.testApp.addStaticBinding(unawareFirstHalf, unawareSecondHalf);
 
-        this.instanceOfB = this.testApp.scaleOut1(this.nodeB.getName(), "instanceOfB");
+        this.instanceOfB = this.testApp.scaleOut1("nodeB", "instanceOfB");
         //instanceOfA has a runtime binding with B
-        this.instanceOfA = this.testApp.scaleOut1(this.nodeA.getName(), "instanceOfA");
+        this.instanceOfA = this.testApp.scaleOut1("nodeA", "instanceOfA");
     }
 
     public Node createNodeA(){
@@ -106,14 +105,14 @@ public class RemoveRuntimeBinding {
     @Test
     public void removeRuntimeBindingTest(){
         //instanceOfA has a runtime binding with instanceofB
-        assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get(this.instanceOfA.getID()).size() == 1);
-        assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get(this.instanceOfA.getID()).get(0).getNodeInstanceID().equals(this.instanceOfB.getID()));
+        assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get("instanceOfA").size() == 1);
+        assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get("instanceOfA").get(0).getNodeInstanceID().equals(this.instanceOfB.getID()));
 
         //delete the binding
         this.testApp.getGlobalState().removeRuntimeBinding(this.instanceOfA, this.req);
 
         //now instanceOfA has no runtime bindings
-        assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get(this.instanceOfA.getID()).size() == 0);
+        assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get("instanceOfA").size() == 0);
 
     }
 

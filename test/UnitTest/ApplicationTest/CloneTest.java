@@ -1,4 +1,4 @@
-package test.UnitTest.AnalyzerTest;
+package test.UnitTest.ApplicationTest;
 
 import static org.junit.Assert.assertTrue;
 
@@ -8,17 +8,15 @@ import java.util.Collection;
 import org.junit.Before;
 import org.junit.Test;
 
-import analyzer.AppCloner;
 import exceptions.AlreadyUsedIDException;
 import exceptions.FailedOperationException;
 import exceptions.InstanceUnknownException;
-import exceptions.NodeUnknownException;
 import exceptions.OperationNotAvailableException;
 import exceptions.RuleNotApplicableException;
 import model.*;
-import test.ThesisAppFactory;
+import myUtils.ThesisAppFactory;
 
-public class AppClonerTest {
+public class CloneTest {
 
     public Application app;
     public Application clonedApp;
@@ -30,7 +28,7 @@ public class AppClonerTest {
 
     @Test
     public void newwlyCreatedAppCloneTest() {
-        clonedApp = AppCloner.cloneApp(app);
+        clonedApp = app.clone();
 
         assertTrue(app.getName().equals(clonedApp.getName()));
 
@@ -85,14 +83,13 @@ public class AppClonerTest {
             NullPointerException, 
             IllegalArgumentException, 
             RuleNotApplicableException,
-            NodeUnknownException, 
             OperationNotAvailableException, 
             FailedOperationException, 
             InstanceUnknownException,
             AlreadyUsedIDException 
     {
         this.setUpApp();
-        clonedApp = AppCloner.cloneApp(app);
+        clonedApp = app.clone();
 
         assertTrue(app.getName().equals(clonedApp.getName()));
 
@@ -165,10 +162,15 @@ public class AppClonerTest {
     }
 
     public void setUpApp()
-            throws NullPointerException, RuleNotApplicableException, NodeUnknownException, IllegalArgumentException,
-            OperationNotAvailableException, FailedOperationException, InstanceUnknownException, AlreadyUsedIDException 
+        throws 
+            NullPointerException, 
+            RuleNotApplicableException, 
+            IllegalArgumentException,
+            OperationNotAvailableException, 
+            FailedOperationException, 
+            InstanceUnknownException, 
+            AlreadyUsedIDException 
     {
-
         app.scaleOut1("mongo", "mongoM1");
         app.scaleOut1("node", "nodeN1");
         app.scaleOut1("node", "nodeN2");

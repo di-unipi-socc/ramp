@@ -1,8 +1,11 @@
 - cambiato tutti i Node e NodeInstance in string nei parametri di application
     - mi turbava avere qualche NodeInstance e qualche String (in piu' e' piu' comodo per la sequence validation)
+
 - messo RuleNotApplicacable quando una istanza e' ignota (in accordo con la tesi di marco che richiede che instance sia in G)
     -  o anche quandi
 - l'eccezione RuleNotApplicable e l'eccezione InstanceUnknownException condividono parzialmente il significato (RuleNotApplicable e' piu' 
-  "generale") (idem con gli scaleOut e NodeUnknown)
+  "generale") 
+--> di base InstanceUnknownException viene lanciata solo dalle PI, gli altri lanciano RuleNotApplicable
 
-- TODO: un sacco di refactoring (sui test, sui parametri dei metodi di application, ecc)
+- globalState nei parametri dei metodi usa NodeInstance invece che l'ID (string) e questo un po' mi turba (va cambiato ?)
+  - da una parte ha senso per coerena, dall'altra non ha senso (vedi ad esempio opStart e la chiamata removeOldBindings)

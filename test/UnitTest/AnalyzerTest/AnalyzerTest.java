@@ -14,11 +14,10 @@ import analyzer.SequenceElement;
 import exceptions.AlreadyUsedIDException;
 import exceptions.IllegalSequenceElementException;
 import exceptions.InstanceUnknownException;
-import exceptions.NodeUnknownException;
 import exceptions.RuleNotApplicableException;
 import model.Application;
 import model.NodeInstance;
-import test.ThesisAppFactory;
+import myUtils.ThesisAppFactory;
 
 public class AnalyzerTest {
 
@@ -36,7 +35,6 @@ public class AnalyzerTest {
         throws 
             NullPointerException, 
             RuleNotApplicableException, 
-            NodeUnknownException,
             AlreadyUsedIDException, 
             InstanceUnknownException 
     {

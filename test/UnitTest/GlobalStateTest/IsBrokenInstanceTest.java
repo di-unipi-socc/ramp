@@ -13,7 +13,6 @@ import model.*;
 import exceptions.AlreadyUsedIDException;
 import exceptions.FailedOperationException;
 import exceptions.InstanceUnknownException;
-import exceptions.NodeUnknownException;
 import exceptions.OperationNotAvailableException;
 import exceptions.RuleNotApplicableException;
 
@@ -41,7 +40,6 @@ public class IsBrokenInstanceTest {
         throws 
             NullPointerException, 
             RuleNotApplicableException, 
-            NodeUnknownException,
             IllegalArgumentException, 
             InstanceUnknownException, 
             AlreadyUsedIDException 
@@ -58,8 +56,8 @@ public class IsBrokenInstanceTest {
         StaticBinding secondHalf = new StaticBinding("nodeB", "capCont");
         this.testApp.addStaticBinding(firstHalf, secondHalf);
 
-        this.instanceOfB = this.testApp.scaleOut1(this.nodeB.getName(), "instanceOfB");
-        this.instanceOfA = this.testApp.scaleOut2(this.nodeA.getName(), "instanceOfA", this.instanceOfB.getID());
+        this.instanceOfB = this.testApp.scaleOut1("nodeB", "instanceOfB");
+        this.instanceOfA = this.testApp.scaleOut2("nodeA", "instanceOfA", "instanceOfB");
     }
 
     public Node createNodeA() {
@@ -139,7 +137,7 @@ public class IsBrokenInstanceTest {
         assertTrue(this.testApp.getGlobalState().getPendingFaults(this.instanceOfA).size() == 1);
 
         //now we remove instanceOfB from the active nodes, instanceOfA become a broken instance
-        this.testApp.getGlobalState().getActiveNodeInstances().remove(this.instanceOfB.getID());
+        this.testApp.getGlobalState().getActiveNodeInstances().remove("instanceOfB");
         assertTrue(this.testApp.getGlobalState().isBrokenInstance(this.instanceOfA));
     }
 

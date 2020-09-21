@@ -12,7 +12,6 @@ import org.junit.Test;
 import model.*;
 import exceptions.AlreadyUsedIDException;
 import exceptions.InstanceUnknownException;
-import exceptions.NodeUnknownException;
 import exceptions.RuleNotApplicableException;
 
 public class ScaleOut1Test {
@@ -109,7 +108,6 @@ public class ScaleOut1Test {
         throws
             NullPointerException, 
             RuleNotApplicableException, 
-            NodeUnknownException,
             IllegalArgumentException, 
             InstanceUnknownException, 
             AlreadyUsedIDException 
@@ -124,7 +122,6 @@ public class ScaleOut1Test {
             NullPointerException, 
             IllegalArgumentException,
             RuleNotApplicableException, 
-            NodeUnknownException, 
             InstanceUnknownException, 
             AlreadyUsedIDException 
     {
@@ -138,12 +135,11 @@ public class ScaleOut1Test {
             NullPointerException, 
             IllegalArgumentException,
             RuleNotApplicableException, 
-            NodeUnknownException, 
             InstanceUnknownException, 
             AlreadyUsedIDException 
     {
-        this.instanceOfA = this.testApp.scaleOut1(this.nodeA.getName(), "test");
-        this.instanceOfB = this.testApp.scaleOut1(this.nodeB.getName(), "test");
+        this.instanceOfA = this.testApp.scaleOut1("nodeA", "test");
+        this.instanceOfB = this.testApp.scaleOut1("nodeB", "test");
     }
 
     //scaleOut1 throws a RuleNotApplicable when the passed nodeName is not an application's nodes 
@@ -152,7 +148,6 @@ public class ScaleOut1Test {
         throws 
             NullPointerException, 
             RuleNotApplicableException, 
-            NodeUnknownException, 
             IllegalArgumentException, 
             InstanceUnknownException, 
             AlreadyUsedIDException 
@@ -166,13 +161,12 @@ public class ScaleOut1Test {
         throws
             NullPointerException, 
             RuleNotApplicableException, 
-            NodeUnknownException, 
             IllegalArgumentException, 
             InstanceUnknownException, 
             AlreadyUsedIDException 
     {
         //nodeC has a containment req
-        this.testApp.scaleOut1(this.nodeC.getName(), "instanceOfC");
+        this.testApp.scaleOut1("nodeC", "instanceOfC");
     }
 
     @Test
@@ -180,29 +174,28 @@ public class ScaleOut1Test {
         throws 
             NullPointerException, 
             RuleNotApplicableException, 
-            NodeUnknownException, 
             IllegalArgumentException, 
             InstanceUnknownException, 
             AlreadyUsedIDException 
     {
         //scaling out a node with no reqs and no bindings when it is created
-        this.instanceOfB = this.testApp.scaleOut1(this.nodeB.getName(), "instanceOfB");
+        this.instanceOfB = this.testApp.scaleOut1("nodeB", "instanceOfB");
         assertNotNull(this.instanceOfB);
         assertTrue(this.testApp.getGlobalState().getActiveNodeInstances().size() == 1);
 
         //scaling out the nodeA that has a reqs that can be offred by B
-        this.instanceOfA = this.testApp.scaleOut1(this.nodeA.getName(), "instanceOfA");
+        this.instanceOfA = this.testApp.scaleOut1("nodeA", "instanceOfA");
         assertNotNull(this.instanceOfA);
         assertTrue(this.testApp.getGlobalState().getActiveNodeInstances().size() == 2);
         assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.instanceOfA).size() == 1);
-        assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get(this.instanceOfA.getID()).get(0).getReq().getName().equals("req"));
+        assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get("instanceOfA").get(0).getReq().getName().equals("req"));
     
-        this.testApp.scaleIn(this.instanceOfA.getID());
-        this.testApp.scaleIn(this.instanceOfB.getID());
+        this.testApp.scaleIn("instanceOfA");
+        this.testApp.scaleIn("instanceOfB");
 
         //scaleOut1 first A and then B, A will have a fault
-        this.instanceOfA = this.testApp.scaleOut1(this.nodeA.getName(), "instanceOfA");
-        this.instanceOfB = this.testApp.scaleOut1(this.nodeB.getName(), "instanceOfB");
+        this.instanceOfA = this.testApp.scaleOut1("nodeA", "instanceOfA");
+        this.instanceOfB = this.testApp.scaleOut1("nodeB", "instanceOfB");
 
         assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.instanceOfA).size() == 0);
     }

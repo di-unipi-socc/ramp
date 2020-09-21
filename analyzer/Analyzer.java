@@ -7,7 +7,6 @@ import exceptions.FailedFaultHandlingExecption;
 import exceptions.FailedOperationException;
 import exceptions.IllegalSequenceElementException;
 import exceptions.InstanceUnknownException;
-import exceptions.NodeUnknownException;
 import exceptions.OperationNotAvailableException;
 import exceptions.RuleNotApplicableException;
 
@@ -47,9 +46,7 @@ public class Analyzer {
             //keep going, this will be handled by the fault handler or leaved as it is
         } catch (OperationNotAvailableException e){
             return false;
-        } catch(RuleNotApplicableException e){
-            return false;
-        } catch(NodeUnknownException e){
+        } catch (RuleNotApplicableException e){
             return false;
         }
 
@@ -64,7 +61,7 @@ public class Analyzer {
         else{
             //there are some faults. there is a biforcation and the sequence must be tested for both branches
             //the not-handled-fault branch goes frist (might fail faster)
-            Application cloneApp = AppCloner.cloneApp(app);
+            Application cloneApp = app.clone();
 
             //TODO: questo va comunque fatto dopo l'aver eliminato le broken instances
             if(this.isValidSequence(cloneApp, sequence) == false)
@@ -73,7 +70,7 @@ public class Analyzer {
             //now we explore the fault handled branch
             //first goes scaleIn that implies the no-broken-instances
             if(brokenInstances.isEmpty() == false){
-                cloneApp = AppCloner.cloneApp(app);
+                cloneApp = app.clone();
                 try{
                     cloneApp.scaleIn(brokenInstances.get(0).getID());
                 } catch(RuleNotApplicableException E){
@@ -85,7 +82,7 @@ public class Analyzer {
             }
             //for each fault check both the handled and not handled branch
             for (Fault f : pendingFaults) { 
-                cloneApp = AppCloner.cloneApp(app);
+                cloneApp = app.clone();
 
                 if(app.getGlobalState().isResolvableFault(f) == true){
                     try {
@@ -145,14 +142,14 @@ public class Analyzer {
         else{
             //there are some faults. there is a biforcation and the sequence must be tested for both branches
             //the not-handled-fault branch goes frist (might fail faster)
-            Application cloneApp = AppCloner.cloneApp(app);
+            Application cloneApp = app.clone();
             if(this.isWeaklyValidSequence(cloneApp, sequence) == true)
                 return true;
             
             //now we explore the fault handled branch
             //first goes scaleIn that implies the no-broken-instances
             if(brokenInstances.isEmpty() == false){
-                cloneApp = AppCloner.cloneApp(app);
+                cloneApp = app.clone();
                 try {
                     cloneApp.scaleIn(brokenInstances.get(0).getID());
                     //keep exploring the tree only if it is possible
@@ -163,7 +160,7 @@ public class Analyzer {
 
             //for each fault check both the handled and not handled branch
             for (Fault f : pendingFaults) {
-                cloneApp = AppCloner.cloneApp(app);
+                cloneApp = app.clone();
 
                 if(app.getGlobalState().isResolvableFault(f) == true){
                     try {
@@ -198,7 +195,6 @@ public class Analyzer {
             OperationNotAvailableException,
             FailedOperationException, 
             RuleNotApplicableException, 
-            NodeUnknownException, 
             InstanceUnknownException 
     {
         switch (seqElement.getRule()) {

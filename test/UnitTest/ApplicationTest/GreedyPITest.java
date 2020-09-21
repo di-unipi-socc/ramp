@@ -11,7 +11,6 @@ import org.junit.Test;
 import model.*;
 import exceptions.AlreadyUsedIDException;
 import exceptions.InstanceUnknownException;
-import exceptions.NodeUnknownException;
 import exceptions.RuleNotApplicableException;
 
 public class GreedyPITest {
@@ -40,7 +39,6 @@ public class GreedyPITest {
         throws 
             NullPointerException, 
             RuleNotApplicableException, 
-            NodeUnknownException,
             IllegalArgumentException, 
             InstanceUnknownException, 
             AlreadyUsedIDException 
@@ -59,8 +57,8 @@ public class GreedyPITest {
         StaticBinding secondHalf = new StaticBinding("nodeB", "testCap");
         this.testApp.addStaticBinding(firstHalf, secondHalf);
 
-        this.instanceOfA = this.testApp.scaleOut1(nodeA.getName(), "instanceOfA");
-        this.instanceOfB = this.testApp.scaleOut1(nodeB.getName(), "instanceOfB");
+        this.instanceOfA = this.testApp.scaleOut1("nodeA", "instanceOfA");
+        this.instanceOfB = this.testApp.scaleOut1("nodeB", "instanceOfB");
     }
 
 
@@ -135,9 +133,10 @@ public class GreedyPITest {
             NullPointerException, 
             InstanceUnknownException 
     {
-        this.testApp.greedyPI(this.instanceOfA.getID(), null);
+        this.testApp.greedyPI("instanceOfA", null);
     }
 
+    //greedyPI throws an InstanceUnknownException if the passed instanceID is not associated with an instance
     @Test(expected = InstanceUnknownException.class)
     public void greedyPINotKnownInstanceException()
         throws 
@@ -153,7 +152,7 @@ public class GreedyPITest {
             NullPointerException, 
             InstanceUnknownException 
     {
-        NodeInstance returned = this.testApp.greedyPI(this.instanceOfA.getID(), this.testReq);
+        NodeInstance returned = this.testApp.greedyPI("instanceOfA", this.testReq);
         assertTrue("wrong instance", returned.getID().equals(this.instanceOfB.getID()));
     }
 

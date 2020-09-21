@@ -7,11 +7,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import model.*;
+import myUtils.ThesisAppFactory;
 import exceptions.AlreadyUsedIDException;
 import exceptions.InstanceUnknownException;
-import exceptions.NodeUnknownException;
 import exceptions.RuleNotApplicableException;
-import test.ThesisAppFactory;
 
 //TODO mancando dei casi di test (generazione eccezioni)
 
@@ -32,7 +31,6 @@ public class ScaleOut2Test {
         throws 
             NullPointerException, 
             RuleNotApplicableException, 
-            NodeUnknownException,
             IllegalArgumentException, 
             InstanceUnknownException, 
             AlreadyUsedIDException 
@@ -56,10 +54,9 @@ public class ScaleOut2Test {
             NullPointerException, 
             RuleNotApplicableException, 
             AlreadyUsedIDException, 
-            NodeUnknownException, 
             InstanceUnknownException 
     {
-        testApp.scaleOut2(null, "dontcare", this.n3.getID());
+        testApp.scaleOut2(null, "dontcare", "n3");
     }
 
     //scaleOut2 throws a NullPointerException if the passed containerID is null
@@ -69,7 +66,6 @@ public class ScaleOut2Test {
             NullPointerException, 
             RuleNotApplicableException, 
             AlreadyUsedIDException, 
-            NodeUnknownException, 
             InstanceUnknownException 
     {
         testApp.scaleOut2("frontend", "dontcare" ,  null);
@@ -82,10 +78,9 @@ public class ScaleOut2Test {
             NullPointerException, 
             RuleNotApplicableException, 
             AlreadyUsedIDException, 
-            NodeUnknownException, 
             InstanceUnknownException 
     {
-        testApp.scaleOut2(this.n1.getNodeType().getName(), "n1", this.n1.getID());
+        testApp.scaleOut2("node", "n1", "n1");
     }
 
     //scaleOut2 throws a RuleNotApplicableException if the passed container do not offer the right 
@@ -96,12 +91,11 @@ public class ScaleOut2Test {
             NullPointerException, 
             RuleNotApplicableException, 
             AlreadyUsedIDException, 
-            NodeUnknownException, 
             InstanceUnknownException 
     {
         //m1 is instance of mongo and do not offer the right cap for frontend
         //frontend need a instance of "node"
-        testApp.scaleOut2(this.frontend.getName(), "frontendF1", this.m1.getID());
+        testApp.scaleOut2("frontend", "frontendF1", "m1");
     }
 
     @Test
@@ -110,16 +104,15 @@ public class ScaleOut2Test {
             NullPointerException, 
             RuleNotApplicableException, 
             AlreadyUsedIDException, 
-            NodeUnknownException, 
             InstanceUnknownException 
     {
-        NodeInstance frontendInstance = testApp.scaleOut2(this.frontend.getName(), "frontendF1", this.n3.getID());
-        assertNotNull("frontendInstance null", frontendInstance);
-        assertTrue(this.testApp.getGlobalState().getActiveNodeInstances().containsValue(frontendInstance));
+        NodeInstance frontendF1 = testApp.scaleOut2(this.frontend.getName(), "frontendF1", this.n3.getID());
+        assertNotNull("frontendInstance null", frontendF1);
+        assertTrue(this.testApp.getGlobalState().getActiveNodeInstances().containsValue(frontendF1));
         //frontendInstance has just 1 runtime binding
-        assertTrue(testApp.getGlobalState().getRuntimeBindings().get(frontendInstance.getID()).size() == 1);
+        assertTrue(testApp.getGlobalState().getRuntimeBindings().get("frontendF1").size() == 1);
         //the servant of the frontendInstance is as expected the instance n3 of node
-        assertTrue(testApp.getGlobalState().getRuntimeBindings().get(frontendInstance.getID()).get(0).getNodeInstanceID().equals(this.n3.getID()));
+        assertTrue(testApp.getGlobalState().getRuntimeBindings().get("frontendF1").get(0).getNodeInstanceID().equals(this.n3.getID()));
     }
 
 }

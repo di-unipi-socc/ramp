@@ -11,7 +11,6 @@ import org.junit.Test;
 import model.*;
 import exceptions.AlreadyUsedIDException;
 import exceptions.InstanceUnknownException;
-import exceptions.NodeUnknownException;
 import exceptions.RuleNotApplicableException;
 
 public class RemoveAllBindingsBothWaysTest {
@@ -50,7 +49,6 @@ public class RemoveAllBindingsBothWaysTest {
         throws 
             NullPointerException, 
             RuleNotApplicableException, 
-            NodeUnknownException,
             IllegalArgumentException, 
             InstanceUnknownException, 
             AlreadyUsedIDException 
@@ -96,9 +94,9 @@ public class RemoveAllBindingsBothWaysTest {
         StaticBinding secondHalfCtoA3 = new StaticBinding("nodeA", "cap3CtoA");
         this.testApp.addStaticBinding(fisrtHalfCtoA3, secondHalfCtoA3);
 
-        this.instanceOfB = this.testApp.scaleOut1(this.nodeB.getName(), "instanceOfB");
-        this.instanceOfA = this.testApp.scaleOut2(this.nodeA.getName(), "instanceOfA", this.instanceOfB.getID());
-        this.instanceOfC = this.testApp.scaleOut2(this.nodeC.getName(), "instanceOfC", this.instanceOfA.getID());
+        this.instanceOfB = this.testApp.scaleOut1("nodeB", "instanceOfB");
+        this.instanceOfA = this.testApp.scaleOut2("nodeA", "instanceOfA", "instanceOfB");
+        this.instanceOfC = this.testApp.scaleOut2("nodeC", "instanceOfC", "instanceOfA");
     }
 
     public Node createNodeA(){
@@ -195,14 +193,14 @@ public class RemoveAllBindingsBothWaysTest {
 
     @Test
     public void removeAllBindingsBothWaysTest(){
-        assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get(this.instanceOfA.getID()).size() == 3);
-        assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get(this.instanceOfC.getID()).size() == 3);
+        assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get("instanceOfA").size() == 3);
+        assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get("instanceOfC").size() == 3);
         this.testApp.getGlobalState().removeAllBindingsBothWays(this.instanceOfA);
 
         //mind that removeAllBindingsBothWays remove even the containment binding (in fact this method is 
         //called only after the scaleIn())
-        assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get(this.instanceOfA.getID()).size() == 0);
-        assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get(this.instanceOfC.getID()).size() == 0);
+        assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get("instanceOfA").size() == 0);
+        assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get("instanceOfC").size() == 0);
     }
 
 }

@@ -5,7 +5,6 @@ import org.junit.Test;
 import model.*;
 import exceptions.AlreadyUsedIDException;
 import exceptions.InstanceUnknownException;
-import exceptions.NodeUnknownException;
 import exceptions.RuleNotApplicableException;
 
 import java.util.List;
@@ -38,7 +37,6 @@ public class GetSatisfiedReqsTest {
         throws 
             NullPointerException, 
             RuleNotApplicableException, 
-            NodeUnknownException,
             AlreadyUsedIDException, 
             InstanceUnknownException 
     {
@@ -65,8 +63,8 @@ public class GetSatisfiedReqsTest {
         StaticBinding thirdAns = new StaticBinding("nodeServer", "capC");
         this.testApp.addStaticBinding(thirdAsk, thirdAns);
 
-        this.nodeServerInstance = this.testApp.scaleOut1(this.nodeServer.getName(), "serverInstance");
-        this.nodeAskingInstance = this.testApp.scaleOut2(this.nodeAsking.getName(), "askingInstance", this.nodeServerInstance.getID());
+        this.nodeServerInstance = this.testApp.scaleOut1("nodeServer", "serverInstance");
+        this.nodeAskingInstance = this.testApp.scaleOut2("nodeAsking", "askingInstance", "serverInstance");
 
     }
 
@@ -150,13 +148,13 @@ public class GetSatisfiedReqsTest {
         assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.nodeAskingInstance).contains(this.reqA));
         assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.nodeAskingInstance).contains(this.reqC));
 
-        this.testApp.opStart(this.nodeServerInstance.getID(), "goToState2");
-        this.testApp.opEnd(this.nodeServerInstance.getID(), "goToState2");
+        this.testApp.opStart("serverInstance", "goToState2");
+        this.testApp.opEnd("serverInstance", "goToState2");
 
         assertTrue(this.nodeServerInstance.getOfferedCaps().contains("capB"));
        
-        this.testApp.opStart(this.nodeAskingInstance.getID(), "goToState2");
-        this.testApp.opEnd(this.nodeAskingInstance.getID(), "goToState2");
+        this.testApp.opStart("askingInstance", "goToState2");
+        this.testApp.opEnd("askingInstance", "goToState2");
 
         assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.nodeAskingInstance).size() == 2);
         assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.nodeAskingInstance).contains(this.reqB));
