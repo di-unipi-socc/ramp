@@ -5,7 +5,9 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 import model.*;
+import exceptions.AlreadyUsedIDException;
 import exceptions.FailedOperationException;
+import exceptions.InstanceUnknownException;
 import exceptions.NodeUnknownException;
 import exceptions.OperationNotAvailableException;
 import exceptions.RuleNotApplicableException;
@@ -22,37 +24,67 @@ public class OpEndTest {
     public void setUp() 
         throws 
             IllegalArgumentException, 
-            NullPointerException, 
+            NullPointerException,
             OperationNotAvailableException,
             RuleNotApplicableException, 
-            NodeUnknownException 
+            NodeUnknownException, 
+            InstanceUnknownException, 
+            AlreadyUsedIDException 
     {
         this.testApp = ThesisAppFactory.createApplication();
-        this.mongoM1 = this.testApp.scaleOut1(this.testApp.getNodes().get("mongo"));
+        this.mongoM1 = this.testApp.scaleOut1("mongo", "mongoM1");
 
-        this.nodeN3 = this.testApp.scaleOut1(this.testApp.getNodes().get("node"));
-        this.frontendF1 = this.testApp.scaleOut2(this.testApp.getNodes().get("frontend"), nodeN3);
+        this.nodeN3 = this.testApp.scaleOut1("node", "nodeN3");
+        this.frontendF1 = this.testApp.scaleOut2("frontend", "frontendF1", "nodeN3");
         
-        this.testApp.opStart(this.mongoM1, "start");
-        this.testApp.opStart(this.frontendF1, "install");
+        this.testApp.opStart(this.mongoM1.getID(), "start");
+        this.testApp.opStart(this.frontendF1.getID(), "install");
     }
 
     //opEnd throws FailedOperationException when there is a fault
     @Test(expected = FailedOperationException.class)
     public void opEndFailedOperationExceptionTest() throws Exception{
-        this.testApp.opEnd(this.frontendF1, "install");
+        this.testApp.opEnd(this.frontendF1.getID(), "install");
 
     }
 
-    //opEnd throws a NullPointerException when the passed instance is null
+    //opEnd throws a NullPointerException when the passed instanceID is null
     @Test(expected = NullPointerException.class)
-    public void opEndNullInstanceTest()
+    public void opEndNullInstanceIDTest()
         throws 
             IllegalArgumentException, 
             NullPointerException, 
-            FailedOperationException 
+            FailedOperationException, 
+            RuleNotApplicableException, 
+            InstanceUnknownException 
     {
         testApp.opEnd(null, "start");
+    }
+
+    //opEnd throws a IllegalArgumentException when the passed instanceID is empty
+    @Test(expected = IllegalArgumentException.class)
+    public void opEndEmptyInstanceIDTest()
+        throws 
+            IllegalArgumentException, 
+            NullPointerException, 
+            FailedOperationException, 
+            RuleNotApplicableException, 
+            InstanceUnknownException 
+    {
+        testApp.opEnd("", "start");
+    }
+
+    //opEnd throws a RuleNotApplicableException when the passed instanceID is not associated with an instance
+    @Test(expected = RuleNotApplicableException.class)
+    public void opEndUnknownInstanceTest()
+        throws 
+            IllegalArgumentException, 
+            NullPointerException, 
+            FailedOperationException, 
+            RuleNotApplicableException, 
+            InstanceUnknownException 
+    {
+        testApp.opEnd("unkownInstanceID", "start");
     }
 
     //opEnd throws a NullPointerException when the passed op is null
@@ -61,20 +93,24 @@ public class OpEndTest {
         throws 
             IllegalArgumentException, 
             NullPointerException, 
-            FailedOperationException 
+            FailedOperationException, 
+            RuleNotApplicableException, 
+            InstanceUnknownException 
     {
-        testApp.opEnd(this.mongoM1, null);
+        testApp.opEnd(this.mongoM1.getID(), null);
     }
 
-    //opEnd throws a NullPointerException when the op is empty
+    //opEnd throws a IllegalArgumentException when the op is empty
     @Test(expected = IllegalArgumentException.class)
     public void opEndEmptyOpTest() 
         throws 
             IllegalArgumentException, 
             NullPointerException, 
-            FailedOperationException 
+            FailedOperationException, 
+            RuleNotApplicableException, 
+            InstanceUnknownException 
     {
-        testApp.opEnd(this.mongoM1, "");
+        testApp.opEnd(this.mongoM1.getID(), "");
     }
 
     @Test
@@ -82,9 +118,11 @@ public class OpEndTest {
         throws 
             IllegalArgumentException, 
             NullPointerException, 
-            FailedOperationException 
+            FailedOperationException, 
+            RuleNotApplicableException, 
+            InstanceUnknownException 
     {
-        testApp.opEnd(this.mongoM1, "start");
+        testApp.opEnd(this.mongoM1.getID(), "start");
         assertTrue("wrong current state", this.mongoM1.getCurrentState().equals("running"));
         assertTrue("wrong number of bindings", testApp.getGlobalState().getRuntimeBindings().get(this.mongoM1.getID()).size() == 0);
 

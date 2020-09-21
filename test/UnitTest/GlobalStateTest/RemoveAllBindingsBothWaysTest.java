@@ -9,6 +9,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import model.*;
+import exceptions.AlreadyUsedIDException;
+import exceptions.InstanceUnknownException;
 import exceptions.NodeUnknownException;
 import exceptions.RuleNotApplicableException;
 
@@ -34,17 +36,24 @@ public class RemoveAllBindingsBothWaysTest {
 
     /**
      * create a simple custom application with three nodes, nodeA, nodeB and nodeC
-     * nodeA has a requirement that is satisfied by nodeB and nodeC has a reuirement 
-     * that is satisfied by nodeC. 
-     * we see how removeAllBindingsBothWays remove from the global state the runtime 
-     * bindings <instanceOfA, req> -> <instanceOfB, cap> AND <instanceOfC, req> -> <instanceOfA, cap>
+     * nodeA has a requirement that is satisfied by nodeB and nodeC has a reuirement
+     * that is satisfied by nodeC. we see how removeAllBindingsBothWays remove from
+     * the global state the runtime bindings <instanceOfA, req> -> <instanceOfB,
+     * cap> AND <instanceOfC, req> -> <instanceOfA, cap>
+     * 
+     * @throws AlreadyUsedIDException
+     * @throws InstanceUnknownException
+     * @throws IllegalArgumentException
      */
     @Before
     public void setUp() 
         throws 
             NullPointerException, 
             RuleNotApplicableException, 
-            NodeUnknownException 
+            NodeUnknownException,
+            IllegalArgumentException, 
+            InstanceUnknownException, 
+            AlreadyUsedIDException 
     {
         this.req1AtoB = new Requirement("req1AtoB", RequirementSort.REPLICA_AWARE);
         this.req2AtoB = new Requirement("req2AtoB", RequirementSort.REPLICA_UNAWARE);
@@ -87,9 +96,9 @@ public class RemoveAllBindingsBothWaysTest {
         StaticBinding secondHalfCtoA3 = new StaticBinding("nodeA", "cap3CtoA");
         this.testApp.addStaticBinding(fisrtHalfCtoA3, secondHalfCtoA3);
 
-        this.instanceOfB = this.testApp.scaleOut1(this.nodeB);
-        this.instanceOfA = this.testApp.scaleOut2(this.nodeA, this.instanceOfB);
-        this.instanceOfC = this.testApp.scaleOut2(this.nodeC, this.instanceOfA);
+        this.instanceOfB = this.testApp.scaleOut1(this.nodeB.getName(), "instanceOfB");
+        this.instanceOfA = this.testApp.scaleOut2(this.nodeA.getName(), "instanceOfA", this.instanceOfB.getID());
+        this.instanceOfC = this.testApp.scaleOut2(this.nodeC.getName(), "instanceOfC", this.instanceOfA.getID());
     }
 
     public Node createNodeA(){

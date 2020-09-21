@@ -21,15 +21,22 @@ public class RemoveRuntimeBinding {
     public Requirement req;
 
     /**
-     * create a simple custom application with two nodes, nodeA and nodeB
-     * nodeA has a requirement (req) and nodeB offer the capability needed (cap)
+     * create a simple custom application with two nodes, nodeA and nodeB nodeA has
+     * a requirement (req) and nodeB offer the capability needed (cap)
+     * 
+     * @throws AlreadyUsedIDException
+     * @throws InstanceUnknownException
+     * @throws IllegalArgumentException
      */
     @Before
     public void setUp() 
         throws 
             NullPointerException, 
             RuleNotApplicableException, 
-            NodeUnknownException 
+            NodeUnknownException,
+            IllegalArgumentException,
+            InstanceUnknownException, 
+            AlreadyUsedIDException 
     {
         this.req = new Requirement("req", RequirementSort.REPLICA_UNAWARE);
 
@@ -44,10 +51,9 @@ public class RemoveRuntimeBinding {
         StaticBinding unawareSecondHalf = new StaticBinding("nodeB", "cap");
         this.testApp.addStaticBinding(unawareFirstHalf, unawareSecondHalf);
 
-        this.instanceOfB = this.testApp.scaleOut1(this.nodeB);
+        this.instanceOfB = this.testApp.scaleOut1(this.nodeB.getName(), "instanceOfB");
         //instanceOfA has a runtime binding with B
-        this.instanceOfA = this.testApp.scaleOut1(this.nodeA);
-        
+        this.instanceOfA = this.testApp.scaleOut1(this.nodeA.getName(), "instanceOfA");
     }
 
     public Node createNodeA(){

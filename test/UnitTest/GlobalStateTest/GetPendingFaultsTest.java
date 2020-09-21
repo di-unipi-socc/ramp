@@ -9,6 +9,8 @@ import static org.junit.Assert.assertTrue;
 
 
 import model.*;
+import exceptions.AlreadyUsedIDException;
+import exceptions.InstanceUnknownException;
 import exceptions.NodeUnknownException;
 import exceptions.RuleNotApplicableException;
 
@@ -19,21 +21,29 @@ public class GetPendingFaultsTest {
     public NodeInstance instanceOfA;
 
     /**
-     * creates a custom simple application with 1 node (nodeA)
-     * nodeA has two requirements and since there is no other nodes that leads to two pending fault
+     * creates a custom simple application with 1 node (nodeA) nodeA has two
+     * requirements and since there is no other nodes that leads to two pending
+     * fault
+     * 
+     * @throws AlreadyUsedIDException
+     * @throws InstanceUnknownException
+     * @throws IllegalArgumentException
      */
     @Before
     public void setUp() 
         throws 
             NullPointerException, 
             RuleNotApplicableException, 
-            NodeUnknownException 
+            NodeUnknownException,
+            IllegalArgumentException, 
+            InstanceUnknownException, 
+            AlreadyUsedIDException 
     {
         this.nodeA = this.createNodeA();
         this.testApp = new Application("testApp");
         this.testApp.addNode(this.nodeA);
 
-        this.instanceOfA = this.testApp.scaleOut1(this.nodeA);
+        this.instanceOfA = this.testApp.scaleOut1(this.nodeA.getName(), "instanceOfA");
     }
 
     //getPendingFaults throws NullPointerException if the passed instance is null

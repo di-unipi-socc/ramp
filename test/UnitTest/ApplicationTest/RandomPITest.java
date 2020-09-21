@@ -10,6 +10,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import model.*;
+import exceptions.AlreadyUsedIDException;
+import exceptions.InstanceUnknownException;
 import exceptions.NodeUnknownException;
 import exceptions.RuleNotApplicableException;
 
@@ -29,17 +31,24 @@ public class RandomPITest {
     public Requirement req;
 
     /**
-        builds a simple custom application with 2 nodes, nodeA and nodeB
-        nodeA requires req and nodeB offer the right cap.
-        there are 4 instances, 1 instance of A and 3 instance of B.
-        instanceA is created before the instances of B so it can have a resolvable fault.
-    */
+     * builds a simple custom application with 2 nodes, nodeA and nodeB nodeA
+     * requires req and nodeB offer the right cap. there are 4 instances, 1 instance
+     * of A and 3 instance of B. instanceA is created before the instances of B so
+     * it can have a resolvable fault.
+     * 
+     * @throws AlreadyUsedIDException
+     * @throws InstanceUnknownException
+     * @throws IllegalArgumentException
+     */
     @Before
     public void setUp() 
         throws 
             NullPointerException, 
             RuleNotApplicableException, 
-            NodeUnknownException 
+            NodeUnknownException,
+            IllegalArgumentException, 
+            InstanceUnknownException, 
+            AlreadyUsedIDException 
     {
         this.req = new Requirement("req", RequirementSort.REPLICA_UNAWARE);
 
@@ -56,10 +65,10 @@ public class RandomPITest {
 
         this.testApp.addStaticBinding(firstHalf, secondHalf);
 
-        this.instanceA = this.testApp.scaleOut1(this.nodeA);
-        this.instanceB1 = this.testApp.scaleOut1(this.nodeB);
-        this.instanceB2 = this.testApp.scaleOut1(this.nodeB);
-        this.instanceB3 = this.testApp.scaleOut1(this.nodeB);
+        this.instanceA = this.testApp.scaleOut1(this.nodeA.getName(), "instanceA");
+        this.instanceB1 = this.testApp.scaleOut1(this.nodeB.getName(), "instanceB1");
+        this.instanceB2 = this.testApp.scaleOut1(this.nodeB.getName(), "instanceB2");
+        this.instanceB3 = this.testApp.scaleOut1(this.nodeB.getName(), "instanceB3");
     }
 
     public Node createNodeA(){
@@ -96,19 +105,49 @@ public class RandomPITest {
         return ret;
     }
 
+    //randomPI thorw a NullPointerException when the passed instanceID is null
     @Test(expected = NullPointerException.class)
-    public void randomPINullAskingInstanceTest(){
+    public void randomPINullInstanceIDTest() 
+        throws 
+            NullPointerException, 
+            InstanceUnknownException {
         this.testApp.randomPI(null, this.req);
     }
 
+    //randomPI throws a NullPointerException when the passed req is null
     @Test(expected = NullPointerException.class)
-    public void randomPINullReqTest(){
-        this.testApp.randomPI(this.instanceA, null);
+    public void randomPINullReqTest() 
+        throws 
+            NullPointerException, 
+            InstanceUnknownException 
+    {
+        this.testApp.randomPI(this.instanceA.getID(), null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void randomPIEmptyInstanceIDTest()
+        throws 
+            NullPointerException, 
+            InstanceUnknownException 
+    {
+        this.testApp.randomPI("", this.req);
+    }
+
+    @Test(expected = InstanceUnknownException.class)
+    public void randomPIUnkonwnInstanceTest()
+        throws 
+            NullPointerException, 
+            InstanceUnknownException 
+    {
+        this.testApp.randomPI("unkownInstanceID", this.req);
     }
 
     @Test
-    public void randomPITest(){
-
+    public void randomPITest() 
+        throws 
+            NullPointerException, 
+            InstanceUnknownException 
+    {
         ArrayList<NodeInstance> capableInstances = (ArrayList<NodeInstance>) this.testApp.getGlobalState().getCapableInstances(this.instanceA, this.req);
         
         //the 3 instances of nodeB are capable
@@ -118,7 +157,7 @@ public class RandomPITest {
 
         //really a trivial test, TODO implement a real test
         for(int i = 0; i < 50; i++)
-            assertTrue(capableInstances.contains(this.testApp.randomPI(this.instanceA, this.req)));
+            assertTrue(capableInstances.contains(this.testApp.randomPI(this.instanceA.getID(), this.req)));
         
     }
 

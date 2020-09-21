@@ -3,6 +3,8 @@ package test.UnitTest.GlobalStateTest;
 import org.junit.Before;
 import org.junit.Test;
 import model.*;
+import exceptions.AlreadyUsedIDException;
+import exceptions.InstanceUnknownException;
 import exceptions.NodeUnknownException;
 import exceptions.RuleNotApplicableException;
 
@@ -23,17 +25,22 @@ public class GetSatisfiedReqsTest {
 
     /**
      * create a custom simple application with two nodes, nodeAsking and nodeServer
-     * nodeAsking has 3 requirements (reqA, reqB and reqC)
-     * nodeServer has 2 states, state1 and state2
-     * in state1 offer the caps for reqA and reqC, in state2 offer the caps for reqB and reqC
-     * we see that nodeAskingInstance has always 2 satisfied reqs when nodeServerInstance change state
+     * nodeAsking has 3 requirements (reqA, reqB and reqC) nodeServer has 2 states,
+     * state1 and state2 in state1 offer the caps for reqA and reqC, in state2 offer
+     * the caps for reqB and reqC we see that nodeAskingInstance has always 2
+     * satisfied reqs when nodeServerInstance change state
+     * 
+     * @throws InstanceUnknownException
+     * @throws AlreadyUsedIDException
      */
     @Before
     public void setUp() 
         throws 
             NullPointerException, 
             RuleNotApplicableException, 
-            NodeUnknownException 
+            NodeUnknownException,
+            AlreadyUsedIDException, 
+            InstanceUnknownException 
     {
         this.reqA = new Requirement("reqA", RequirementSort.REPLICA_UNAWARE);
         this.reqB = new Requirement("reqB", RequirementSort.REPLICA_AWARE);
@@ -58,8 +65,8 @@ public class GetSatisfiedReqsTest {
         StaticBinding thirdAns = new StaticBinding("nodeServer", "capC");
         this.testApp.addStaticBinding(thirdAsk, thirdAns);
 
-        this.nodeServerInstance = this.testApp.scaleOut1(this.nodeServer);
-        this.nodeAskingInstance = this.testApp.scaleOut2(this.nodeAsking, this.nodeServerInstance);
+        this.nodeServerInstance = this.testApp.scaleOut1(this.nodeServer.getName(), "serverInstance");
+        this.nodeAskingInstance = this.testApp.scaleOut2(this.nodeAsking.getName(), "askingInstance", this.nodeServerInstance.getID());
 
     }
 
@@ -143,13 +150,13 @@ public class GetSatisfiedReqsTest {
         assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.nodeAskingInstance).contains(this.reqA));
         assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.nodeAskingInstance).contains(this.reqC));
 
-        this.testApp.opStart(this.nodeServerInstance, "goToState2");
-        this.testApp.opEnd(this.nodeServerInstance, "goToState2");
+        this.testApp.opStart(this.nodeServerInstance.getID(), "goToState2");
+        this.testApp.opEnd(this.nodeServerInstance.getID(), "goToState2");
 
         assertTrue(this.nodeServerInstance.getOfferedCaps().contains("capB"));
        
-        this.testApp.opStart(this.nodeAskingInstance, "goToState2");
-        this.testApp.opEnd(this.nodeAskingInstance, "goToState2");
+        this.testApp.opStart(this.nodeAskingInstance.getID(), "goToState2");
+        this.testApp.opEnd(this.nodeAskingInstance.getID(), "goToState2");
 
         assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.nodeAskingInstance).size() == 2);
         assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.nodeAskingInstance).contains(this.reqB));

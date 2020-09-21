@@ -9,6 +9,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import model.*;
+import exceptions.AlreadyUsedIDException;
+import exceptions.InstanceUnknownException;
 import exceptions.NodeUnknownException;
 import exceptions.RuleNotApplicableException;
 
@@ -23,12 +25,16 @@ public class AutoreconnectTest {
     public Requirement faultyReq;
 
     /**
-     * creates a custom simple application that has two nodes, nodeA and nodeB. 
-     * nodeA has two requirements (reqUnaware, faultyReq), nodeB offer the capability that satisfies
-     * reqUnaware. 
-     * scaling out nodeB (instanceOfB) and then nodeA (instanceOfA). 
-     * This means that instanceOfA has two pending fault, one of them is resolvable by instanceOfB, 
-     * the other one (the one that requires faultyReq will remain non resolvable)
+     * creates a custom simple application that has two nodes, nodeA and nodeB.
+     * nodeA has two requirements (reqUnaware, faultyReq), nodeB offer the
+     * capability that satisfies reqUnaware. scaling out nodeB (instanceOfB) and
+     * then nodeA (instanceOfA). This means that instanceOfA has two pending fault,
+     * one of them is resolvable by instanceOfB, the other one (the one that
+     * requires faultyReq will remain non resolvable)
+     * 
+     * @throws AlreadyUsedIDException
+     * @throws InstanceUnknownException
+     * @throws IllegalArgumentException
      */
 
     @Before
@@ -36,7 +42,10 @@ public class AutoreconnectTest {
         throws 
             NullPointerException, 
             RuleNotApplicableException, 
-            NodeUnknownException 
+            NodeUnknownException,
+            IllegalArgumentException, 
+            InstanceUnknownException, 
+            AlreadyUsedIDException 
     {
         this.reqUnaware = new Requirement("req", RequirementSort.REPLICA_UNAWARE);
         this.faultyReq = new Requirement("faultyReq", RequirementSort.REPLICA_UNAWARE);
@@ -53,9 +62,8 @@ public class AutoreconnectTest {
         this.testApp.addStaticBinding(unawareFirstHalf, unawareSecondHalf);
 
         //scaling out nodeB so nodeA has 2 fault, 1 resolvable, 1 pending
-        this.instanceOfA = this.testApp.scaleOut1(this.nodeA);
-        this.instanceOfB = this.testApp.scaleOut1(this.nodeB);
-    
+        this.instanceOfA = this.testApp.scaleOut1(this.nodeA.getName(), "instanceOfA");
+        this.instanceOfB = this.testApp.scaleOut1(this.nodeB.getName(), "instanceOfB");
     }
 
     public Node createNodeA(){
@@ -95,34 +103,70 @@ public class AutoreconnectTest {
         return ret;
     }
 
-    //autoreconnect throws a NullPointerException if the passed instance is null
+    //autoreconnect throws a NullPointerException if the passed instanceID is null
     @Test(expected = NullPointerException.class)
-    public void autoreconnectInstanceNullTest() throws NullPointerException, RuleNotApplicableException {
+    public void autoreconnectInstanceIDNullTest() 
+        throws 
+            NullPointerException, 
+            RuleNotApplicableException,
+            InstanceUnknownException 
+    {
         this.testApp.autoreconnect(null, this.reqUnaware);
     }
 
+    //auotreconnect throws a IllegalArgumentException if the passed instanceID is empty
+    @Test(expected = IllegalArgumentException.class)
+    public void autoreconnectInstanceIDEmptyTest()
+        throws 
+            NullPointerException, 
+            RuleNotApplicableException,
+            InstanceUnknownException 
+    {
+        this.testApp.autoreconnect("", this.reqUnaware);
+    }
+
+    //autoreconnect throws a RuleNotApplicableException if the passed instanceID have not an instance associated
+    @Test(expected = RuleNotApplicableException.class)
+    public void autoreconnectNotExistingInstanceTest()
+        throws 
+            NullPointerException, 
+            RuleNotApplicableException,
+            InstanceUnknownException 
+    {
+        this.testApp.autoreconnect("notExistingNodeInstance", this.reqUnaware);
+    }
+        
     //autoreconnect throws a NullPointerException if the passed requirement is null
     @Test(expected = NullPointerException.class)
-    public void autoreconnectReqNullTest() throws NullPointerException, RuleNotApplicableException {
-        this.testApp.autoreconnect(this.instanceOfA, null);
+    public void autoreconnectReqNullTest() 
+        throws 
+            NullPointerException, 
+            RuleNotApplicableException,
+            InstanceUnknownException 
+    {
+        this.testApp.autoreconnect(this.instanceOfA.getID(), null);
     }
 
     //there are two pending fault, one of them is resolvable. autoreconnect fix the resolvable fault
     //creating the necessary runtime binding between the asking instance and the instance that provides the cap
     @Test
-    public void autoreconnectTest() throws NullPointerException, RuleNotApplicableException {
+    public void autoreconnectTest() 
+        throws 
+            NullPointerException, 
+            RuleNotApplicableException, 
+            InstanceUnknownException 
+    {
         //instanceOfA has 2 pending fault
         assertTrue(this.testApp.getGlobalState().getPendingFaults(this.instanceOfA).size() == 2);
         //one of the 2 pending fault is resolvable (reqUnaware)
         assertTrue(this.testApp.getGlobalState().getResolvableFaults(this.instanceOfA).size() == 1);
 
         //we fix the resolvable fault
-        this.testApp.autoreconnect(this.instanceOfA, this.reqUnaware);
+        this.testApp.autoreconnect(this.instanceOfA.getID(), this.reqUnaware);
 
         //now instanceOfA has only one fault and a not resolvable fault (faultyReq)
         assertTrue(this.testApp.getGlobalState().getPendingFaults(this.instanceOfA).size() == 1);
         assertTrue(this.testApp.getGlobalState().getResolvableFaults(this.instanceOfA).size() == 0);
-
     }
 
 }

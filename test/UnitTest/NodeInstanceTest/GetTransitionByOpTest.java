@@ -9,7 +9,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import model.*;
+import exceptions.AlreadyUsedIDException;
 import exceptions.FailedOperationException;
+import exceptions.InstanceUnknownException;
 import exceptions.NodeUnknownException;
 import exceptions.OperationNotAvailableException;
 import exceptions.RuleNotApplicableException;
@@ -21,20 +23,28 @@ public class GetTransitionByOpTest {
     public NodeInstance instanceOfA;
 
     /**
-     * create a simple custom application with one node with 3 transition and 3 operations
+     * create a simple custom application with one node with 3 transition and 3
+     * operations
+     * 
+     * @throws AlreadyUsedIDException
+     * @throws InstanceUnknownException
+     * @throws IllegalArgumentException
      */
     @Before
     public void setUp() 
         throws 
             NullPointerException, 
             RuleNotApplicableException, 
-            NodeUnknownException 
+            NodeUnknownException,
+            IllegalArgumentException, 
+            InstanceUnknownException, 
+            AlreadyUsedIDException 
     {
         this.nodeA = this.createNodeA();
         this.testApp = new Application("testApp");
         this.testApp.addNode(this.nodeA);
 
-        this.instanceOfA = testApp.scaleOut1(this.nodeA);
+        this.instanceOfA = testApp.scaleOut1(this.nodeA.getName(), "instanceOfA");
     }
 
     public Node createNodeA() {
@@ -86,18 +96,20 @@ public class GetTransitionByOpTest {
             IllegalArgumentException, 
             NullPointerException,
             OperationNotAvailableException, 
-            FailedOperationException 
+            FailedOperationException, 
+            RuleNotApplicableException, 
+            InstanceUnknownException 
     {
         assertTrue(this.instanceOfA.getTransitionByOp("goToState3").getName().equals("state1goToState3state3"));
         assertTrue(this.instanceOfA.getTransitionByOp("goToState3Bis").getName().equals("state1goToState3Bisstate3"));
 
-        this.testApp.opStart(this.instanceOfA, "goToState3");
-        this.testApp.opEnd(this.instanceOfA, "goToState3");
+        this.testApp.opStart(this.instanceOfA.getID(), "goToState3");
+        this.testApp.opEnd(this.instanceOfA.getID(), "goToState3");
 
         assertTrue(this.instanceOfA.getTransitionByOp("goToState2").getName().equals("state3goToState2state2"));
 
-        this.testApp.opStart(this.instanceOfA, "goToState2");
-        this.testApp.opEnd(this.instanceOfA, "goToState2");
+        this.testApp.opStart(this.instanceOfA.getID(), "goToState2");
+        this.testApp.opEnd(this.instanceOfA.getID(), "goToState2");
 
         //in state 2 no op is defined so getTransitionByOp should return null
         assertNull(this.instanceOfA.getTransitionByOp("random")); 

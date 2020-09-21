@@ -11,7 +11,9 @@ import org.junit.Test;
 
 import analyzer.Analyzer;
 import analyzer.SequenceElement;
+import exceptions.AlreadyUsedIDException;
 import exceptions.IllegalSequenceElementException;
+import exceptions.InstanceUnknownException;
 import exceptions.NodeUnknownException;
 import exceptions.RuleNotApplicableException;
 import model.Application;
@@ -30,18 +32,26 @@ public class AnalyzerTest {
     public Analyzer analyzer;
 
     @Before
-    public void setUp() throws NullPointerException, RuleNotApplicableException, NodeUnknownException {
+    public void setUp() 
+        throws 
+            NullPointerException, 
+            RuleNotApplicableException, 
+            NodeUnknownException,
+            AlreadyUsedIDException, 
+            InstanceUnknownException 
+    {
         app = ThesisAppFactory.createApplication();
-        n1 = app.scaleOut1(app.getNodes().get("node"));
-        m1 = app.scaleOut1(app.getNodes().get("mongo"));
-        b1 = app.scaleOut2(app.getNodes().get("backend"), n1);
-        f1 = app.scaleOut2(app.getNodes().get("frontend"), n1);
+        n1 = app.scaleOut1("node", "n1");
+        m1 = app.scaleOut1("mongo", "m1");
+        b1 = app.scaleOut2("backend", "b1", "n1");
+        f1 = app.scaleOut2("frontend", "f1", "n1");
         analyzer = new Analyzer();
     }
 
     @Test
     // a valid sequence is declared valid
-    public void validSequenceTest() throws NullPointerException, IllegalSequenceElementException {
+    public void validSequenceTest() throws NullPointerException, IllegalSequenceElementException,
+            InstanceUnknownException {
         List<SequenceElement> validSequence = this.createValidSequence();
         List<SequenceElement> weaklyValidSequence = this.createWeaklyValidSequence();    
 

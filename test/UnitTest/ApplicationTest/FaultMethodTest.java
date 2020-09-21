@@ -9,7 +9,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import model.*;
+import exceptions.AlreadyUsedIDException;
 import exceptions.FailedFaultHandlingExecption;
+import exceptions.InstanceUnknownException;
 import exceptions.NodeUnknownException;
 import exceptions.RuleNotApplicableException;
 
@@ -20,23 +22,26 @@ public class FaultMethodTest {
     public Node nodeB;
     public Node nodeC;
 
-    //the faulty instance
+    // the faulty instance
     public NodeInstance instanceOfA;
 
-    //the sane instance 
+    // the sane instance
     public NodeInstance instanceOfB;
 
-    //the not having fault handling state instance
+    // the not having fault handling state instance
     public NodeInstance instanceOfC;
 
     public Requirement testReq;
 
     /**
-     * creates a custom simple application with 3 nodes, nodeA, nodeB and nodeC. 
-     * nodeB do not offer any cap nor need any requirements
-     * nodeA has a requirement and has a fault handling state
-     * nodeC has a requirement but do not has a fault handling state
-     * instanceOf* and the instances of node*
+     * creates a custom simple application with 3 nodes, nodeA, nodeB and nodeC.
+     * nodeB do not offer any cap nor need any requirements nodeA has a requirement
+     * and has a fault handling state nodeC has a requirement but do not has a fault
+     * handling state instanceOf* and the instances of node
+     * 
+     * @throws AlreadyUsedIDException
+     * @throws InstanceUnknownException
+     * @throws IllegalArgumentException*
      */
 
     @Before
@@ -44,7 +49,10 @@ public class FaultMethodTest {
         throws 
             NullPointerException, 
             RuleNotApplicableException, 
-            NodeUnknownException
+            NodeUnknownException,
+            IllegalArgumentException, 
+            InstanceUnknownException, 
+            AlreadyUsedIDException
     {
         this.testReq = new Requirement("testReq", RequirementSort.REPLICA_UNAWARE);
 
@@ -58,9 +66,9 @@ public class FaultMethodTest {
         this.testApp.addNode(this.nodeB);
         this.testApp.addNode(this.nodeC);
         
-        this.instanceOfA = this.testApp.scaleOut1(this.nodeA);
-        this.instanceOfB = this.testApp.scaleOut1(this.nodeB);
-        this.instanceOfC = this.testApp.scaleOut1(this.nodeC);
+        this.instanceOfA = this.testApp.scaleOut1(this.nodeA.getName(), "instanceOfA");
+        this.instanceOfB = this.testApp.scaleOut1(this.nodeB.getName(), "instanceOfB");
+        this.instanceOfC = this.testApp.scaleOut1(this.nodeC.getName(), "instanceOfC");
     }
 
     public Node createNodeA(){
@@ -129,15 +137,28 @@ public class FaultMethodTest {
         return ret;
     }
 
-    //fault throws a NullPointerException when the passed instance is null
+    //fault throws a NullPointerException when the passed instanceID is null
     @Test(expected = NullPointerException.class)
-    public void faultMethodNullInstanceTest()
+    public void faultMethodNullInstanceIDTest()
         throws 
             NullPointerException, 
             FailedFaultHandlingExecption, 
-            RuleNotApplicableException 
+            RuleNotApplicableException, 
+            InstanceUnknownException 
     {
         this.testApp.fault(null, this.testReq);
+    }
+
+    //fault throws an IllegalArgumentException when the passed instanceID is empty
+    @Test(expected = IllegalArgumentException.class)
+    public void faultMethodEmptyInstanceIDTest()
+        throws 
+            NullPointerException, 
+            FailedFaultHandlingExecption, 
+            RuleNotApplicableException, 
+            InstanceUnknownException 
+    {
+        this.testApp.fault("", this.testReq);
     }
 
 
@@ -147,9 +168,10 @@ public class FaultMethodTest {
         throws 
             NullPointerException, 
             FailedFaultHandlingExecption, 
-            RuleNotApplicableException 
+            RuleNotApplicableException, 
+            InstanceUnknownException 
     {
-        this.testApp.fault(this.instanceOfA, null);
+        this.testApp.fault(this.instanceOfA.getID(), null);
     }
 
     //fault throws a RuleNotAplicableException when the passed <instance, req> creates no fault
@@ -158,10 +180,24 @@ public class FaultMethodTest {
         throws 
         NullPointerException, 
         FailedFaultHandlingExecption, 
-        RuleNotApplicableException 
+        RuleNotApplicableException, 
+        InstanceUnknownException 
     {
-        this.testApp.fault(this.instanceOfB, this.testReq);
+        this.testApp.fault(this.instanceOfB.getID(), this.testReq);
     }
+
+    //fault throws a RuleNotAplicableException when the passed instanceID is not assciated with an instance
+    @Test (expected = RuleNotApplicableException.class)
+    public void faultMethodInstanceUnknownTest()
+        throws 
+        NullPointerException, 
+        FailedFaultHandlingExecption, 
+        RuleNotApplicableException, 
+        InstanceUnknownException 
+    {
+        this.testApp.fault("unkownInstanceID", this.testReq);
+    }
+
 
     //fault throws a FailedFaultHanldingException if there is not found a fault handlig state to go
     @Test(expected = FailedFaultHandlingExecption.class)
@@ -169,9 +205,10 @@ public class FaultMethodTest {
         throws 
             NullPointerException, 
             FailedFaultHandlingExecption, 
-            RuleNotApplicableException 
+            RuleNotApplicableException, 
+            InstanceUnknownException 
     {
-        this.testApp.fault(this.instanceOfC, this.testReq);
+        this.testApp.fault(this.instanceOfC.getID(), this.testReq);
     }
 
     @Test
@@ -179,9 +216,10 @@ public class FaultMethodTest {
         throws 
             NullPointerException, 
             FailedFaultHandlingExecption, 
-            RuleNotApplicableException 
+            RuleNotApplicableException, 
+            InstanceUnknownException 
     {
-        this.testApp.fault(this.instanceOfA, this.testReq);
+        this.testApp.fault(this.instanceOfA.getID(), this.testReq);
         assertTrue(this.instanceOfA.getCurrentState().equals("faultHandlingState"));
     }
        

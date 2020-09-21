@@ -6,6 +6,7 @@ import java.util.List;
 import exceptions.FailedFaultHandlingExecption;
 import exceptions.FailedOperationException;
 import exceptions.IllegalSequenceElementException;
+import exceptions.InstanceUnknownException;
 import exceptions.NodeUnknownException;
 import exceptions.OperationNotAvailableException;
 import exceptions.RuleNotApplicableException;
@@ -28,9 +29,7 @@ public class Analyzer {
     }
 
     public boolean isValidSequence(Application app, List<SequenceElement> sequence)
-        throws 
-            IllegalSequenceElementException, 
-            NullPointerException 
+            throws IllegalSequenceElementException, NullPointerException, InstanceUnknownException 
     {
         if (app == null)
             throw new NullPointerException();
@@ -57,14 +56,17 @@ public class Analyzer {
         ArrayList<Fault> pendingFaults = (ArrayList<Fault>) app.getGlobalState().getPendingFaults();
         ArrayList<NodeInstance> brokenInstances = (ArrayList<NodeInstance>) app.getGlobalState().getBrokeninstances();
 
+        //spezza il controllo (togli l'&& e fai due if, prima elimini le broken instance (no broken instances))
         if(pendingFaults.isEmpty() == true && brokenInstances.isEmpty() == true)
             //there is no biforcation with a deterministic pi, proceeding
             return this.isValidSequence(app, sequence);
+
         else{
             //there are some faults. there is a biforcation and the sequence must be tested for both branches
             //the not-handled-fault branch goes frist (might fail faster)
             Application cloneApp = AppCloner.cloneApp(app);
 
+            //TODO: questo va comunque fatto dopo l'aver eliminato le broken instances
             if(this.isValidSequence(cloneApp, sequence) == false)
                 return false;
             
@@ -73,7 +75,7 @@ public class Analyzer {
             if(brokenInstances.isEmpty() == false){
                 cloneApp = AppCloner.cloneApp(app);
                 try{
-                    cloneApp.scaleIn(brokenInstances.get(0));
+                    cloneApp.scaleIn(brokenInstances.get(0).getID());
                 } catch(RuleNotApplicableException E){
                     return false;
                 }
@@ -87,7 +89,7 @@ public class Analyzer {
 
                 if(app.getGlobalState().isResolvableFault(f) == true){
                     try {
-                        cloneApp.autoreconnect(cloneApp.getGlobalState().getActiveNodeInstances().get(f.getInstanceID()), f.getReq());
+                        cloneApp.autoreconnect(f.getInstanceID(), f.getReq());
                     } catch (RuleNotApplicableException e) {
                         return false;
                     }
@@ -96,7 +98,7 @@ public class Analyzer {
                         return false;  
                 }else{
                     try {
-                        cloneApp.fault(cloneApp.getGlobalState().getActiveNodeInstances().get(f.getInstanceID()), f.getReq()); 
+                        cloneApp.fault(f.getInstanceID(), f.getReq()); 
                     } catch (FailedFaultHandlingExecption e) {
                         return false;
                     } catch (RuleNotApplicableException e) {
@@ -129,6 +131,7 @@ public class Analyzer {
         SequenceElement seqElement = sequence.remove(0);
         try {
             this.executeSequenceElement(app, seqElement);
+        //TODO: qui ci vogliono le stesse eccezioni che su valid sequence
         } catch (Exception e) {
             //keep going
         } 
@@ -151,7 +154,7 @@ public class Analyzer {
             if(brokenInstances.isEmpty() == false){
                 cloneApp = AppCloner.cloneApp(app);
                 try {
-                    cloneApp.scaleIn(brokenInstances.get(0));
+                    cloneApp.scaleIn(brokenInstances.get(0).getID());
                     //keep exploring the tree only if it is possible
                     if(this.isWeaklyValidSequence(cloneApp, sequence) == true)
                         return true;
@@ -164,13 +167,13 @@ public class Analyzer {
 
                 if(app.getGlobalState().isResolvableFault(f) == true){
                     try {
-                        cloneApp.autoreconnect(cloneApp.getGlobalState().getActiveNodeInstances().get(f.getInstanceID()), f.getReq()); 
+                        cloneApp.autoreconnect(f.getInstanceID(), f.getReq()); 
                         if(this.isWeaklyValidSequence(cloneApp, sequence) == true)
                             return true;  
                     } catch (Exception e) {} 
                 }else{
                     try {
-                        cloneApp.fault(cloneApp.getGlobalState().getActiveNodeInstances().get(f.getInstanceID()), f.getReq());  
+                        cloneApp.fault(f.getInstanceID(), f.getReq());  
                         if(this.isWeaklyValidSequence(cloneApp, sequence) == true)
                             return true;   
                     } catch (Exception e) {}
@@ -182,14 +185,9 @@ public class Analyzer {
 
     public boolean isNotValidSequence(Application app, List<SequenceElement> sequence)
         throws 
-            NullPointerException,
-            IllegalSequenceElementException
+            NullPointerException, 
+            IllegalSequenceElementException 
     {
-        if (app == null)
-            throw new NullPointerException();
-        if (this.wellFormattedSequence(sequence) == false)
-            throw new IllegalSequenceElementException();
-
         return !this.isWeaklyValidSequence(app, sequence);
     }
 
@@ -200,23 +198,24 @@ public class Analyzer {
             OperationNotAvailableException,
             FailedOperationException, 
             RuleNotApplicableException, 
-            NodeUnknownException 
+            NodeUnknownException, 
+            InstanceUnknownException 
     {
         switch (seqElement.getRule()) {
             case "opStart":
-                app.opStart(seqElement.getTargetInstance(), seqElement.getOp());
+                app.opStart(seqElement.getTargetInstance().getID(), seqElement.getOp());
                 break;
             case "opEnd":
-                app.opEnd(seqElement.getTargetInstance(), seqElement.getOp());
+                app.opEnd(seqElement.getTargetInstance().getID(), seqElement.getOp());
                 break;
             case "scaleIn":
-                app.scaleIn(seqElement.getTargetInstance());
+                app.scaleIn(seqElement.getTargetInstance().getID());
                 break;
             case "scaleOut1":
-                app.scaleOut1(seqElement.getTargetNode());
+                //app.scaleOut1(seqElement.getTargetNode().getName(), seqEle);
                 break;
             case "scaleOut2": 
-                app.scaleOut2(seqElement.getTargetNode(), seqElement.getServingInstance());
+                //app.scaleOut2(seqElement.getTargetNode(), seqElement.getServingInstance());
             default:
                 break;
         }

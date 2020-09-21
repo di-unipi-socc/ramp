@@ -10,7 +10,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import model.*;
+import exceptions.AlreadyUsedIDException;
 import exceptions.FailedOperationException;
+import exceptions.InstanceUnknownException;
 import exceptions.NodeUnknownException;
 import exceptions.OperationNotAvailableException;
 import exceptions.RuleNotApplicableException;
@@ -26,17 +28,25 @@ public class IsResolvableFaultTest {
     public NodeInstance secondInstanceOfB;
 
     /**
-     * create a custom simple application with 2 nodes, nodeA and nodeB
-     * nodeA has two states, state1 and state2. in state1 nodeA requires req, in state2 requires req2
-     *   req2 will be always non resolvable since there is no instance with the right cap
-     * nodeB has 1 state in which it offer one capability (that satisfy req)
+     * create a custom simple application with 2 nodes, nodeA and nodeB nodeA has
+     * two states, state1 and state2. in state1 nodeA requires req, in state2
+     * requires req2 req2 will be always non resolvable since there is no instance
+     * with the right cap nodeB has 1 state in which it offer one capability (that
+     * satisfy req)
+     * 
+     * @throws AlreadyUsedIDException
+     * @throws InstanceUnknownException
+     * @throws IllegalArgumentException
      */
     @Before
     public void setUp() 
         throws 
             NullPointerException, 
-            RuleNotApplicableException,
-            NodeUnknownException 
+            RuleNotApplicableException, 
+            NodeUnknownException,
+            IllegalArgumentException, 
+            InstanceUnknownException, 
+            AlreadyUsedIDException 
     {
         this.nodeA = this.createNodeA();
         this.nodeB = this.createNodeB();
@@ -49,9 +59,9 @@ public class IsResolvableFaultTest {
         StaticBinding secondHalf = new StaticBinding("nodeB", "cap");
         this.testApp.addStaticBinding(firstHalf, secondHalf);
 
-        this.instanceOfB = this.testApp.scaleOut1(this.nodeB);
-        this.instanceOfA = this.testApp.scaleOut1(this.nodeA);
-        this.secondInstanceOfB = this.testApp.scaleOut1(this.nodeB);
+        this.instanceOfB = this.testApp.scaleOut1(this.nodeB.getName(), "instanceOfB");
+        this.instanceOfA = this.testApp.scaleOut1(this.nodeA.getName(), "instanceOfA");
+        this.secondInstanceOfB = this.testApp.scaleOut1(this.nodeB.getName(), "instanceOfB1");
     }
 
     public Node createNodeA() {
@@ -119,7 +129,8 @@ public class IsResolvableFaultTest {
             RuleNotApplicableException,
             IllegalArgumentException, 
             FailedOperationException, 
-            OperationNotAvailableException 
+            OperationNotAvailableException, 
+            InstanceUnknownException 
     {
         //now there is no fault (instanceOfA is in state1 and instanceOfB is offering the right cap)
         assertTrue(this.testApp.getGlobalState().getPendingFaults().isEmpty());
@@ -132,13 +143,13 @@ public class IsResolvableFaultTest {
         assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get(this.instanceOfA.getID()).get(0).getNodeInstanceID().equals(this.instanceOfB.getID()));
 
         //now we kill instanceOfB and we get a fault (resolvable, thanks to secondInstanceOfB)
-        this.testApp.scaleIn(this.instanceOfB);
+        this.testApp.scaleIn(this.instanceOfB.getID());
         assertTrue(this.testApp.getGlobalState().getPendingFaults(this.instanceOfA).size() == 1);
         Fault f = this.testApp.getGlobalState().getResolvableFaults(this.instanceOfA).get(0);
         assertTrue(this.testApp.getGlobalState().isResolvableFault(f));
 
         //this now ricreate the binding of AreqB with secondInstanceOfB
-        this.testApp.autoreconnect(this.instanceOfA, f.getReq());
+        this.testApp.autoreconnect(this.instanceOfA.getID(), f.getReq());
 
         //now there is no fault (once again, as before)
         assertTrue(this.testApp.getGlobalState().getPendingFaults().isEmpty());
@@ -151,8 +162,8 @@ public class IsResolvableFaultTest {
         assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get(this.instanceOfA.getID()).get(0).getNodeInstanceID().equals(this.secondInstanceOfB.getID()));
 
         //now we move A to state2 where there will be a fault not resolvable
-        this.testApp.opStart(this.instanceOfA, "goToState2");
-        this.testApp.opEnd(this.instanceOfA, "goToState2");
+        this.testApp.opStart(this.instanceOfA.getID(), "goToState2");
+        this.testApp.opEnd(this.instanceOfA.getID(), "goToState2");
 
         //there is now a pending fault 
         assertTrue(this.testApp.getGlobalState().getPendingFaults().size() == 1);

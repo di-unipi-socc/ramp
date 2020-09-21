@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import model.*;
-
+//TODO: ridefinisci clone in Application
 public class AppCloner {
     
     public static Application cloneApp(Application app)

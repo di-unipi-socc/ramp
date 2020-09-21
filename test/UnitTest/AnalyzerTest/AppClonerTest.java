@@ -9,7 +9,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import analyzer.AppCloner;
+import exceptions.AlreadyUsedIDException;
 import exceptions.FailedOperationException;
+import exceptions.InstanceUnknownException;
 import exceptions.NodeUnknownException;
 import exceptions.OperationNotAvailableException;
 import exceptions.RuleNotApplicableException;
@@ -69,16 +71,26 @@ public class AppClonerTest {
 
         // check that the global state is well cloned
         assertTrue(app.getGlobalState().getActiveNodeInstances().size() == 0);
-        assertTrue(app.getGlobalState().getActiveNodeInstances().size() == clonedApp.getGlobalState().getActiveNodeInstances().size());
+        assertTrue(app.getGlobalState().getActiveNodeInstances().size() == clonedApp.getGlobalState()
+                .getActiveNodeInstances().size());
 
         assertTrue(app.getGlobalState().getRuntimeBindings().size() == 0);
-        assertTrue(app.getGlobalState().getRuntimeBindings().size() == clonedApp.getGlobalState().getRuntimeBindings().size());
+        assertTrue(app.getGlobalState().getRuntimeBindings().size() == clonedApp.getGlobalState().getRuntimeBindings()
+                .size());
     }
 
     @Test
-    public void RunningAppCloneTest() throws NullPointerException, IllegalArgumentException, RuleNotApplicableException,
-            NodeUnknownException, OperationNotAvailableException, FailedOperationException {
-        
+    public void RunningAppCloneTest() 
+        throws 
+            NullPointerException, 
+            IllegalArgumentException, 
+            RuleNotApplicableException,
+            NodeUnknownException, 
+            OperationNotAvailableException, 
+            FailedOperationException, 
+            InstanceUnknownException,
+            AlreadyUsedIDException 
+    {
         this.setUpApp();
         clonedApp = AppCloner.cloneApp(app);
 
@@ -120,90 +132,76 @@ public class AppClonerTest {
         }
 
         // check that the global state is well cloned
-        assertTrue(app.getGlobalState().getActiveNodeInstances().size() == clonedApp.getGlobalState().getActiveNodeInstances().size());
-        assertTrue(app.getGlobalState().getRuntimeBindings().size() == clonedApp.getGlobalState().getRuntimeBindings().size());
+        assertTrue(app.getGlobalState().getActiveNodeInstances().size() == clonedApp.getGlobalState()
+                .getActiveNodeInstances().size());
+        assertTrue(app.getGlobalState().getRuntimeBindings().size() == clonedApp.getGlobalState().getRuntimeBindings()
+                .size());
 
-        Collection<NodeInstance> appInstancesCollection =  app.getGlobalState().getActiveNodeInstances().values();
+        Collection<NodeInstance> appInstancesCollection = app.getGlobalState().getActiveNodeInstances().values();
         ArrayList<NodeInstance> appActiveInstances = new ArrayList<>(appInstancesCollection);
 
         for (NodeInstance appInstance : appActiveInstances) {
             assertTrue(clonedApp.getGlobalState().getActiveNodeInstances().containsKey(appInstance.getID()));
             assertTrue(clonedApp.getGlobalState().getActiveNodeInstances().containsValue(appInstance));
 
-            NodeInstance clonedAppInstance = clonedApp.getGlobalState().getActiveNodeInstances().get(appInstance.getID());
+            NodeInstance clonedAppInstance = clonedApp.getGlobalState().getActiveNodeInstances()
+                    .get(appInstance.getID());
 
             assertTrue(appInstance.getCurrentState().equals(clonedAppInstance.getCurrentState()));
 
-            for (Requirement appReq : appInstance.getNeededReqs()) 
+            for (Requirement appReq : appInstance.getNeededReqs())
                 assertTrue(clonedAppInstance.getNeededReqs().contains(appReq));
 
-            for(String appCap : appInstance.getOfferedCaps())
+            for (String appCap : appInstance.getOfferedCaps())
                 assertTrue(clonedAppInstance.getOfferedCaps().contains(appCap));
-            
-            for(Transition appTransition : appInstance.getPossibleTransitions())
+
+            for (Transition appTransition : appInstance.getPossibleTransitions())
                 assertTrue(clonedAppInstance.getPossibleTransitions().contains(appTransition));
 
-            for(RuntimeBinding appBinding : app.getGlobalState().getRuntimeBindings().get(appInstance.getID()))
-                assertTrue(clonedApp.getGlobalState().getRuntimeBindings().get(clonedAppInstance.getID()).contains(appBinding));   
+            for (RuntimeBinding appBinding : app.getGlobalState().getRuntimeBindings().get(appInstance.getID()))
+                assertTrue(clonedApp.getGlobalState().getRuntimeBindings().get(clonedAppInstance.getID())
+                        .contains(appBinding));
         }
     }
 
-    public void setUpApp() 
-        throws 
-            NullPointerException, 
-            RuleNotApplicableException, 
-            NodeUnknownException,
-            IllegalArgumentException, 
-            OperationNotAvailableException, 
-            FailedOperationException 
+    public void setUpApp()
+            throws NullPointerException, RuleNotApplicableException, NodeUnknownException, IllegalArgumentException,
+            OperationNotAvailableException, FailedOperationException, InstanceUnknownException, AlreadyUsedIDException 
     {
 
-        Node frontend = app.getNodes().get("frontend");
-        Node backend = app.getNodes().get("backend");
-        Node node = app.getNodes().get("node");
-        Node mongo = app.getNodes().get("mongo");
+        app.scaleOut1("mongo", "mongoM1");
+        app.scaleOut1("node", "nodeN1");
+        app.scaleOut1("node", "nodeN2");
+        app.scaleOut1("node", "nodeN3");
+        app.scaleOut2("frontend", "frontendF1", "nodeN3");
+        app.scaleOut2("backend", "backendB1", "nodeN1");
+        app.scaleOut2("backend", "backendB2", "nodeN2");
 
-        NodeInstance nodeN3;
-        NodeInstance nodeN2;
-        NodeInstance nodeN1;
-        NodeInstance mongoM1;
-        NodeInstance frontendF1;
-        NodeInstance backendB1;
-        NodeInstance backendB2;
+        app.opStart("mongoM1", "start");
+        app.opEnd("mongoM1", "start");
 
-        mongoM1 = app.scaleOut1(mongo);
-        nodeN1 = app.scaleOut1(node);
-        nodeN2 = app.scaleOut1(node);
-        nodeN3 = app.scaleOut1(node);
-        frontendF1 = app.scaleOut2(frontend, nodeN3);
-        backendB1 = app.scaleOut2(backend, nodeN1);
-        backendB2 = app.scaleOut2(backend, nodeN2);
+        app.opStart("nodeN1", "start");
+        app.opEnd("nodeN1", "start");
+        app.opStart("nodeN2", "start");
+        app.opEnd("nodeN2", "start");
+        app.opStart("nodeN3", "start");
+        app.opEnd("nodeN3", "start");
 
-        app.opStart(mongoM1, "start");
-        app.opEnd(mongoM1, "start");
+        app.opStart("backendB1", "install");
+        app.opEnd("backendB1", "install");
+        app.opStart("backendB1", "start");
+        app.opEnd("backendB1", "start");
 
-        app.opStart(nodeN1, "start");
-        app.opEnd(nodeN1, "start");
-        app.opStart(nodeN2, "start");
-        app.opEnd(nodeN2, "start");
-        app.opStart(nodeN3, "start");
-        app.opEnd(nodeN3, "start");
+        app.opStart("backendB2", "install");
+        app.opEnd("backendB2", "install");
+        app.opStart("backendB2", "start");
+        app.opEnd("backendB2", "start");
 
-        app.opStart(backendB1, "install");
-        app.opEnd(backendB1, "install");
-        app.opStart(backendB1, "start");
-        app.opEnd(backendB1, "start");
-
-        app.opStart(backendB2, "install");
-        app.opEnd(backendB2, "install");
-        app.opStart(backendB2, "start");
-        app.opEnd(backendB2, "start");
-
-        app.opStart(frontendF1, "install");
-        app.opEnd(frontendF1, "install");
-        app.opStart(frontendF1, "config");
-        app.opEnd(frontendF1, "config");
-        app.opStart(frontendF1, "start");
-        app.opEnd(frontendF1, "start");
+        app.opStart("frontendF1", "install");
+        app.opEnd("frontendF1", "install");
+        app.opStart("frontendF1", "config");
+        app.opEnd("frontendF1", "config");
+        app.opStart("frontendF1", "start");
+        app.opEnd("frontendF1", "start");
     }
 }

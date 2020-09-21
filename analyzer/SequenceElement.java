@@ -4,6 +4,8 @@ import model.*;
 
 //element of the sequence that we have to analyze
 
+//TODO: sistema con eredit. (classe astratta)
+
 public class SequenceElement {
 
     private String rule; //opStart, opEnd, ...
@@ -19,11 +21,11 @@ public class SequenceElement {
         if (rule.isEmpty() == true)
             throw new IllegalArgumentException("rule empty");
 
-        this.targetInstance = null;
-        this.req = null;
-        this.servingInstance = null;
-        this.targetNode = null;
-        this.op = null;
+        this.targetInstance = null; //richiama instance
+        this.req = null; //faulted requirement
+        this.servingInstance = null; //TODO richiama hosting instance
+        this.targetNode = null; //richiama node (o node type)
+        this.op = null; 
 
         this.rule = rule;
     }
@@ -119,7 +121,6 @@ public class SequenceElement {
         
         return false;
     }
-
 
     private boolean wellFormattedOpStart(){
 

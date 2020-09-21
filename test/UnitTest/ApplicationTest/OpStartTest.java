@@ -6,6 +6,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import model.*;
+import exceptions.AlreadyUsedIDException;
+import exceptions.InstanceUnknownException;
 import exceptions.NodeUnknownException;
 import exceptions.OperationNotAvailableException;
 import exceptions.RuleNotApplicableException;
@@ -21,19 +23,24 @@ public class OpStartTest {
         throws 
             NullPointerException, 
             RuleNotApplicableException, 
-            NodeUnknownException 
+            NodeUnknownException,
+            IllegalArgumentException, 
+            InstanceUnknownException, 
+            AlreadyUsedIDException 
     {
         this.testApp = ThesisAppFactory.createApplication();
-        this.mongoM1 = this.testApp.scaleOut1(this.testApp.getNodes().get("mongo"));
+        this.mongoM1 = this.testApp.scaleOut1("mongo", "mongoM1");
     }
 
-    //opStart throws a NullPointerException when the passed instance is null
+    //opStart throws a NullPointerException when the passed instanceID is null
     @Test(expected = NullPointerException.class)
-    public void opStartNullInstanceTest()
+    public void opStartNullInstanceIDTest()
         throws 
             IllegalArgumentException, 
             NullPointerException, 
-            OperationNotAvailableException 
+            OperationNotAvailableException, 
+            RuleNotApplicableException, 
+            InstanceUnknownException 
     {
         testApp.opStart(null, "start");
     }
@@ -44,9 +51,11 @@ public class OpStartTest {
         throws 
             IllegalArgumentException, 
             NullPointerException, 
-            OperationNotAvailableException 
+            OperationNotAvailableException, 
+            RuleNotApplicableException, 
+            InstanceUnknownException 
     {
-        testApp.opStart(this.mongoM1, null);
+        testApp.opStart(this.mongoM1.getID(), null);
     }
 
     //opStart throws an IllegalArgumentException when the op is empty
@@ -55,10 +64,39 @@ public class OpStartTest {
         throws 
             IllegalArgumentException, 
             NullPointerException, 
-            OperationNotAvailableException 
+            OperationNotAvailableException, 
+            RuleNotApplicableException, 
+            InstanceUnknownException 
     {
-        testApp.opStart(this.mongoM1, "");
+        testApp.opStart(this.mongoM1.getID(), "");
     }
+
+    //opStart throws an IllegalArgumentException when the instanceID is empty
+    @Test(expected = IllegalArgumentException.class)
+    public void opStartEmptyInstanceIDOpTest()
+        throws 
+            IllegalArgumentException, 
+            NullPointerException, 
+            OperationNotAvailableException, 
+            RuleNotApplicableException, 
+            InstanceUnknownException 
+    {
+        testApp.opStart("", "start");
+    }
+
+    //opStart throws a RuleNotApplicableException when the passed instanceID is not associated with an instance
+    @Test(expected = RuleNotApplicableException.class)
+    public void opStartUnknownInstanceTest()
+        throws 
+            IllegalArgumentException, 
+            NullPointerException, 
+            OperationNotAvailableException, 
+            RuleNotApplicableException, 
+            InstanceUnknownException 
+    {
+        testApp.opStart("unknownInstanceID", "start");
+    }
+
 
     //opStart throws an OperationNotAvailableException when the operation is not known
     @Test(expected = OperationNotAvailableException.class)
@@ -66,9 +104,11 @@ public class OpStartTest {
         throws 
             IllegalArgumentException, 
             NullPointerException, 
-            OperationNotAvailableException 
+            OperationNotAvailableException, 
+            RuleNotApplicableException, 
+            InstanceUnknownException 
     {
-        testApp.opStart(this.mongoM1, "notKnownOp");
+        testApp.opStart(this.mongoM1.getID(), "notKnownOp");
     }
 
     @Test
@@ -76,9 +116,11 @@ public class OpStartTest {
         throws 
             IllegalArgumentException, 
             NullPointerException, 
-            OperationNotAvailableException 
+            OperationNotAvailableException, 
+            RuleNotApplicableException, 
+            InstanceUnknownException 
     {
-        testApp.opStart(this.mongoM1, "start");
+        testApp.opStart(this.mongoM1.getID(), "start");
         assertTrue("wrong current state", this.mongoM1.getCurrentState().equals("stoppedstartrunning"));
         assertTrue("wrong number of bindings", testApp.getGlobalState().getRuntimeBindings().get(this.mongoM1.getID()).size() == 0);    
     }

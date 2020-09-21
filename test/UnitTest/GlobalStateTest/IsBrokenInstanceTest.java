@@ -10,7 +10,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import model.*;
+import exceptions.AlreadyUsedIDException;
 import exceptions.FailedOperationException;
+import exceptions.InstanceUnknownException;
 import exceptions.NodeUnknownException;
 import exceptions.OperationNotAvailableException;
 import exceptions.RuleNotApplicableException;
@@ -25,16 +27,24 @@ public class IsBrokenInstanceTest {
     public Requirement reqCont;
 
     /**
-     * create a custom simple application with 2 nodes, nodeA and nodeB
-     * nodeA has only 1 state and requires one containment requirement (reqCont)
-     * nodeB has 2 state, in state1 it offer the cap that satisfy reqCont, in state2 do not offer any caps
+     * create a custom simple application with 2 nodes, nodeA and nodeB nodeA has
+     * only 1 state and requires one containment requirement (reqCont) nodeB has 2
+     * state, in state1 it offer the cap that satisfy reqCont, in state2 do not
+     * offer any caps
+     * 
+     * @throws AlreadyUsedIDException
+     * @throws InstanceUnknownException
+     * @throws IllegalArgumentException
      */
     @Before
     public void setUp() 
         throws 
             NullPointerException, 
             RuleNotApplicableException, 
-            NodeUnknownException 
+            NodeUnknownException,
+            IllegalArgumentException, 
+            InstanceUnknownException, 
+            AlreadyUsedIDException 
     {
         this.reqCont = new Requirement("reqCont", RequirementSort.CONTAINMENT);
         this.nodeA = this.createNodeA();
@@ -48,8 +58,8 @@ public class IsBrokenInstanceTest {
         StaticBinding secondHalf = new StaticBinding("nodeB", "capCont");
         this.testApp.addStaticBinding(firstHalf, secondHalf);
 
-        this.instanceOfB = this.testApp.scaleOut1(this.nodeB);
-        this.instanceOfA = this.testApp.scaleOut2(this.nodeA, this.instanceOfB);
+        this.instanceOfB = this.testApp.scaleOut1(this.nodeB.getName(), "instanceOfB");
+        this.instanceOfA = this.testApp.scaleOut2(this.nodeA.getName(), "instanceOfA", this.instanceOfB.getID());
     }
 
     public Node createNodeA() {
@@ -112,7 +122,9 @@ public class IsBrokenInstanceTest {
             IllegalArgumentException, 
             NullPointerException,
             OperationNotAvailableException, 
-            FailedOperationException 
+            FailedOperationException, 
+            RuleNotApplicableException, 
+            InstanceUnknownException 
     {
         //instanceOfB is alive and offering the right cap
         assertFalse(this.testApp.getGlobalState().isBrokenInstance(this.instanceOfA));
@@ -120,8 +132,8 @@ public class IsBrokenInstanceTest {
        
         //in state2 instanceOfB do not offer anymore the containment capabilty
         //hence instanceOfA is not a broken instance but a pending fault
-        this.testApp.opStart(this.instanceOfB, "goToState2");
-        this.testApp.opEnd(this.instanceOfB, "goToState2");
+        this.testApp.opStart(this.instanceOfB.getID(), "goToState2");
+        this.testApp.opEnd(this.instanceOfB.getID(), "goToState2");
 
         assertFalse(this.testApp.getGlobalState().isBrokenInstance(this.instanceOfA));
         assertTrue(this.testApp.getGlobalState().getPendingFaults(this.instanceOfA).size() == 1);

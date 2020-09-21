@@ -21,17 +21,24 @@ public class AddBindingTest {
     public Requirement req;
 
     /**
-     * creates a custom simple application with 2 nodes, nodeA and nodeB
-     * nodeA has a requirement and nodeB has the capability to satisfy it.
-     * we add de runtime binding <instanceOfA, req> -> <instanceOfB, cap>
+     * creates a custom simple application with 2 nodes, nodeA and nodeB nodeA has a
+     * requirement and nodeB has the capability to satisfy it. we add de runtime
+     * binding <instanceOfA, req> -> <instanceOfB, cap>
+     * 
+     * @throws AlreadyUsedIDException
+     * @throws InstanceUnknownException
+     * @throws IllegalArgumentException
      */
-    
+
     @Before
     public void setUp() 
         throws 
             NullPointerException, 
             RuleNotApplicableException, 
-            NodeUnknownException 
+            NodeUnknownException,
+            IllegalArgumentException, 
+            InstanceUnknownException, 
+            AlreadyUsedIDException 
     {
         this.req = new Requirement("req", RequirementSort.REPLICA_UNAWARE);
 
@@ -47,8 +54,8 @@ public class AddBindingTest {
         this.testApp.addStaticBinding(unawareFirstHalf, unawareSecondHalf);
 
         //A has a fault resolvable
-        this.instanceOfA = this.testApp.scaleOut1(this.nodeA);
-        this.instanceOfB = this.testApp.scaleOut1(this.nodeB);
+        this.instanceOfA = this.testApp.scaleOut1(this.nodeA.getName(), "instanceOfA");
+        this.instanceOfB = this.testApp.scaleOut1(this.nodeB.getName(), "instanceOfB");
         
     }
 

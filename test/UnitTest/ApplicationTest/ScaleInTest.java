@@ -10,6 +10,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import model.*;
+import exceptions.AlreadyUsedIDException;
+import exceptions.InstanceUnknownException;
 import exceptions.NodeUnknownException;
 import exceptions.RuleNotApplicableException;
 
@@ -32,29 +34,31 @@ public class ScaleInTest {
     /**
      * creates a custom singole application with 3 nodes, nodeA, nodeB and nodeC
      * 
-     * nodeA has 
-     *  - two requirement
-     *     - a contaiment requirement AreqC that is satisfied by nodeC
-     *     - a replica-unaware requirement AreqB that is satisfied by nodeB
-     *  - one capability
-     *     - AcapB that satisfies the requirement of nodeB
+     * nodeA has - two requirement - a contaiment requirement AreqC that is
+     * satisfied by nodeC - a replica-unaware requirement AreqB that is satisfied by
+     * nodeB - one capability - AcapB that satisfies the requirement of nodeB
      * 
-     * nodeB has 
-     *   - one requirement
-     *      - a replica-unaware requirement BreqA that is satisfied by nodeA
-     *   - one capability
-     *      - BcapA that satisfies AreqB of nodeA
+     * nodeB has - one requirement - a replica-unaware requirement BreqA that is
+     * satisfied by nodeA - one capability - BcapA that satisfies AreqB of nodeA
      * 
-     * nodeC has only one capability (CcapA) that satisfies one requirement of nodeA (AreqC)
+     * nodeC has only one capability (CcapA) that satisfies one requirement of nodeA
+     * (AreqC)
      * 
      * unkownNode is a node that is not part of the application
+     * 
+     * @throws AlreadyUsedIDException
+     * @throws InstanceUnknownException
+     * @throws IllegalArgumentException
      */
     @Before
     public void setUp() 
         throws 
             NullPointerException, 
             RuleNotApplicableException, 
-            NodeUnknownException 
+            NodeUnknownException,
+            IllegalArgumentException, 
+            InstanceUnknownException, 
+            AlreadyUsedIDException 
     {
         this.nodeA = this.createNodeA();
         this.nodeB = this.createNodeB();
@@ -79,9 +83,9 @@ public class ScaleInTest {
         StaticBinding secondHalfBreqA = new StaticBinding("nodeA", "AcapB");
         this.testApp.addStaticBinding(firstHalfBreqA, secondHalfBreqA);
 
-        this.instanceOfC = this.testApp.scaleOut1(this.nodeC);
-        this.instanceOfA = this.testApp.scaleOut2(this.nodeA, this.instanceOfC);
-        this.instanceOfB = this.testApp.scaleOut1(this.nodeB);
+        this.instanceOfC = this.testApp.scaleOut1(this.nodeC.getName(), "instanceOfC");
+        this.instanceOfA = this.testApp.scaleOut2(this.nodeA.getName(), "instanceOfA", this.instanceOfC.getID());
+        this.instanceOfB = this.testApp.scaleOut1(this.nodeB.getName(), "instanceOfB");
     }
 
     public Node createNodeA(){
@@ -161,14 +165,24 @@ public class ScaleInTest {
         return ret;
     }
 
-    //scaleIn throws a NullPointerException when the passed instance is null
+    //scaleIn throws a NullPointerException when the passed instanceID is null
     @Test(expected = NullPointerException.class)
-    public void scaleInNullInstanceTest() 
+    public void scaleInNullInstanceIDTest() 
         throws 
             NullPointerException, 
             RuleNotApplicableException 
     {
         this.testApp.scaleIn(null);
+    }
+
+    //scaleIn throws a IllegalArgumentException when the passed instanceID is empty
+    @Test(expected = IllegalArgumentException.class)
+    public void scaleInEmptyInstanceIDTest() 
+        throws 
+            NullPointerException, 
+            RuleNotApplicableException 
+    {
+        this.testApp.scaleIn("");
     }
 
     //scaleIn throws a RuleNotApplicableException when the passed instance is an instance of an unkown node
@@ -178,7 +192,7 @@ public class ScaleInTest {
             NullPointerException, 
             RuleNotApplicableException 
     {
-        this.testApp.scaleIn(this.unknownInstance);
+        this.testApp.scaleIn(this.unknownInstance.getID());
     }
 
     //test that if we scaleIn a container instance (instanceOfC) is destroyed the container and the contained
@@ -187,14 +201,15 @@ public class ScaleInTest {
     public void scaleInOnContainerTest() 
         throws 
             NullPointerException, 
-            RuleNotApplicableException 
+            RuleNotApplicableException, 
+            InstanceUnknownException 
     {
 
         //has only one binding because B is created after A, so there is resolvable fault
         assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.instanceOfA).size() == 1);
 
         Fault f = this.testApp.getGlobalState().getResolvableFaults(this.instanceOfA).get(0);
-        this.testApp.autoreconnect(this.instanceOfA, f.getReq());
+        this.testApp.autoreconnect(this.instanceOfA.getID(), f.getReq());
 
         //now A has the 2 binding: 1 with C for the containment and 1 with B for the other requirement
         assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.instanceOfA).size() == 2);
@@ -204,7 +219,7 @@ public class ScaleInTest {
         assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.instanceOfC).size() == 0);
 
         //the scaleIn destroy instanceOfC so it is destroyed even instanceOfA that's contained in instanceOfC
-        this.testApp.scaleIn(this.instanceOfC);
+        this.testApp.scaleIn(this.instanceOfC.getID());
 
         //the destroyed instances is remove from the set of active instances
         assertNull(this.testApp.getGlobalState().getActiveNodeInstances().get(this.instanceOfC.getID()));
@@ -219,19 +234,24 @@ public class ScaleInTest {
 
     //test that is a non container instance is destroyed only that instance and its runtime bindings are destroyed
     @Test
-    public void scaleOut1NotContainerTest() throws NullPointerException, RuleNotApplicableException {
+    public void scaleOut1NotContainerTest() 
+        throws 
+            NullPointerException, 
+            RuleNotApplicableException,
+            InstanceUnknownException 
+    {
         //has only one binding because B is created after A, so there is resolvable fault
         assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.instanceOfA).size() == 1);
 
         Fault f = this.testApp.getGlobalState().getResolvableFaults(this.instanceOfA).get(0);
-        this.testApp.autoreconnect(this.instanceOfA, f.getReq());
+        this.testApp.autoreconnect(this.instanceOfA.getID(), f.getReq());
 
         //now A has the 2 binding: 1 with C for the containment and 1 with B for the other requirement
         assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.instanceOfA).size() == 2);
         //B has only 1 binding with A, since B has a requirement that A satisfies
         assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.instanceOfB).size() == 1);
 
-        this.testApp.scaleIn(this.instanceOfB);
+        this.testApp.scaleIn(this.instanceOfB.getID());
 
         assertNull(this.testApp.getGlobalState().getActiveNodeInstances().get(this.instanceOfB.getID()));
         assertNull(this.testApp.getGlobalState().getRuntimeBindings().get(this.instanceOfB.getID()));
