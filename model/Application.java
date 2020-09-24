@@ -1,12 +1,15 @@
 package model;
 
 import exceptions.*;
+import analyzer.executable_element.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import analyzer.executable_element.ExecutableElement;
 
 //represents the whole application
 public class Application {
@@ -383,20 +386,20 @@ public class Application {
 
     /**
      * @param instanceID id of the instance that have a fault to be resolved
-     * @param req the (resolvable) faulted requirement
+     * @param req        the (resolvable) faulted requirement
      * @throws RuleNotApplicableException
      * @throws NullPointerException
+     * @throws InstanceUnknownException
      */
-    public void autoreconnect(String instanceID, Requirement req) 
-        throws 
-            RuleNotApplicableException,
-            NullPointerException, 
-            InstanceUnknownException
+    public void autoreconnect(String instanceID, Requirement req)
+            throws RuleNotApplicableException, NullPointerException, InstanceUnknownException
     {
         if(instanceID == null)
             throw new NullPointerException("instanceID null");
+        
         if(instanceID.isEmpty() == true)
             throw new IllegalArgumentException("instanceID empty");
+        
         if(req == null)
             throw new NullPointerException("req null");
         
@@ -524,7 +527,6 @@ public class Application {
             throw new RuleNotApplicableException("wrong kind of node");
         
         //create the new instance
-
         newNodeInstance = this.createNewNodeInstance(node, instanceID);
 
         //add the new instance in the G set
@@ -734,5 +736,40 @@ public class Application {
         }
 
         return clone;
+    }
+
+    public void execute(ExecutableElement element) 
+        throws 
+            IllegalArgumentException, 
+            NullPointerException,
+            FailedOperationException, 
+            RuleNotApplicableException, 
+            InstanceUnknownException,
+            OperationNotAvailableException, 
+            AlreadyUsedIDException 
+    {
+        switch (element.getRule()) {
+            case "opStart":
+                OpStart el = (OpStart) element;
+                this.opStart(el.getInstnaceID(), el.getOp());                    
+                break;
+            case "opEnd":
+                OpEnd el1 = (OpEnd) element;
+                this.opEnd(el1.getInstanceID(), el1.getOp());
+                break;
+            case "scaleIn":
+                ScaleIn el2 = (ScaleIn) element;
+                this.scaleIn(el2.getInstanceID());
+                break;
+            case "scaleOut1":
+                ScaleOut1 el3 = (ScaleOut1) element;
+                this.scaleOut1(el3.getNodeName(), el3.getIDToAssign());
+                break;
+            case "scaleOut2": 
+                ScaleOut2 el4 = (ScaleOut2) element;
+                this.scaleOut2(el4.getNodeName(), el4.getIDToAssign(), el4.getContainerID());
+            default:
+                break;
+        }
     }
 }

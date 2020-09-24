@@ -1,14 +1,16 @@
-package analyzer.sequence;
+package analyzer.executable_element;
 
-public class ScaleOut1 extends SequenceElement {
+public class ScaleOut2 extends ExecutableElement {
     
     private String nodeName;
     private String idToAssign;
+    private String containerID;
     
-    public ScaleOut1(String rule, String nodeName, String idToAssign){
-        this.rule = rule;
+    public ScaleOut2(String nodeName, String idToAssign, String containerID){
+        this.rule = "scaleOut2";
         this.nodeName = nodeName;
         this.idToAssign = idToAssign;
+        this.containerID = containerID;
     }
 
     public String getNodeName(){
@@ -19,18 +21,22 @@ public class ScaleOut1 extends SequenceElement {
         return this.idToAssign;
     }
 
+    public String getContainerID(){
+        return this.containerID;
+    }
+
     public boolean wellFormattedSequenceElement(){
         boolean ret = true;
 
-        if(rule.equals("scaleOut1") == false)
-            ret = false;
-        
         if(this.nodeName == null || this.nodeName.isEmpty() == true)
             ret = false;
         
         if(this.idToAssign == null || this.idToAssign.isEmpty() == true)
             ret = false;
-        
+
+        if(this.containerID == null || this.containerID.isEmpty() == true)
+            ret = false;
+            
         return ret;
     }
 

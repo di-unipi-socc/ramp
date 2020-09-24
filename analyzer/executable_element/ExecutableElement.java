@@ -1,6 +1,6 @@
-package analyzer.sequence;
+package analyzer.executable_element;
 
-public abstract class SequenceElement {
+public abstract class ExecutableElement {
 
     protected String rule;
 

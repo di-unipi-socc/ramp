@@ -1,14 +1,17 @@
-package analyzer.sequence;
+package analyzer.executable_element;
 
-public class OpStart extends SequenceElement{
-    
+public class OpEnd extends ExecutableElement {
     private final String instanceID;
     private final String op;
 
-    public OpStart(String rule, String id, String op){
-        this.rule = rule;
+    public OpEnd(String id, String op){
+        this.rule = "opEnd";
         this.instanceID = id;
         this.op = op;
+    }
+
+    public String getInstanceID(){
+        return this.instanceID;
     }
 
     public String getOp(){
@@ -21,18 +24,9 @@ public class OpStart extends SequenceElement{
         if(this.instanceID == null || this.instanceID.isEmpty() == true)
             ret = false;
         
-        if(this.rule.equals("opStart") == false)
-            ret = false;
-        
         if(this.op == null || this.op.isEmpty() == true)
             ret = false;
 
         return ret;
     }
-
-    public String getInstnaceID() {
-        return this.instanceID;
-    }
-
-
 }

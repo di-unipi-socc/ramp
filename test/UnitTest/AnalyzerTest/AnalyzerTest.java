@@ -10,95 +10,127 @@ import org.junit.Before;
 import org.junit.Test;
 
 import analyzer.Analyzer;
-import analyzer.SequenceElement;
+import analyzer.executable_element.*;
+
 import exceptions.AlreadyUsedIDException;
 import exceptions.IllegalSequenceElementException;
 import exceptions.InstanceUnknownException;
 import exceptions.RuleNotApplicableException;
 import model.Application;
-import model.NodeInstance;
 import utilities.ThesisAppFactory;
 
 public class AnalyzerTest {
 
     public Application app;
-
-    public NodeInstance n1;
-    public NodeInstance m1;
-    public NodeInstance b1;
-    public NodeInstance f1;
-
     public Analyzer analyzer;
 
     @Before
-    public void setUp() 
+    public void setUp()
         throws 
             NullPointerException, 
             RuleNotApplicableException, 
             AlreadyUsedIDException, 
             InstanceUnknownException 
     {
-        app = ThesisAppFactory.createApplication();
-        n1 = app.scaleOut1("node", "n1");
-        m1 = app.scaleOut1("mongo", "m1");
-        b1 = app.scaleOut2("backend", "b1", "n1");
-        f1 = app.scaleOut2("frontend", "f1", "n1");
         analyzer = new Analyzer();
     }
 
     @Test
     // a valid sequence is declared valid
-    public void validSequenceTest() throws NullPointerException, IllegalSequenceElementException,
-            InstanceUnknownException {
-        List<SequenceElement> validSequence = this.createValidSequence();
-        List<SequenceElement> weaklyValidSequence = this.createWeaklyValidSequence();    
-
-        assertTrue(analyzer.isValidSequence(app, validSequence));
-        assertFalse(analyzer.isValidSequence(app, weaklyValidSequence));
+    public void validSequenceTest() 
+        throws 
+            NullPointerException, 
+            IllegalSequenceElementException,
+            IllegalArgumentException
+             
+    {    
+        assertTrue(analyzer.isValidSequence(ThesisAppFactory.createApplication(), this.createValidSequence()));
+        assertFalse(analyzer.isValidSequence(ThesisAppFactory.createApplication(), this.createWeaklyValidSequence()));
     }
 
     @Test
-    public void weaklyValidSequenceTest() throws NullPointerException, IllegalSequenceElementException {
-        //a valid sequence is obv a weakly valid sequence
-        assertTrue(analyzer.isWeaklyValidSequence(app, this.createValidSequence())); 
-        assertTrue(analyzer.isWeaklyValidSequence(app, this.createWeaklyValidSequence()));
+    public void weaklyValidSequenceTest() 
+        throws 
+            NullPointerException, 
+            IllegalSequenceElementException, 
+            RuleNotApplicableException, 
+            InstanceUnknownException
+    {
+        assertTrue(analyzer.isWeaklyValidSequence(ThesisAppFactory.createApplication(), this.createValidSequence())); 
+        assertTrue(analyzer.isWeaklyValidSequence(ThesisAppFactory.createApplication(), this.createWeaklyValidSequence()));
+
     }
 
-    public ArrayList<SequenceElement> createValidSequence(){
-        ArrayList<SequenceElement> validSequence = new ArrayList<>();
+    public ArrayList<ExecutableElement> createValidSequence(){
+        ArrayList<ExecutableElement> validSequence = new ArrayList<>();
 
-        this.addSequenceElement(validSequence, "start", n1);
-        this.addSequenceElement(validSequence, "start", m1);
-        this.addSequenceElement(validSequence, "install", b1);
-        this.addSequenceElement(validSequence, "start", b1);
-        this.addSequenceElement(validSequence, "install", f1);
-        this.addSequenceElement(validSequence, "config", f1);
-        this.addSequenceElement(validSequence, "stop", b1);
+        ExecutableElement e1 = new ScaleOut1("node", "n1");
+        ExecutableElement e2 = new ScaleOut1("mongo", "m1");
+        ExecutableElement e3 = new ScaleOut2("backend", "b1", "n1");
+        ExecutableElement e4 = new ScaleOut2("frontend", "f1", "n1");
 
-        this.addSequenceElement(validSequence, "start", f1); //creates fault (hence biforcation)
+        validSequence.add(e1);
+        validSequence.add(e2);
+        validSequence.add(e3);
+        validSequence.add(e4);
+
+        this.addOpStartEnd(validSequence, "n1", "start");
+        this.addOpStartEnd(validSequence, "m1", "start");
+        this.addOpStartEnd(validSequence, "b1", "install");
+        this.addOpStartEnd(validSequence, "b1", "start");
+        this.addOpStartEnd(validSequence, "f1", "install");
+        this.addOpStartEnd(validSequence, "f1", "config");
+        this.addOpStartEnd(validSequence, "b1", "stop");
+
+        this.addOpStartEnd(validSequence, "f1", "start"); //creates fault (hence biforcation)
         //after the fault f1 is in the transitional state configured-start-working
 
         //this two ops will be tested among two brenches (the one where the 
         //pending fault created is handled and the one where it is not)
         //since this two ops do not use f1 the sequence will be valid
-        this.addSequenceElement(validSequence, "stop", m1);
-        this.addSequenceElement(validSequence, "stop", n1);
+        this.addOpStartEnd(validSequence, "m1", "stop");
+        this.addOpStartEnd(validSequence, "n1", "stop");
 
+        ExecutableElement e5 = new ScaleIn("n1");
+        ExecutableElement e6 = new ScaleIn("m1");
+        ExecutableElement e7 = new ScaleIn("f1");
+        ExecutableElement e8 = new ScaleIn("b1");
+
+        //inverted order for broken instances
+        //mind that if there is a broke instance there will be scaleIn on cascade
+        //if we scaleIn an instance that is not alive (or known) the system raise an error
+
+        validSequence.add(e7); 
+        validSequence.add(e8);
+        validSequence.add(e5);
+        validSequence.add(e6);
+        
         return validSequence;
     }
 
-    public ArrayList<SequenceElement> createWeaklyValidSequence(){
-        ArrayList<SequenceElement> weaklyValidSequence = new ArrayList<>();
+    public ArrayList<ExecutableElement> createWeaklyValidSequence(){
 
-        this.addSequenceElement(weaklyValidSequence, "start", n1);
-        this.addSequenceElement(weaklyValidSequence, "start", m1);
-        this.addSequenceElement(weaklyValidSequence, "install", b1);
-        this.addSequenceElement(weaklyValidSequence, "start", b1);
-        this.addSequenceElement(weaklyValidSequence, "install", f1);
-        this.addSequenceElement(weaklyValidSequence, "config", f1);
-        this.addSequenceElement(weaklyValidSequence, "stop", b1);
+        ArrayList<ExecutableElement> weaklyValidSequence = new ArrayList<>();
 
-        this.addSequenceElement(weaklyValidSequence, "start", f1); //creates fault (hence biforcation)
+        ExecutableElement e1 = new ScaleOut1("node", "n1");
+        ExecutableElement e2 = new ScaleOut1("mongo", "m1");
+        ExecutableElement e3 = new ScaleOut2("backend", "b1", "n1");
+        ExecutableElement e4 = new ScaleOut2("frontend", "f1", "n1");
+
+        weaklyValidSequence.add(e1);
+        weaklyValidSequence.add(e2);
+        weaklyValidSequence.add(e3);
+        weaklyValidSequence.add(e4);
+        
+        this.addOpStartEnd(weaklyValidSequence, "n1", "start");
+        this.addOpStartEnd(weaklyValidSequence, "m1", "start");
+        this.addOpStartEnd(weaklyValidSequence, "b1", "install");
+        this.addOpStartEnd(weaklyValidSequence, "b1", "start");
+        this.addOpStartEnd(weaklyValidSequence, "f1", "install");
+        this.addOpStartEnd(weaklyValidSequence, "f1", "config");
+        this.addOpStartEnd(weaklyValidSequence, "b1", "stop");
+
+        this.addOpStartEnd(weaklyValidSequence, "f1", "start"); //creates fault (hence biforcation)
         //after the fault f1 is in the transitional state configured-start-working
 
         /**
@@ -106,24 +138,18 @@ public class AnalyzerTest {
          * is reached if the fault handler is executed (that put f1 in configured)
          * if the fault handler is not executed there is not a global state to go
          */
-        this.addSequenceElement(weaklyValidSequence, "uninstall", f1);
-        this.addSequenceElement(weaklyValidSequence, "stop", n1);
+        this.addOpStartEnd(weaklyValidSequence, "f1", "uninstall");
+        this.addOpStartEnd(weaklyValidSequence, "n1", "stop");
 
         return weaklyValidSequence;
     }
 
+    public void addOpStartEnd(List<ExecutableElement> sequence, String instanceID, String op){
+        ExecutableElement opStart = new OpStart(instanceID, op);
+        ExecutableElement opEnd = new OpEnd(instanceID, op);
 
-    public void addSequenceElement(List<SequenceElement> sequence, String op, NodeInstance targetInstance){
-        SequenceElement start = new SequenceElement("opStart");
-        start.setOp(op);
-        start.setTargetInstance(targetInstance);
-
-        SequenceElement stop = new SequenceElement("opEnd");
-        stop.setOp(op);
-        stop.setTargetInstance(targetInstance);
-
-        sequence.add(start);
-        sequence.add(stop);
+        sequence.add(opStart);
+        sequence.add(opEnd);
     }
 
 }

@@ -1,11 +1,11 @@
-package analyzer.sequence;
+package analyzer.executable_element;
 
-public class ScaleIn extends SequenceElement {
+public class ScaleIn extends ExecutableElement {
     
     private final String instanceID;
 
-    public ScaleIn(String rule, String id){
-        this.rule = rule;
+    public ScaleIn(String id){
+        this.rule = "scaleIn";
         this.instanceID = id;
     }   
 
@@ -16,9 +16,6 @@ public class ScaleIn extends SequenceElement {
     public boolean wellFormattedSequenceElement(){
         boolean ret = true;
 
-        if(rule.equals("scaleIn") == false)
-            ret = false;
-        
         if(this.instanceID == null || this.instanceID.isEmpty() == true)
             ret = false;
 
