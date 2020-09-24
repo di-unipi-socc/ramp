@@ -14,7 +14,7 @@ import exceptions.InstanceUnknownException;
 import exceptions.OperationNotAvailableException;
 import exceptions.RuleNotApplicableException;
 import model.*;
-import myUtils.ThesisAppFactory;
+import utilities.ThesisAppFactory;
 
 public class CloneTest {
 

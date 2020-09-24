@@ -1,4 +1,4 @@
-package myUtils;
+package utilities;
 
 import model.*;
 import java.util.*;

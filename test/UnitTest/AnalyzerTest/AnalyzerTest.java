@@ -17,7 +17,7 @@ import exceptions.InstanceUnknownException;
 import exceptions.RuleNotApplicableException;
 import model.Application;
 import model.NodeInstance;
-import myUtils.ThesisAppFactory;
+import utilities.ThesisAppFactory;
 
 public class AnalyzerTest {
 

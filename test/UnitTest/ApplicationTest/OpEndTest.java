@@ -5,12 +5,12 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 import model.*;
+import utilities.ThesisAppFactory;
 import exceptions.AlreadyUsedIDException;
 import exceptions.FailedOperationException;
 import exceptions.InstanceUnknownException;
 import exceptions.OperationNotAvailableException;
 import exceptions.RuleNotApplicableException;
-import myUtils.ThesisAppFactory;
 
 public class OpEndTest {
 

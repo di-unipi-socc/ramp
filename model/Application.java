@@ -734,6 +734,5 @@ public class Application {
         }
 
         return clone;
-        
     }
 }

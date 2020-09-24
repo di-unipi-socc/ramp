@@ -3,6 +3,8 @@ package analyzer;
 import java.util.ArrayList;
 import java.util.List;
 
+import analyzer.sequence.*;
+import exceptions.AlreadyUsedIDException;
 import exceptions.FailedFaultHandlingExecption;
 import exceptions.FailedOperationException;
 import exceptions.IllegalSequenceElementException;
@@ -28,7 +30,12 @@ public class Analyzer {
     }
 
     public boolean isValidSequence(Application app, List<SequenceElement> sequence)
-            throws IllegalSequenceElementException, NullPointerException, InstanceUnknownException 
+        throws 
+            IllegalSequenceElementException, 
+            NullPointerException, 
+            InstanceUnknownException,
+            IllegalArgumentException, 
+            AlreadyUsedIDException 
     {
         if (app == null)
             throw new NullPointerException();
@@ -43,79 +50,78 @@ public class Analyzer {
         try {
             this.executeSequenceElement(app, seqElement);
         } catch (FailedOperationException e) {
-            //keep going, this will be handled by the fault handler or leaved as it is
-        } catch (OperationNotAvailableException e){
+            // keep going, this will be handled by the fault handler or leaved as it is
+        } catch (OperationNotAvailableException e) {
             return false;
-        } catch (RuleNotApplicableException e){
+        } catch (RuleNotApplicableException e) {
             return false;
         }
 
         ArrayList<Fault> pendingFaults = (ArrayList<Fault>) app.getGlobalState().getPendingFaults();
         ArrayList<NodeInstance> brokenInstances = (ArrayList<NodeInstance>) app.getGlobalState().getBrokeninstances();
 
-        //spezza il controllo (togli l'&& e fai due if, prima elimini le broken instance (no broken instances))
-        if(pendingFaults.isEmpty() == true && brokenInstances.isEmpty() == true)
-            //there is no biforcation with a deterministic pi, proceeding
+        // spezza il controllo (togli l'&& e fai due if, prima elimini le broken
+        // instance (no broken instances))
+        if (pendingFaults.isEmpty() == true && brokenInstances.isEmpty() == true)
+            // there is no biforcation with a deterministic pi, proceeding
             return this.isValidSequence(app, sequence);
 
-        else{
-            //there are some faults. there is a biforcation and the sequence must be tested for both branches
-            //the not-handled-fault branch goes frist (might fail faster)
+        else {
+            // there are some faults. there is a biforcation and the sequence must be tested
+            // for both branches
+            // the not-handled-fault branch goes frist (might fail faster)
             Application cloneApp = app.clone();
 
-            //TODO: questo va comunque fatto dopo l'aver eliminato le broken instances
-            if(this.isValidSequence(cloneApp, sequence) == false)
+            // TODO: questo va comunque fatto dopo l'aver eliminato le broken instances
+            if (this.isValidSequence(cloneApp, sequence) == false)
                 return false;
-            
-            //now we explore the fault handled branch
-            //first goes scaleIn that implies the no-broken-instances
-            if(brokenInstances.isEmpty() == false){
+
+            // now we explore the fault handled branch
+            // first goes scaleIn that implies the no-broken-instances
+            if (brokenInstances.isEmpty() == false) {
                 cloneApp = app.clone();
-                try{
+                try {
                     cloneApp.scaleIn(brokenInstances.get(0).getID());
-                } catch(RuleNotApplicableException E){
+                } catch (RuleNotApplicableException E) {
                     return false;
                 }
-            
-                if(this.isValidSequence(cloneApp, sequence) == false)
+
+                if (this.isValidSequence(cloneApp, sequence) == false)
                     return false;
             }
-            //for each fault check both the handled and not handled branch
-            for (Fault f : pendingFaults) { 
+            // for each fault check both the handled and not handled branch
+            for (Fault f : pendingFaults) {
                 cloneApp = app.clone();
 
-                if(app.getGlobalState().isResolvableFault(f) == true){
+                if (app.getGlobalState().isResolvableFault(f) == true) {
                     try {
                         cloneApp.autoreconnect(f.getInstanceID(), f.getReq());
                     } catch (RuleNotApplicableException e) {
                         return false;
                     }
-                    
-                    if(this.isValidSequence(cloneApp, sequence) == false)
-                        return false;  
-                }else{
+
+                    if (this.isValidSequence(cloneApp, sequence) == false)
+                        return false;
+                } else {
                     try {
-                        cloneApp.fault(f.getInstanceID(), f.getReq()); 
+                        cloneApp.fault(f.getInstanceID(), f.getReq());
                     } catch (FailedFaultHandlingExecption e) {
                         return false;
                     } catch (RuleNotApplicableException e) {
                         return false;
                     }
 
-                    if(this.isValidSequence(cloneApp, sequence) == false)
-                        return false;  
+                    if (this.isValidSequence(cloneApp, sequence) == false)
+                        return false;
                 }
             }
         }
-        
+
         return true;
     }
 
     public boolean isWeaklyValidSequence(Application app, List<SequenceElement> sequence)
-        throws 
-            IllegalSequenceElementException, 
-            NullPointerException 
-    {  
+            throws IllegalSequenceElementException, NullPointerException {
         if (app == null)
             throw new NullPointerException();
 
@@ -128,52 +134,56 @@ public class Analyzer {
         SequenceElement seqElement = sequence.remove(0);
         try {
             this.executeSequenceElement(app, seqElement);
-        //TODO: qui ci vogliono le stesse eccezioni che su valid sequence
+            // TODO: qui ci vogliono le stesse eccezioni che su valid sequence
         } catch (Exception e) {
-            //keep going
-        } 
+            // keep going
+        }
 
         ArrayList<Fault> pendingFaults = (ArrayList<Fault>) app.getGlobalState().getPendingFaults();
         ArrayList<NodeInstance> brokenInstances = (ArrayList<NodeInstance>) app.getGlobalState().getBrokeninstances();
 
-        if(pendingFaults.isEmpty() == true && brokenInstances.isEmpty() == true)
-        //there is no biforcation with a deterministic pi, proceeding
+        if (pendingFaults.isEmpty() == true && brokenInstances.isEmpty() == true)
+            // there is no biforcation with a deterministic pi, proceeding
             return this.isWeaklyValidSequence(app, sequence);
-        else{
-            //there are some faults. there is a biforcation and the sequence must be tested for both branches
-            //the not-handled-fault branch goes frist (might fail faster)
+        else {
+            // there are some faults. there is a biforcation and the sequence must be tested
+            // for both branches
+            // the not-handled-fault branch goes frist (might fail faster)
             Application cloneApp = app.clone();
-            if(this.isWeaklyValidSequence(cloneApp, sequence) == true)
+            if (this.isWeaklyValidSequence(cloneApp, sequence) == true)
                 return true;
-            
-            //now we explore the fault handled branch
-            //first goes scaleIn that implies the no-broken-instances
-            if(brokenInstances.isEmpty() == false){
+
+            // now we explore the fault handled branch
+            // first goes scaleIn that implies the no-broken-instances
+            if (brokenInstances.isEmpty() == false) {
                 cloneApp = app.clone();
                 try {
                     cloneApp.scaleIn(brokenInstances.get(0).getID());
-                    //keep exploring the tree only if it is possible
-                    if(this.isWeaklyValidSequence(cloneApp, sequence) == true)
+                    // keep exploring the tree only if it is possible
+                    if (this.isWeaklyValidSequence(cloneApp, sequence) == true)
                         return true;
-                } catch (RuleNotApplicableException e) {}
+                } catch (RuleNotApplicableException e) {
+                }
             }
 
-            //for each fault check both the handled and not handled branch
+            // for each fault check both the handled and not handled branch
             for (Fault f : pendingFaults) {
                 cloneApp = app.clone();
 
-                if(app.getGlobalState().isResolvableFault(f) == true){
+                if (app.getGlobalState().isResolvableFault(f) == true) {
                     try {
-                        cloneApp.autoreconnect(f.getInstanceID(), f.getReq()); 
-                        if(this.isWeaklyValidSequence(cloneApp, sequence) == true)
-                            return true;  
-                    } catch (Exception e) {} 
-                }else{
+                        cloneApp.autoreconnect(f.getInstanceID(), f.getReq());
+                        if (this.isWeaklyValidSequence(cloneApp, sequence) == true)
+                            return true;
+                    } catch (Exception e) {
+                    }
+                } else {
                     try {
-                        cloneApp.fault(f.getInstanceID(), f.getReq());  
-                        if(this.isWeaklyValidSequence(cloneApp, sequence) == true)
-                            return true;   
-                    } catch (Exception e) {}
+                        cloneApp.fault(f.getInstanceID(), f.getReq());
+                        if (this.isWeaklyValidSequence(cloneApp, sequence) == true)
+                            return true;
+                    } catch (Exception e) {
+                    }
                 }
             }
         }
@@ -181,48 +191,50 @@ public class Analyzer {
     }
 
     public boolean isNotValidSequence(Application app, List<SequenceElement> sequence)
-        throws 
-            NullPointerException, 
-            IllegalSequenceElementException 
-    {
+            throws NullPointerException, IllegalSequenceElementException {
         return !this.isWeaklyValidSequence(app, sequence);
     }
 
     public void executeSequenceElement(Application app, SequenceElement seqElement)
         throws 
             IllegalArgumentException, 
-            NullPointerException, 
+            NullPointerException,
             OperationNotAvailableException,
             FailedOperationException, 
             RuleNotApplicableException, 
-            InstanceUnknownException 
+            InstanceUnknownException, 
+            AlreadyUsedIDException 
     {
         switch (seqElement.getRule()) {
             case "opStart":
-                app.opStart(seqElement.getTargetInstance().getID(), seqElement.getOp());
+                OpStart el = (OpStart) seqElement;
+                app.opStart(el.getInstnaceID(), el.getOp());                    
                 break;
             case "opEnd":
-                app.opEnd(seqElement.getTargetInstance().getID(), seqElement.getOp());
+                OpEnd el1 = (OpEnd) seqElement;
+                app.opEnd(el1.getInstanceID(), el1.getOp());
                 break;
             case "scaleIn":
-                app.scaleIn(seqElement.getTargetInstance().getID());
+                ScaleIn el2 = (ScaleIn) seqElement;
+                app.scaleIn(el2.getInstanceID());
                 break;
             case "scaleOut1":
-                //app.scaleOut1(seqElement.getTargetNode().getName(), seqEle);
+                ScaleOut1 el3 = (ScaleOut1) seqElement;
+                app.scaleOut1(el3.getNodeName(), el3.getIDToAssign());
                 break;
             case "scaleOut2": 
-                //app.scaleOut2(seqElement.getTargetNode(), seqElement.getServingInstance());
+                ScaleOut2 el4 = (ScaleOut2) seqElement;
+                app.scaleOut2(el4.getNodeName(), el4.getIDToAssign(), el4.getContainerID());
             default:
                 break;
         }
     }
 
-    //metodo privato che controlla che gli elementi della sequenza siano ben formattati (abbiano i giusti campi)
     private boolean wellFormattedSequence(List<SequenceElement> sequence){
         boolean res = true;
         
         for (SequenceElement element : sequence) { 
-            if(element.wellFormattedOpSequence() == false)
+            if(element.wellFormattedSequenceElement() == false)
                 res = false;
         }
 
