@@ -1,5 +1,7 @@
 package model;
 
+import static org.junit.Assert.fail;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -60,8 +62,7 @@ public class GlobalState {
         List<Requirement> satisfiedReqs = new ArrayList<>();
 
         // runtime bindings of instance
-        ArrayList<RuntimeBinding> instanceRunBindings = (ArrayList<RuntimeBinding>) this.runtimeBindings
-                .get(instance.getID());
+        ArrayList<RuntimeBinding> instanceRunBindings = (ArrayList<RuntimeBinding>) this.runtimeBindings.get(instance.getID());
 
         for (RuntimeBinding runBinding : instanceRunBindings) {
 
@@ -74,12 +75,10 @@ public class GlobalState {
                 NodeInstance servingInstance = this.activeNodeInstances.get(runBinding.getNodeInstanceID());
 
                 // the serving instance is the right kind of Node?
-                boolean servingInsRightNodeType = servingInstance.getNodeType().getName()
-                        .equals(capStaticBinding.getNodeName());
+                boolean servingInsRightNodeType = servingInstance.getNodeType().getName().equals(capStaticBinding.getNodeName());
 
                 // the serving instance is currently offering the right cap of instance?
-                boolean servingInsOfferingRightCap = servingInstance.getOfferedCaps()
-                        .contains(capStaticBinding.getCapOrReq());
+                boolean servingInsOfferingRightCap = servingInstance.getOfferedCaps().contains(capStaticBinding.getCapOrReq());
 
                 if (servingInsOfferingRightCap == true && servingInsRightNodeType == true)
                     // the requirement is trurly satisfied
@@ -112,7 +111,9 @@ public class GlobalState {
      * @throws NullPointerException
      */
     public List<NodeInstance> getCapableInstances(NodeInstance askingInstance, Requirement req)
-            throws NullPointerException {
+        throws 
+            NullPointerException 
+    {
         if (askingInstance == null)
             throw new NullPointerException("askingInstance null");
         if (req == null)
@@ -128,14 +129,15 @@ public class GlobalState {
             ArrayList<NodeInstance> activeInstances = new ArrayList<>(activeInstancesCollection);
 
             // for each instance check if it is the right kind of node and if it currently
-            // offering
-            // the right capability for <askingInstance, req>
+            // offering the right capability for <askingInstance, req>
             for (NodeInstance instance : activeInstances) {
                 boolean instanceRightType = instance.getNodeType().getName().equals(capStaticBinding.getNodeName());
                 boolean instanceOfferingRightCap = instance.getOfferedCaps().contains(capStaticBinding.getCapOrReq());
 
                 if (instanceRightType == true && instanceOfferingRightCap == true)
                     capableInstances.add(instance);
+                else  
+                    fail(instance.getID() + " " + capStaticBinding.getNodeName());
 
             }
         }

@@ -17,12 +17,21 @@ import exceptions.IllegalSequenceElementException;
 import exceptions.InstanceUnknownException;
 import exceptions.RuleNotApplicableException;
 import model.Application;
+import model.ManagementProtocol;
+import model.Node;
+import model.NodeInstance;
+import model.Requirement;
+import model.RequirementSort;
+import model.RuntimeBinding;
+import model.StaticBinding;
 import utilities.ThesisAppFactory;
 
 public class AnalyzerTest {
 
     public Application app;
     public Analyzer analyzer;
+
+    public Application toyApp; //for the create combinations test
 
     @Before
     public void setUp()
@@ -32,7 +41,8 @@ public class AnalyzerTest {
             AlreadyUsedIDException, 
             InstanceUnknownException 
     {
-        analyzer = new Analyzer();
+        this.analyzer = new Analyzer();
+        this.toyApp = this.createToyApp();
     }
 
     @Test
@@ -152,4 +162,120 @@ public class AnalyzerTest {
         sequence.add(opEnd);
     }
 
+    //creates the simple applications to use for the test of create combinations
+    public Application createToyApp(){
+        Application ret = new Application("toy");
+
+        Node nodeA = this.createNodeA();
+        Node nodeB = this.createNodeB();
+        Node nodeC = this.createNodeC();
+
+        ret.addNode(nodeA);
+        ret.addNode(nodeB);
+        ret.addNode(nodeC);
+
+        StaticBinding firstHalf = new StaticBinding("nodeA", "server");
+        StaticBinding secondHalf = new StaticBinding("nodeB", "server");
+        ret.addStaticBinding(firstHalf, secondHalf);
+
+        StaticBinding firstHalf1 = new StaticBinding("nodeA", "db");
+        StaticBinding secondHalf1 = new StaticBinding("nodeB", "db");
+        ret.addStaticBinding(firstHalf1, secondHalf1);
+
+        StaticBinding firstHalf2 = new StaticBinding("nodeA", "server");
+        StaticBinding secondHalf2 = new StaticBinding("nodeC", "server");
+        ret.addStaticBinding(firstHalf2, secondHalf2);
+
+        StaticBinding firstHalf3 = new StaticBinding("nodeA", "db");
+        StaticBinding secondHalf3 = new StaticBinding("nodeC", "db");
+        ret.addStaticBinding(firstHalf3, secondHalf3);
+
+        return ret;
+    }
+
+    public Node createNodeB(){
+        Node ret = new Node("nodeB", "state1", new ManagementProtocol());
+        ManagementProtocol mp = ret.getManagementProtocol();
+        ret.addState("state1");
+
+        ret.addCapability("server");
+        ret.addCapability("db");
+
+        mp.addRhoEntry("state1", new ArrayList<Requirement>());
+        
+        List<String> runningCaps = new ArrayList<>();
+        runningCaps.add("server");
+        runningCaps.add("db");
+        mp.addGammaEntry("state1", runningCaps);
+
+        for (String state : ret.getStates()) 
+            mp.addPhiEntry(state, new ArrayList<String>());
+
+        return ret;
+    }
+
+    public Node createNodeC(){
+        Node ret = new Node("nodeC", "state1", new ManagementProtocol());
+        ManagementProtocol mp = ret.getManagementProtocol();
+        ret.addState("state1");
+
+        ret.addCapability("server");
+        ret.addCapability("db");
+
+        mp.addRhoEntry("state1", new ArrayList<Requirement>());
+        
+        List<String> runningCaps = new ArrayList<>();
+        runningCaps.add("server");
+        runningCaps.add("db");
+        mp.addGammaEntry("state1", runningCaps);
+
+        for (String state : ret.getStates()) 
+            mp.addPhiEntry(state, new ArrayList<String>());
+
+        return ret;
+    }
+
+    public Node createNodeA(){
+        Node ret = new Node("nodeA", "state1", new ManagementProtocol());
+        ManagementProtocol mp = ret.getManagementProtocol();
+
+        Requirement server = new Requirement("server", RequirementSort.REPLICA_UNAWARE);
+        Requirement db = new Requirement("db", RequirementSort.REPLICA_UNAWARE);
+
+        ret.addState("state1");
+
+        ret.addRequirement(server);
+        ret.addRequirement(db);
+
+        List<Requirement> testReqs = new ArrayList<>();
+        testReqs.add(server);
+        testReqs.add(db);
+        mp.addRhoEntry("state1", testReqs);
+
+        //gamma: state -> caps offered in that state
+        for (String state : ret.getStates())
+            mp.addGammaEntry(state, new ArrayList<String>());
+
+        for (String state : ret.getStates()) 
+            mp.addPhiEntry(state, new ArrayList<String>());
+        
+        return ret;
+    }
+
+    @Test
+    public void recursiveCombinationsTest() throws NullPointerException, IllegalArgumentException,
+            RuleNotApplicableException, InstanceUnknownException, AlreadyUsedIDException {
+
+        this.toyApp.scaleOut1("nodeC", "instanceC");
+        this.toyApp.scaleOut1("nodeB", "instanceB");
+        NodeInstance instanceA = this.toyApp.scaleOut1("nodeA", "instanceA");
+
+        analyzer.createBindingCombinations(this.toyApp, "instanceA");
+
+        //List<List<RuntimeBinding>> combinations = analyzer.createBindingCombinations(this.toyApp, "instanceA");
+        Requirement server = new Requirement("server", RequirementSort.REPLICA_UNAWARE);
+
+        assertTrue(this.toyApp.getGlobalState().getCapableInstances(instanceA, server).get(0).getID(), false);
+
+    }
 }

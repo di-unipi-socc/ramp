@@ -5,9 +5,20 @@ public class OpStart extends ExecutableElement{
     private final String instanceID;
     private final String op;
 
-    public OpStart(String id, String op){
+    public OpStart(String instanceID, String op){
+
+        if(instanceID == null)
+            throw new NullPointerException("instanceID null");
+        if(instanceID.isEmpty() == true)
+            throw new IllegalArgumentException("instanceID empty");
+        if(op == null)
+            throw new NullPointerException("op null");
+        if(op.isEmpty() == true)
+            throw new IllegalArgumentException("op empty");
+
+
         this.rule = "opStart";
-        this.instanceID = id;
+        this.instanceID = instanceID;
         this.op = op;
     }
 

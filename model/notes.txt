@@ -9,6 +9,7 @@
 
 - globalState nei parametri dei metodi usa NodeInstance invece che l'ID (string) e questo un po' mi turba (va cambiato ?)
   - da una parte ha senso per coerenza, dall'altra non ha senso (vedi ad esempio opStart e la chiamata removeOldBindings)
+-> cambia in string anche su gs
 
 ExecutableElement non ha anche instanceID perche' ha un significato diverso e mi turba (con scaleIn o opStart indica l'istanza da usare)
 ma con scaleOut indica l'id da assegnare alla nuova istanza)

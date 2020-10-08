@@ -1,20 +1,13 @@
 package analyzer;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import analyzer.executable_element.*;
-import exceptions.AlreadyUsedIDException;
-import exceptions.FailedFaultHandlingExecption;
-import exceptions.FailedOperationException;
-import exceptions.IllegalSequenceElementException;
-import exceptions.InstanceUnknownException;
-import exceptions.OperationNotAvailableException;
-import exceptions.RuleNotApplicableException;
-
-import model.Application;
-import model.Fault;
-import model.NodeInstance;
+import exceptions.*;
+import model.*;
 
 /**
  * idea del metodo analisi della sequenza con /pi deterministica algoritmo
@@ -83,17 +76,17 @@ public class Analyzer {
         
         //branch where the faults are hanled by their type
         if(pendingFaults.isEmpty() == false){
-
             //for each fault check if it is pending or resolvable
             for(Fault f : pendingFaults) {
                 cloneApp = app.clone();
 
-                if(app.getGlobalState().isResolvableFault(f) == true) {
+                if(cloneApp.getGlobalState().isResolvableFault(f) == true) {
                     try {
                         cloneApp.autoreconnect(f.getInstanceID(), f.getReq());
                         //if the fault is resolved keep exploring the branch
                         if (this.isValidSequence(cloneApp, sequence) == false)
                             return false;
+
                     } catch (RuleNotApplicableException e) {
                         return false;
                     } catch (InstanceUnknownException e) {
@@ -115,6 +108,7 @@ public class Analyzer {
                 }
             }
         }
+        
         return true;
     }
 
@@ -205,18 +199,177 @@ public class Analyzer {
     }
 
     public boolean isNotValidSequence(Application app, List<ExecutableElement> sequence)
-            throws NullPointerException, IllegalSequenceElementException, InstanceUnknownException {
+        throws 
+            NullPointerException, 
+            IllegalSequenceElementException, 
+            InstanceUnknownException 
+    {
         return !this.isWeaklyValidSequence(app, sequence);
+    }
+
+    public boolean nonDetIsWeaklyValid(Application app, List<ExecutableElement> sequence)
+        throws 
+            IllegalSequenceElementException, 
+            NullPointerException, 
+            InstanceUnknownException 
+    {    
+        if (app == null)
+            throw new NullPointerException();
+
+        if (this.wellFormattedSequence(sequence) == false)
+            throw new IllegalSequenceElementException();
+
+        if (sequence.isEmpty() == true)
+            return true;
+
+        ArrayList<Fault> pendingFaults = (ArrayList<Fault>) app.getGlobalState().getPendingFaults();
+        ArrayList<NodeInstance> brokenInstances = (ArrayList<NodeInstance>) app.getGlobalState().getBrokeninstances();
+
+        Application cloneApp;
+
+        if(brokenInstances.isEmpty() == false){
+            cloneApp = app.clone();
+            try {
+                cloneApp.scaleIn(brokenInstances.get(0).getID());
+                if (this.nonDetIsWeaklyValid(cloneApp, sequence) == true)
+                    return true;
+
+            } catch (RuleNotApplicableException E) {
+                return false;
+            }
+
+            cloneApp = app.clone(); //clone this to reset the clone well
+        }
+
+        if(pendingFaults.isEmpty() == false){
+            //for each fault check if it is pending or resolvable
+            for(Fault f : pendingFaults) {
+                cloneApp = app.clone();
+
+                if(app.getGlobalState().isResolvableFault(f) == true) {
+                    try {
+                        cloneApp.autoreconnect(f.getInstanceID(), f.getReq());
+                        //if the fault is resolved keep exploring the branch
+                        if (this.nonDetIsWeaklyValid(cloneApp, sequence) == true)
+                            return true;
+                    } catch (RuleNotApplicableException e) {
+                        return false;
+                    }
+                    
+                }else {
+                    try {
+                        cloneApp.fault(f.getInstanceID(), f.getReq());
+                        //if the fault is resolved keep exploring the branch
+                        if (this.isWeaklyValidSequence(cloneApp, sequence) == true)
+                            return true;
+
+                    } catch (FailedFaultHandlingExecption e) {
+                        return false;
+                    } catch (RuleNotApplicableException e) {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        ExecutableElement op = sequence.remove(0);
+
+        if (op instanceof OpStart){
+           
+     
+        }
+
+        if (op instanceof OpEnd){
+
+        }
+
+        if (op instanceof ScaleIn){
+
+        }
+
+        if (op instanceof ScaleOut1){
+
+        }
+
+        if (op instanceof ScaleOut2){
+
+        }
+
+
+        return false;
     }
 
     private boolean wellFormattedSequence(List<ExecutableElement> sequence){
         boolean res = true;
         
         for (ExecutableElement element : sequence) { 
-            if(element.wellFormattedSequenceElement() == false)
+            if (element.wellFormattedSequenceElement() == false)
                 res = false;
         }
 
         return res;
-    }   
+    }
+    
+    public List<List<RuntimeBinding>> createBindingCombinations(Application app, String instanceID)            
+    {
+        NodeInstance instance = app.getGlobalState().getActiveNodeInstances().get(instanceID);
+
+        Map<Requirement, List<NodeInstance>> reqToCapableInstance = new HashMap<>();
+
+        for(Requirement r : instance.getNeededReqs())
+            reqToCapableInstance.put(r, app.getGlobalState().getCapableInstances(instance, r));
+        
+        int reqsStart = 0; 
+        int reqsEnd = instance.getNeededReqs().size() - 1;        
+
+        List<List<RuntimeBinding>> combinations = new ArrayList<>();
+        List<RuntimeBinding> currentCombination = new ArrayList<>();
+        this.recursiveCombinations(reqsStart, reqsEnd, instance.getNeededReqs(), reqToCapableInstance, combinations, currentCombination);
+        
+        return combinations;
+    }
+
+
+    public void recursiveCombinations(
+        int reqsStart, 
+        int reqsEnd, 
+        List<Requirement> neededReqs, 
+        Map<Requirement, List<NodeInstance>> reqToCapableInstance, 
+        List<List<RuntimeBinding>> combinations, 
+        List<RuntimeBinding> currentCombination)
+    {
+        Requirement req = neededReqs.get(reqsStart);
+        ArrayList<NodeInstance> capableInstance = (ArrayList<NodeInstance>) reqToCapableInstance.get(req);
+        
+        if(reqsEnd == reqsStart){
+
+            List<RuntimeBinding> combination = null;
+
+            for(NodeInstance i : capableInstance){
+                RuntimeBinding newRunBinding = new RuntimeBinding(req, i.getID());
+
+                combination = this.cloneList(currentCombination);
+                combination.add(newRunBinding);
+                combinations.add(combination);
+            }
+            return; 
+        }else{
+            for(NodeInstance i : capableInstance){
+                currentCombination.add(new RuntimeBinding(req, i.getID()));
+                //TODO: probabilmente currentCombination nel parametro va clonato, altrimenti mi sporca i riferimenti
+                this.recursiveCombinations(reqsStart + 1, reqsEnd, neededReqs, reqToCapableInstance, combinations, currentCombination);
+            }
+        }   
+        return;
+    }
+
+    private List<RuntimeBinding> cloneList(List<RuntimeBinding> currentCombination){
+        List<RuntimeBinding> ret = new ArrayList<>();
+
+        for (RuntimeBinding runtimeBinding : currentCombination) 
+            ret.add(new RuntimeBinding(runtimeBinding.getReq(), runtimeBinding.getNodeInstanceID()));
+        
+        return ret;
+    }
+
 }

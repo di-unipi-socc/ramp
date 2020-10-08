@@ -565,7 +565,7 @@ public class Application {
         if(instance == null)
             throw new RuleNotApplicableException("instance unknown");
     
-        this.globalState.activeNodeInstances.remove(instance.getID());
+        this.globalState.activeNodeInstances.remove(instanceID);
 
         //remove the bindings that took care of instance's req and the ones where instance was the server
         this.globalState.removeAllBindingsBothWays(instance);
@@ -623,6 +623,9 @@ public class Application {
         this.bindingFunction.put(source, target);
     }
 
+    /**
+     * clones the application (recursivly, hence clone the global state and so on)
+     */
     public Application clone(){
         Application clone = new Application(this.name);
 
