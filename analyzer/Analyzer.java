@@ -341,9 +341,10 @@ public class Analyzer {
         Requirement req = neededReqs.get(reqsStart);
         ArrayList<NodeInstance> capableInstance = (ArrayList<NodeInstance>) reqToCapableInstance.get(req);
         
+        List<RuntimeBinding> combination = null;
+
         if(reqsEnd == reqsStart){
 
-            List<RuntimeBinding> combination = null;
 
             for(NodeInstance i : capableInstance){
                 RuntimeBinding newRunBinding = new RuntimeBinding(req, i.getID());
@@ -355,9 +356,9 @@ public class Analyzer {
             return; 
         }else{
             for(NodeInstance i : capableInstance){
-                currentCombination.add(new RuntimeBinding(req, i.getID()));
-                //TODO: probabilmente currentCombination nel parametro va clonato, altrimenti mi sporca i riferimenti
-                this.recursiveCombinations(reqsStart + 1, reqsEnd, neededReqs, reqToCapableInstance, combinations, currentCombination);
+                combination = this.cloneList(currentCombination);
+                combination.add(new RuntimeBinding(req, i.getID()));
+                this.recursiveCombinations(reqsStart + 1, reqsEnd, neededReqs, reqToCapableInstance, combinations, combination);
             }
         }   
         return;

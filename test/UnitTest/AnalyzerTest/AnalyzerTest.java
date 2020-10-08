@@ -19,7 +19,6 @@ import exceptions.RuleNotApplicableException;
 import model.Application;
 import model.ManagementProtocol;
 import model.Node;
-import model.NodeInstance;
 import model.Requirement;
 import model.RequirementSort;
 import model.RuntimeBinding;
@@ -179,16 +178,8 @@ public class AnalyzerTest {
         ret.addStaticBinding(firstHalf, secondHalf);
 
         StaticBinding firstHalf1 = new StaticBinding("nodeA", "db");
-        StaticBinding secondHalf1 = new StaticBinding("nodeB", "db");
+        StaticBinding secondHalf1 = new StaticBinding("nodeC", "db");
         ret.addStaticBinding(firstHalf1, secondHalf1);
-
-        StaticBinding firstHalf2 = new StaticBinding("nodeA", "server");
-        StaticBinding secondHalf2 = new StaticBinding("nodeC", "server");
-        ret.addStaticBinding(firstHalf2, secondHalf2);
-
-        StaticBinding firstHalf3 = new StaticBinding("nodeA", "db");
-        StaticBinding secondHalf3 = new StaticBinding("nodeC", "db");
-        ret.addStaticBinding(firstHalf3, secondHalf3);
 
         return ret;
     }
@@ -199,13 +190,11 @@ public class AnalyzerTest {
         ret.addState("state1");
 
         ret.addCapability("server");
-        ret.addCapability("db");
 
         mp.addRhoEntry("state1", new ArrayList<Requirement>());
         
         List<String> runningCaps = new ArrayList<>();
         runningCaps.add("server");
-        runningCaps.add("db");
         mp.addGammaEntry("state1", runningCaps);
 
         for (String state : ret.getStates()) 
@@ -219,13 +208,11 @@ public class AnalyzerTest {
         ManagementProtocol mp = ret.getManagementProtocol();
         ret.addState("state1");
 
-        ret.addCapability("server");
         ret.addCapability("db");
 
         mp.addRhoEntry("state1", new ArrayList<Requirement>());
         
         List<String> runningCaps = new ArrayList<>();
-        runningCaps.add("server");
         runningCaps.add("db");
         mp.addGammaEntry("state1", runningCaps);
 
@@ -266,16 +253,35 @@ public class AnalyzerTest {
     public void recursiveCombinationsTest() throws NullPointerException, IllegalArgumentException,
             RuleNotApplicableException, InstanceUnknownException, AlreadyUsedIDException {
 
-        this.toyApp.scaleOut1("nodeC", "instanceC");
-        this.toyApp.scaleOut1("nodeB", "instanceB");
-        NodeInstance instanceA = this.toyApp.scaleOut1("nodeA", "instanceA");
+        this.toyApp.scaleOut1("nodeC", "instanceC1");
+        this.toyApp.scaleOut1("nodeC", "instanceC2");
+        this.toyApp.scaleOut1("nodeC", "instanceC3");
 
-        analyzer.createBindingCombinations(this.toyApp, "instanceA");
+        this.toyApp.scaleOut1("nodeB", "instanceB1");
+        this.toyApp.scaleOut1("nodeB", "instanceB2");
+        this.toyApp.scaleOut1("nodeB", "instanceB3");
 
-        //List<List<RuntimeBinding>> combinations = analyzer.createBindingCombinations(this.toyApp, "instanceA");
-        Requirement server = new Requirement("server", RequirementSort.REPLICA_UNAWARE);
+        this.toyApp.scaleOut1("nodeA", "instanceA");
 
-        assertTrue(this.toyApp.getGlobalState().getCapableInstances(instanceA, server).get(0).getID(), false);
+        List<List<RuntimeBinding>> combinations = analyzer.createBindingCombinations(this.toyApp, "instanceA");
+        assertTrue(combinations.size() == 9);
 
+        //assertTrue(printCombinations(combinations), false);
+    }
+
+    public String printCombinations(List<List<RuntimeBinding>> combinations){
+        String s = "";
+
+        s = s.concat("[ ");
+        for (List<RuntimeBinding> list : combinations) {
+            s = s.concat("[");
+            for (RuntimeBinding runBinding : list) {
+                s = s.concat("<" + runBinding.getNodeInstanceID() + " " + runBinding.getReq().getName() + "> "); 
+            }
+            s = s.concat("] ");
+        }
+
+        s = s.concat(" ]");
+        return s;
     }
 }

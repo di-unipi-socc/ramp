@@ -1,7 +1,5 @@
 package model;
 
-import static org.junit.Assert.fail;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -136,8 +134,7 @@ public class GlobalState {
 
                 if (instanceRightType == true && instanceOfferingRightCap == true)
                     capableInstances.add(instance);
-                else  
-                    fail(instance.getID() + " " + capStaticBinding.getNodeName());
+               
 
             }
         }
