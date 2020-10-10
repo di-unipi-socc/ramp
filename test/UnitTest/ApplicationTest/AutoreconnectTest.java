@@ -123,8 +123,8 @@ public class AutoreconnectTest {
         this.testApp.autoreconnect("", this.reqUnaware);
     }
 
-    //autoreconnect throws a RuleNotApplicableException if the passed instanceID have not an instance associated
-    @Test(expected = RuleNotApplicableException.class)
+    //autoreconnect throws a InstanceUnknownException if the passed instanceID have not an instance associated
+    @Test(expected = InstanceUnknownException.class)
     public void autoreconnectNotExistingInstanceTest()
         throws 
             NullPointerException, 
@@ -155,16 +155,16 @@ public class AutoreconnectTest {
             InstanceUnknownException 
     {
         //instanceOfA has 2 pending fault
-        assertTrue(this.testApp.getGlobalState().getPendingFaults(this.instanceOfA).size() == 2);
+        assertTrue(this.testApp.getGlobalState().getPendingFaults("instanceOfA").size() == 2);
         //one of the 2 pending fault is resolvable (reqUnaware)
-        assertTrue(this.testApp.getGlobalState().getResolvableFaults(this.instanceOfA).size() == 1);
+        assertTrue(this.testApp.getGlobalState().getResolvableFaults("instanceOfA").size() == 1);
 
         //we fix the resolvable fault
         this.testApp.autoreconnect("instanceOfA", this.reqUnaware);
 
         //now instanceOfA has only one fault and a not resolvable fault (faultyReq)
-        assertTrue(this.testApp.getGlobalState().getPendingFaults(this.instanceOfA).size() == 1);
-        assertTrue(this.testApp.getGlobalState().getResolvableFaults(this.instanceOfA).size() == 0);
+        assertTrue(this.testApp.getGlobalState().getPendingFaults("instanceOfA").size() == 1);
+        assertTrue(this.testApp.getGlobalState().getResolvableFaults("instanceOfA").size() == 0);
     }
 
 }

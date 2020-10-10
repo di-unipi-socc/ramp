@@ -168,7 +168,8 @@ public class ScaleInTest {
     public void scaleInNullInstanceIDTest() 
         throws 
             NullPointerException, 
-            RuleNotApplicableException 
+            RuleNotApplicableException, 
+            InstanceUnknownException 
     {
         this.testApp.scaleIn(null);
     }
@@ -178,17 +179,19 @@ public class ScaleInTest {
     public void scaleInEmptyInstanceIDTest() 
         throws 
             NullPointerException, 
-            RuleNotApplicableException 
+            RuleNotApplicableException, 
+            InstanceUnknownException 
     {
         this.testApp.scaleIn("");
     }
 
-    //scaleIn throws a RuleNotApplicableException when the passed instance is an instance of an unkown node
-    @Test(expected = RuleNotApplicableException.class)
+    //scaleIn throws a InstanceUnknownException when the passed instance is an instance of an unkown node
+    @Test(expected = InstanceUnknownException.class)
     public void scaleInUnknownInstance() 
         throws 
             NullPointerException, 
-            RuleNotApplicableException 
+            RuleNotApplicableException, 
+            InstanceUnknownException 
     {
         this.testApp.scaleIn(this.unknownInstance.getID());
     }
@@ -204,17 +207,17 @@ public class ScaleInTest {
     {
 
         //has only one binding because B is created after A, so there is resolvable fault
-        assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.instanceOfA).size() == 1);
+        assertTrue(this.testApp.getGlobalState().getSatisfiedReqs("instanceOfA").size() == 1);
 
-        Fault f = this.testApp.getGlobalState().getResolvableFaults(this.instanceOfA).get(0);
+        Fault f = this.testApp.getGlobalState().getResolvableFaults("instanceOfA").get(0);
         this.testApp.autoreconnect(f.getInstanceID(), f.getReq());
 
         //now A has the 2 binding: 1 with C for the containment and 1 with B for the other requirement
-        assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.instanceOfA).size() == 2);
+        assertTrue(this.testApp.getGlobalState().getSatisfiedReqs("instanceOfA").size() == 2);
         //B has only 1 binding with A, since B has a requirement that A satisfies
-        assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.instanceOfB).size() == 1);
+        assertTrue(this.testApp.getGlobalState().getSatisfiedReqs("instanceOfB").size() == 1);
         //C has no reqs
-        assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.instanceOfC).size() == 0);
+        assertTrue(this.testApp.getGlobalState().getSatisfiedReqs("instanceOfC").size() == 0);
 
         //the scaleIn destroy instanceOfC so it is destroyed even instanceOfA that's contained in instanceOfC
         this.testApp.scaleIn("instanceOfC");
@@ -227,7 +230,7 @@ public class ScaleInTest {
         assertNull(this.testApp.getGlobalState().getRuntimeBindings().get("instanceOfA"));
         assertNull(this.testApp.getGlobalState().getRuntimeBindings().get("instanceOfC"));
 
-        assertTrue(this.testApp.getGlobalState().getPendingFaults(this.instanceOfB).size() == 1);
+        assertTrue(this.testApp.getGlobalState().getPendingFaults("instanceOfB").size() == 1);
     }
 
     //test that is a non container instance is destroyed only that instance and its runtime bindings are destroyed
@@ -239,15 +242,15 @@ public class ScaleInTest {
             InstanceUnknownException 
     {
         //has only one binding because B is created after A, so there is resolvable fault
-        assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.instanceOfA).size() == 1);
+        assertTrue(this.testApp.getGlobalState().getSatisfiedReqs("instanceOfA").size() == 1);
 
-        Fault f = this.testApp.getGlobalState().getResolvableFaults(this.instanceOfA).get(0);
+        Fault f = this.testApp.getGlobalState().getResolvableFaults("instanceOfA").get(0);
         this.testApp.autoreconnect(this.instanceOfA.getID(), f.getReq());
 
         //now A has the 2 binding: 1 with C for the containment and 1 with B for the other requirement
-        assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.instanceOfA).size() == 2);
+        assertTrue(this.testApp.getGlobalState().getSatisfiedReqs("instanceOfA").size() == 2);
         //B has only 1 binding with A, since B has a requirement that A satisfies
-        assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.instanceOfB).size() == 1);
+        assertTrue(this.testApp.getGlobalState().getSatisfiedReqs("instanceOfB").size() == 1);
 
         this.testApp.scaleIn(this.instanceOfB.getID());
 
@@ -255,7 +258,7 @@ public class ScaleInTest {
         assertNull(this.testApp.getGlobalState().getRuntimeBindings().get("instanceOfB"));
 
         //since B is eliminated A has a fault, because B was providing a cap
-        assertTrue(this.testApp.getGlobalState().getPendingFaults(this.instanceOfA).size() == 1);
+        assertTrue(this.testApp.getGlobalState().getPendingFaults("instanceOfA").size() == 1);
 
     }
 

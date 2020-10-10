@@ -150,20 +150,19 @@ public class Application {
     public NodeInstance randomPI(String instanceID, Requirement req)
         throws
             NullPointerException,
+            IllegalArgumentException,
             InstanceUnknownException
     {
-        if(instanceID == null)
-            throw new NullPointerException("instance null");
-        if(instanceID.isEmpty() == true)
-            throw new IllegalArgumentException();
         if(req == null)
             throw new NullPointerException("req null");
         
-        NodeInstance instance = this.getGlobalState().getActiveNodeInstances().get(instanceID);
-        if(instance == null)
-            throw new InstanceUnknownException();
-
-        ArrayList<NodeInstance> capableInstances = (ArrayList<NodeInstance>) this.globalState.getCapableInstances(instance, req);
+        try {
+            this.globalState.checkNodeInstanceExistance(instanceID);
+        } catch (IllegalArgumentException | NullPointerException | InstanceUnknownException e) {
+            throw e; 
+        }
+        
+        ArrayList<NodeInstance> capableInstances = (ArrayList<NodeInstance>) this.globalState.getCapableInstances(instanceID, req);
         NodeInstance servingInstance = capableInstances.get(this.randomIndex(0, capableInstances.size() - 1));
         
         return servingInstance;
@@ -180,17 +179,10 @@ public class Application {
             NullPointerException,
             InstanceUnknownException
     {    
-        if(instanceID == null)
-            throw new NullPointerException("instance null");
-        if(instanceID.isEmpty() == true)
-            throw new IllegalArgumentException(); 
         if(req == null)
             throw new NullPointerException("req null");
         
-        NodeInstance instance = this.getGlobalState().getActiveNodeInstances().get(instanceID);
-        if(instance == null)
-            throw new InstanceUnknownException();
-        
+        NodeInstance instance = this.globalState.getNodeInstanceByID(instanceID);
         NodeInstance servingInstance = null;
 
         Collection<NodeInstance> activeInstancesCollection =  this.globalState.activeNodeInstances.values();
@@ -231,21 +223,14 @@ public class Application {
             OperationNotAvailableException, 
             IllegalArgumentException,
             NullPointerException, 
-            RuleNotApplicableException, 
             InstanceUnknownException
     {
-        if(instanceID == null)
-            throw new NullPointerException("instanceID null");
-        if(instanceID.isEmpty() == true)
-            throw new IllegalArgumentException("instanceID empty");
         if(op == null)
             throw new NullPointerException("op null");
         if(op.isEmpty() == true)
             throw new IllegalArgumentException("op empty");
 
-        NodeInstance instance = this.globalState.getActiveNodeInstances().get(instanceID);
-        if(instance == null)
-            throw new RuleNotApplicableException("instance unknown");
+        NodeInstance instance = this.globalState.getNodeInstanceByID(instanceID);
 
         Transition transitionToHappen = instance.getTransitionByOp(op);
 
@@ -257,10 +242,10 @@ public class Application {
         instance.setCurrentState(transitionToHappen.getName());
 
         //kill old bindings (the ones that were about the old state)
-        this.globalState.removeOldBindings(instance);
+        this.globalState.removeOldBindings(instanceID);
 
         //add the new bindings (the ones that are about the new transient state)
-        this.globalState.addNewBindings(instance);
+        this.globalState.addNewBindings(instanceID);
     }
 
     /**
@@ -278,25 +263,19 @@ public class Application {
             InstanceUnknownException
     {
 
-        if(instanceID == null)
-            throw new NullPointerException("instanceID null");
-        if(instanceID.isEmpty() == true)
-            throw new IllegalArgumentException("instanceID empty");
         if(op == null)
             throw new NullPointerException("op null");
         if(op.isEmpty() == true)
             throw new IllegalArgumentException("op empty");
 
-        NodeInstance instance = this.getGlobalState().getActiveNodeInstances().get(instanceID);
-        if(instance == null)
-            throw new RuleNotApplicableException("instance unknown");
+        NodeInstance instance = this.globalState.getNodeInstanceByID(instanceID);
 
-        ArrayList<Fault> pendingFaults = (ArrayList<Fault>) this.globalState.getPendingFaults(instance);
+        ArrayList<Fault> pendingFaults = (ArrayList<Fault>) this.globalState.getPendingFaults(instanceID);
 
         if(pendingFaults.isEmpty() == false)
             throw new FailedOperationException("pending faults to be handled");
 
-        if(this.globalState.isBrokenInstance(instance) == true)
+        if(this.globalState.isBrokenInstance(instanceID) == true)
             throw new FailedOperationException("broken instance");
 
         //get the transition by its name (which is stored in the current state, since instance is in a transient state)
@@ -309,10 +288,10 @@ public class Application {
         instance.setCurrentState(transitionToComplete.getEndingState());
 
         //kill old bindings (the ones that were about the old state)
-        this.globalState.removeOldBindings(instance);
+        this.globalState.removeOldBindings(instanceID);
 
         //add the new bindings (the ones that are about the new (final) state
-        this.globalState.addNewBindings(instance);
+        this.globalState.addNewBindings(instanceID);
     }
 
     /**
@@ -329,16 +308,10 @@ public class Application {
             RuleNotApplicableException, 
             InstanceUnknownException
     {
-        if(instanceID == null)
-            throw new NullPointerException("instanceID null");
-        if(instanceID.isEmpty() == true)
-            throw new IllegalArgumentException("instanceID empty");
         if(req == null)
             throw new NullPointerException("req null");
 
-        NodeInstance instance = this.globalState.getActiveNodeInstances().get(instanceID);
-        if(instance == null)
-            throw new RuleNotApplicableException();
+        NodeInstance instance = this.globalState.getNodeInstanceByID(instanceID);
 
         Fault fault = new Fault(instance.getID(), req);
 
@@ -380,47 +353,41 @@ public class Application {
 
         //we apply the rule
         instance.setCurrentState(rightState);
-        this.globalState.removeOldBindings(instance);
-        this.globalState.addNewBindings(instance);
+        this.globalState.removeOldBindings(instanceID);
+        this.globalState.addNewBindings(instanceID);
     }
 
     /**
      * @param instanceID id of the instance that have a fault to be resolved
-     * @param req        the (resolvable) faulted requirement
+     * @param req the (resolvable) faulted requirement
      * @throws RuleNotApplicableException
      * @throws NullPointerException
      * @throws InstanceUnknownException
      */
     public void autoreconnect(String instanceID, Requirement req)
-            throws RuleNotApplicableException, NullPointerException, InstanceUnknownException
+        throws 
+            RuleNotApplicableException, 
+            NullPointerException, 
+            InstanceUnknownException
     {
-        if(instanceID == null)
-            throw new NullPointerException("instanceID null");
-        
-        if(instanceID.isEmpty() == true)
-            throw new IllegalArgumentException("instanceID empty");
-        
         if(req == null)
             throw new NullPointerException("req null");
-        
-        NodeInstance instance = this.getGlobalState().getActiveNodeInstances().get(instanceID);
-        
-        if(instance == null)
-            throw new RuleNotApplicableException("instance unknown");
 
-        Fault fault = new Fault(instance.getID(), req);
+        this.globalState.checkNodeInstanceExistance(instanceID);
+
+        Fault fault = new Fault(instanceID, req);
 
         if(this.globalState.isResolvableFault(fault) == false)
             throw new RuleNotApplicableException("not a resolvable fault");
         
         //delete the old binding (that has failed)
-        this.globalState.removeRuntimeBinding(instance, req);
+        this.globalState.removeRuntimeBinding(instanceID, req);
 
         //find a new capable instance that can take care of req
-        NodeInstance servingInstance = this.greedyPI(instance.getID(), req);
+        NodeInstance servingInstance = this.greedyPI(instanceID, req);
 
         //servingInstance cant be null, otherwise req wouldn't be resolvable
-        this.globalState.addBinding(instance, req, servingInstance);
+        this.globalState.addBinding(instanceID, req, servingInstance.getID());
     }
 
     /**
@@ -460,13 +427,13 @@ public class Application {
         NodeInstance newNodeInstance = this.createNewNodeInstance(node, instanceID);
 
         //add the new instance in the G set
-        this.globalState.activeNodeInstances.put(newNodeInstance.getID(), newNodeInstance);
+        this.globalState.activeNodeInstances.put(instanceID, newNodeInstance);
 
         //set up the runtime binding for the new instance
-        this.globalState.runtimeBindings.put(newNodeInstance.getID(), new ArrayList<RuntimeBinding>());
+        this.globalState.runtimeBindings.put(instanceID, new ArrayList<RuntimeBinding>());
         
         //add the bindings needed for the initial state of the instance
-        this.globalState.addNewBindings(newNodeInstance);
+        this.globalState.addNewBindings(instanceID);
 
         return newNodeInstance;
     }
@@ -478,6 +445,8 @@ public class Application {
      * @return the newly created node instance
      * @throws RuleNotApplicableException
      * @throws NullPointerException
+     * @throws InstanceUnknownException
+     * @throws AlreadyUsedIDException
      */
     public NodeInstance scaleOut2(String nodeName, String instanceID, String containerID) 
         throws 
@@ -490,20 +459,12 @@ public class Application {
             throw new NullPointerException("nodeName null");
         if(nodeName.isEmpty() == true)
             throw new IllegalArgumentException("nodeName empty");
-        
-        if(containerID == null)
-            throw new NullPointerException("containerID null");
-        if(containerID.isEmpty() == true)
-            throw new IllegalArgumentException("containerID empty");
 
         Node node = this.getNodes().get(nodeName);
         if(node == null)
             throw new RuleNotApplicableException("node unknown");
 
-    
-        NodeInstance container = this.globalState.getActiveNodeInstances().get(containerID);
-        if(container == null)
-            throw new RuleNotApplicableException("container null");
+        NodeInstance container = this.globalState.getNodeInstanceByID(containerID);
         
         ArrayList<Requirement> nodeRequirements = (ArrayList<Requirement>) node.getReqs();
 
@@ -530,16 +491,16 @@ public class Application {
         newNodeInstance = this.createNewNodeInstance(node, instanceID);
 
         //add the new instance in the G set
-        this.globalState.activeNodeInstances.put(newNodeInstance.getID(), newNodeInstance);
+        this.globalState.activeNodeInstances.put(instanceID, newNodeInstance);
 
         //set up the runtime binding for the new instance
-        this.globalState.runtimeBindings.put(newNodeInstance.getID(), new ArrayList<RuntimeBinding>());
+        this.globalState.runtimeBindings.put(instanceID, new ArrayList<RuntimeBinding>());
 
         //explicitly add the containment binding
-        this.globalState.addBinding(newNodeInstance, containmentRequirement, container);
+        this.globalState.addBinding(instanceID, containmentRequirement, containerID);
 
         //add the non-containemnt bindings needed for the initial state of the new instance
-        this.globalState.addNewBindings(newNodeInstance);
+        this.globalState.addNewBindings(instanceID);
         
         return newNodeInstance;
     }
@@ -548,27 +509,20 @@ public class Application {
      * @param instanceID the id of the instance that has to be killed
      * @throws NullPonterException
      * @throws RuleNotApplicableException
+     * @throws InstanceUnknownException
      */
-    public void scaleIn(String instanceID) 
+    public void scaleIn(String instanceID)
         throws 
             RuleNotApplicableException, 
-            NullPointerException 
+            NullPointerException, 
+            InstanceUnknownException 
     {
-        if(instanceID == null)
-            throw new NullPointerException("instanceID null");
-        
-        if(instanceID.isEmpty() == true)
-            throw new IllegalArgumentException("instanceID empty");
-        
-        NodeInstance instance = this.globalState.getActiveNodeInstances().get(instanceID);
-        
-        if(instance == null)
-            throw new RuleNotApplicableException("instance unknown");
+        this.globalState.checkNodeInstanceExistance(instanceID);
     
         this.globalState.activeNodeInstances.remove(instanceID);
 
         //remove the bindings that took care of instance's req and the ones where instance was the server
-        this.globalState.removeAllBindingsBothWays(instance);
+        this.globalState.removeAllBindingsBothWays(instanceID);
 
         //if instance was a container the contained instance must be destroyed too
         this.autodestroy();
@@ -576,8 +530,15 @@ public class Application {
     
     /**
      * @throws RuleNotApplicableException
+     * @throws InstanceUnknownException
+     * @throws NullPointerException
      */
-    private void autodestroy() throws RuleNotApplicableException {
+    private void autodestroy() 
+        throws 
+            RuleNotApplicableException, 
+            NullPointerException, 
+            InstanceUnknownException 
+    {
         ArrayList<NodeInstance> brokenInstances = (ArrayList<NodeInstance>) this.globalState.getBrokeninstances();
         
         if(brokenInstances.isEmpty() == false)

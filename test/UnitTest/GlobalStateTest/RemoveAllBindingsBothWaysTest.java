@@ -187,15 +187,25 @@ public class RemoveAllBindingsBothWaysTest {
 
     //removeAllBindingsBothWays throws NullPointerException if the passed instance is null
     @Test(expected = NullPointerException.class)
-    public void removeAllBindingsBothWaysNullInstanceTest(){
+    public void removeAllBindingsBothWaysNullInstanceTest()
+        throws 
+            NullPointerException, 
+            IllegalArgumentException, 
+            InstanceUnknownException 
+    {
         this.testApp.getGlobalState().removeAllBindingsBothWays(null);
     }
 
     @Test
-    public void removeAllBindingsBothWaysTest(){
+    public void removeAllBindingsBothWaysTest()
+        throws 
+            NullPointerException, 
+            IllegalArgumentException, 
+            InstanceUnknownException 
+    {
         assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get("instanceOfA").size() == 3);
         assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get("instanceOfC").size() == 3);
-        this.testApp.getGlobalState().removeAllBindingsBothWays(this.instanceOfA);
+        this.testApp.getGlobalState().removeAllBindingsBothWays("instanceOfA");
 
         //mind that removeAllBindingsBothWays remove even the containment binding (in fact this method is 
         //called only after the scaleIn())

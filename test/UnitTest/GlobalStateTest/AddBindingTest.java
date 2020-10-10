@@ -95,33 +95,53 @@ public class AddBindingTest {
 
     //addBinding throws a NullPointerException if the passed askingInstance is null
     @Test(expected = NullPointerException.class)
-    public void addBindingNullAskingInstanceTest(){
-        this.testApp.getGlobalState().addBinding(null, this.req, this.instanceOfB);
+    public void addBindingNullAskingInstanceTest()
+        throws 
+            NullPointerException, 
+            IllegalArgumentException, 
+            InstanceUnknownException 
+    {
+        this.testApp.getGlobalState().addBinding(null, this.req, "instanceOfB");
     }
 
     //addBinding throws a NullPointerException if the passed requirement is null
     @Test(expected = NullPointerException.class)
-    public void addBindingNullReqTest(){
-        this.testApp.getGlobalState().addBinding(this.instanceOfA, null, this.instanceOfB);
+    public void addBindingNullReqTest()
+        throws 
+            NullPointerException, 
+            IllegalArgumentException, 
+            InstanceUnknownException 
+    {
+        this.testApp.getGlobalState().addBinding("instanceOfA", null, "instanceOfB");
     }
 
     //addBinding thorws a NullPointerException if the passed servingInstance is null
     @Test(expected = NullPointerException.class)
-    public void addBindingNullServingInstanceTest(){
-        this.testApp.getGlobalState().addBinding(this.instanceOfA, this.req, null);
+    public void addBindingNullServingInstanceTest()
+        throws 
+            NullPointerException, 
+            IllegalArgumentException, 
+            InstanceUnknownException 
+    {
+        this.testApp.getGlobalState().addBinding("instanceOfA", this.req, null);
     }
 
     @Test
-    public void addBindingTest(){
+    public void addBindingTest() 
+        throws 
+            NullPointerException, 
+            IllegalArgumentException, 
+            InstanceUnknownException 
+    {
         //instanceOfA has a fault and no binding
         assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get("instanceOfA").size() == 0);
-        assertTrue(this.testApp.getGlobalState().getPendingFaults(this.instanceOfA).size() == 1);
-        assertTrue(this.testApp.getGlobalState().getResolvableFaults(this.instanceOfA).size() == 1);
+        assertTrue(this.testApp.getGlobalState().getPendingFaults("instanceOfA").size() == 1);
+        assertTrue(this.testApp.getGlobalState().getResolvableFaults("instanceOfA").size() == 1);
 
-        this.testApp.getGlobalState().addBinding(this.instanceOfA, this.req, this.instanceOfB);
+        this.testApp.getGlobalState().addBinding("instanceOfA", this.req, "instanceOfB");
 
         //fault is resolved
-        assertTrue(this.testApp.getGlobalState().getPendingFaults(this.instanceOfA).size() == 0);
+        assertTrue(this.testApp.getGlobalState().getPendingFaults("instanceOfA").size() == 0);
         //instanceOfA has 1 runtime 
         assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get("instanceOfA").size() == 1);
     }

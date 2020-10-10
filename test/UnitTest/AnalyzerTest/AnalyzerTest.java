@@ -50,7 +50,8 @@ public class AnalyzerTest {
         throws 
             NullPointerException, 
             IllegalSequenceElementException,
-            IllegalArgumentException
+            IllegalArgumentException, 
+            InstanceUnknownException
              
     {    
         assertTrue(analyzer.isValidSequence(ThesisAppFactory.createApplication(), this.createValidSequence()));

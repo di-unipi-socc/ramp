@@ -46,13 +46,23 @@ public class GetPendingFaultsTest {
 
     //getPendingFaults throws NullPointerException if the passed instance is null
     @Test(expected = NullPointerException.class)
-    public void getPendingFaultsNullInstanceTest(){
+    public void getPendingFaultsNullInstanceTest()
+        throws 
+            NullPointerException, 
+            IllegalArgumentException, 
+            InstanceUnknownException 
+    {
         this.testApp.getGlobalState().getPendingFaults(null);
     }  
 
     @Test
-    public void getPendingFaultsTest(){
-        List<Fault> faults = this.testApp.getGlobalState().getPendingFaults(this.instanceOfA);
+    public void getPendingFaultsTest() 
+        throws 
+            NullPointerException, 
+            IllegalArgumentException, 
+            InstanceUnknownException 
+    {
+        List<Fault> faults = this.testApp.getGlobalState().getPendingFaults("instanceOfA");
         assertTrue(faults.size() == 2);
     }
 

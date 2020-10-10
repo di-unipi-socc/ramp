@@ -1,7 +1,6 @@
 package analyzer;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +23,12 @@ public class Analyzer {
     }
 
     public boolean isValidSequence(Application app, List<ExecutableElement> sequence)
-            throws IllegalSequenceElementException, NullPointerException {
+        throws 
+            IllegalSequenceElementException, 
+            NullPointerException, 
+            IllegalArgumentException,
+            InstanceUnknownException 
+    {
         if (app == null)
             throw new NullPointerException();
 
@@ -299,11 +303,9 @@ public class Analyzer {
             for (List<RuntimeBinding> comb : combinations) {
                 if (comb.containsAll(runtimeBindingBeforeAndAfter) == true) {
                     cloneApp = app.clone();
-                    for (RuntimeBinding rb : comb) {
-                        NodeInstance server = cloneApp.getGlobalState().getActiveNodeInstances()
-                                .get(rb.getNodeInstanceID());
-                        cloneApp.getGlobalState().addBinding(instance, rb.getReq(), server);
-                    }
+                    for (RuntimeBinding rb : comb) 
+                        cloneApp.getGlobalState().addBinding(instance.getID(), rb.getReq(), rb.getNodeInstanceID());
+                    
                     if (this.nonDetIsWeaklyValid(cloneApp, sequence) == true)
                         return true;
                 }
@@ -332,8 +334,7 @@ public class Analyzer {
                     neededReqsBeforeAndAfter.add(req);
             }
 
-            List<RuntimeBinding> instanceRuntimeBinding = app.getGlobalState().getRuntimeBindings()
-                    .get(instance.getID());
+            List<RuntimeBinding> instanceRuntimeBinding = app.getGlobalState().getRuntimeBindings().get(instance.getID());
             List<RuntimeBinding> runtimeBindingBeforeAndAfter = new ArrayList<>();
 
             for (RuntimeBinding rb : instanceRuntimeBinding) {
@@ -349,8 +350,7 @@ public class Analyzer {
                 if (comb.containsAll(runtimeBindingBeforeAndAfter) == true) {
                     cloneApp = app.clone();
                     for (RuntimeBinding rb : comb) {
-                        NodeInstance server = cloneApp.getGlobalState().getActiveNodeInstances().get(rb.getNodeInstanceID());
-                        cloneApp.getGlobalState().addBinding(instance, rb.getReq(), server);
+                        cloneApp.getGlobalState().addBinding(instance.getID(), rb.getReq(), rb.getNodeInstanceID());
                     }
                     if (this.nonDetIsWeaklyValid(cloneApp, sequence) == true)
                         return true;
@@ -359,7 +359,19 @@ public class Analyzer {
         }
 
         if (op instanceof ScaleIn) {
+            ScaleIn todo = (ScaleIn) op;
 
+            try {
+                app.execute(todo);
+            } catch (IllegalArgumentException | FailedOperationException | RuleNotApplicableException
+                    | OperationNotAvailableException | AlreadyUsedIDException e) {
+                return false;
+            }
+
+            cloneApp = app.clone();
+            if(this.nonDetIsWeaklyValid(cloneApp, sequence) == true)
+                return true;
+            
         }
 
         if (op instanceof ScaleOut1) {
@@ -372,23 +384,48 @@ public class Analyzer {
                 return false;
             }
             
-            app.getGlobalState().removeAllBindingsBothWays(app.getGlobalState().getActiveNodeInstances().get(todo.getIDToAssign()));
+            app.getGlobalState().removeAllBindingsBothWays(todo.getIDToAssign());
             combinations = this.createBindingCombinations(app, todo.getIDToAssign());
 
             for(List<RuntimeBinding> comb : combinations){
                 cloneApp = app.clone();
                 for(RuntimeBinding rb : comb)
-                    cloneApp.getGlobalState().addBinding(cloneApp.getGlobalState().getActiveNodeInstances().get(todo.getIDToAssign()), rb.getReq(), cloneApp.getGlobalState().getActiveNodeInstances().get(rb.getNodeInstanceID()));
+                    cloneApp.getGlobalState().addBinding(todo.getIDToAssign(), rb.getReq(), rb.getNodeInstanceID());
                 
                 if(this.nonDetIsWeaklyValid(cloneApp, sequence) == true)
                     return true;
             }
-
-            
         }
 
         if (op instanceof ScaleOut2){
+            ScaleOut2 todo = (ScaleOut2) op;
 
+            try {
+                app.execute(todo);
+            } catch (IllegalArgumentException | FailedOperationException | RuleNotApplicableException
+                    | OperationNotAvailableException | AlreadyUsedIDException e) {
+                return false;
+            }
+            
+            
+            RuntimeBinding containmentRB = null;
+            for(RuntimeBinding rb : app.getGlobalState().getRuntimeBindings().get(todo.getIDToAssign())){
+                if(rb.getReq().isContainment() == true)
+                    containmentRB = rb;
+            }
+
+            app.getGlobalState().removeAllBindingsBothWays(todo.getIDToAssign());
+            app.getGlobalState().addBinding(todo.getIDToAssign(), containmentRB.getReq(), todo.getContainerID());
+            combinations = this.createBindingCombinations(app, todo.getIDToAssign());
+
+            for(List<RuntimeBinding> comb : combinations){
+                cloneApp = app.clone();
+                for(RuntimeBinding rb : comb)
+                    cloneApp.getGlobalState().addBinding(todo.getIDToAssign(), rb.getReq(), rb.getNodeInstanceID());
+                
+                if(this.nonDetIsWeaklyValid(cloneApp, sequence) == true)
+                    return true;
+            }
         }
 
 
@@ -407,25 +444,41 @@ public class Analyzer {
         return res;
     }
     
-    public List<List<RuntimeBinding>> createBindingCombinations(Application app, String instanceID)            
+    public List<List<RuntimeBinding>> createBindingCombinations(Application app, String instanceID)
+        throws 
+            NullPointerException, 
+            IllegalArgumentException, 
+            InstanceUnknownException 
     {
-        NodeInstance instance = app.getGlobalState().getActiveNodeInstances().get(instanceID);
+        NodeInstance instance = app.getGlobalState().getNodeInstanceByID(instanceID);
 
         Map<Requirement, List<NodeInstance>> reqToCapableInstance = new HashMap<>();
 
         for(Requirement r : instance.getNeededReqs())
-            reqToCapableInstance.put(r, app.getGlobalState().getCapableInstances(instance, r));
+            reqToCapableInstance.put(r, app.getGlobalState().getCapableInstances(instanceID, r));
         
         int reqsStart = 0; 
-        int reqsEnd = instance.getNeededReqs().size() - 1;        
+        List<Requirement> neededReqs = instance.getNeededReqs();
 
+        Requirement containmentReq = null;
+        for(Requirement r : neededReqs){
+            if(r.isContainment() == true)
+                containmentReq = r;
+        }
+        
+        //TODO rischiosa con i ref?
+        if(containmentReq != null)
+            neededReqs.remove(containmentReq);
+
+        int reqsEnd = instance.getNeededReqs().size() - 1; 
+        
         List<List<RuntimeBinding>> combinations = new ArrayList<>();
         List<RuntimeBinding> currentCombination = new ArrayList<>();  
 
         this.recursiveCombinations(
             reqsStart, 
             reqsEnd, 
-            instance.getNeededReqs(), 
+            neededReqs, 
             reqToCapableInstance, 
             combinations, 
             currentCombination

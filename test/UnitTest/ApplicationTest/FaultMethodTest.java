@@ -184,8 +184,8 @@ public class FaultMethodTest {
         this.testApp.fault("instanceOfB", this.testReq);
     }
 
-    //fault throws a RuleNotAplicableException when the passed instanceID is not assciated with an instance
-    @Test (expected = RuleNotApplicableException.class)
+    //fault throws a InstanceUnknownException when the passed instanceID is not assciated with an instance
+    @Test (expected = InstanceUnknownException.class)
     public void faultMethodInstanceUnknownTest()
         throws 
         NullPointerException, 

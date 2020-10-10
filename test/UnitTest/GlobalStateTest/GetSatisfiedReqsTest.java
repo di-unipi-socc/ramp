@@ -137,16 +137,21 @@ public class GetSatisfiedReqsTest {
 
     //getSatisfiedReqs thorws a NullPointerException if the passed instance is null
     @Test(expected = NullPointerException.class)
-    public void getSatisfiedReqsNullInstanceTest(){
+    public void getSatisfiedReqsNullInstanceTest()
+        throws 
+            NullPointerException, 
+            IllegalArgumentException, 
+            InstanceUnknownException 
+    {
         this.testApp.getGlobalState().getSatisfiedReqs(null);
     }
 
     @Test
     public void getSatisfiedReqsTest() throws Exception{
 
-        assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.nodeAskingInstance).size() == 2);
-        assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.nodeAskingInstance).contains(this.reqA));
-        assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.nodeAskingInstance).contains(this.reqC));
+        assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.nodeAskingInstance.getID()).size() == 2);
+        assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.nodeAskingInstance.getID()).contains(this.reqA));
+        assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.nodeAskingInstance.getID()).contains(this.reqC));
 
         this.testApp.opStart("serverInstance", "goToState2");
         this.testApp.opEnd("serverInstance", "goToState2");
@@ -156,9 +161,9 @@ public class GetSatisfiedReqsTest {
         this.testApp.opStart("askingInstance", "goToState2");
         this.testApp.opEnd("askingInstance", "goToState2");
 
-        assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.nodeAskingInstance).size() == 2);
-        assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.nodeAskingInstance).contains(this.reqB));
-        assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.nodeAskingInstance).contains(this.reqC));  
+        assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.nodeAskingInstance.getID()).size() == 2);
+        assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.nodeAskingInstance.getID()).contains(this.reqB));
+        assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.nodeAskingInstance.getID()).contains(this.reqC));  
     }
 
 }

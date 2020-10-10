@@ -116,7 +116,12 @@ public class IsResolvableFaultTest {
 
     //isResolvableFault throws a NullPointerException if the passed instance is null    
     @Test(expected = NullPointerException.class)
-    public void isResolvableFaultNullFaultTest() {
+    public void isResolvableFaultNullFaultTest()
+        throws 
+            NullPointerException, 
+            IllegalArgumentException, 
+            InstanceUnknownException 
+    {
         this.testApp.getGlobalState().isResolvableFault(null);
     }
 
@@ -142,8 +147,8 @@ public class IsResolvableFaultTest {
 
         //now we kill instanceOfB and we get a fault (resolvable, thanks to secondInstanceOfB)
         this.testApp.scaleIn(this.instanceOfB.getID());
-        assertTrue(this.testApp.getGlobalState().getPendingFaults(this.instanceOfA).size() == 1);
-        Fault f = this.testApp.getGlobalState().getResolvableFaults(this.instanceOfA).get(0);
+        assertTrue(this.testApp.getGlobalState().getPendingFaults("instanceOfA").size() == 1);
+        Fault f = this.testApp.getGlobalState().getResolvableFaults("instanceOfA").get(0);
         assertTrue(this.testApp.getGlobalState().isResolvableFault(f));
 
         //this now ricreate the binding of AreqB with secondInstanceOfB
@@ -167,7 +172,7 @@ public class IsResolvableFaultTest {
         assertTrue(this.testApp.getGlobalState().getPendingFaults().size() == 1);
 
         //the pending fault is not resolvable
-        Fault f1 = this.testApp.getGlobalState().getPendingFaults(this.instanceOfA).get(0);
+        Fault f1 = this.testApp.getGlobalState().getPendingFaults("instanceOfA").get(0);
         assertFalse(this.testApp.getGlobalState().isResolvableFault(f1));
 
         assertTrue(this.testApp.getGlobalState().getResolvableFaults().size() == 0);

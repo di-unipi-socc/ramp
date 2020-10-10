@@ -146,7 +146,6 @@ public class Main {
         // NodeInstance nodeN2;
         // NodeInstance nodeN1;
         // NodeInstance mongoM1;
-        NodeInstance frontendF1;
         // NodeInstance backendB1;
         // NodeInstance backendB2;
 
@@ -160,7 +159,7 @@ public class Main {
         app.scaleOut1("node", "nodeN1");
         app.scaleOut1("node", "nodeN2");
         app.scaleOut1("node", "nodeN3");
-        frontendF1 = app.scaleOut2("frontend", "frontendF1", "nodeN3");
+        app.scaleOut2("frontend", "frontendF1", "nodeN3");
         app.scaleOut2("backend", "backendB1", "nodeN1");
         app.scaleOut2("backend", "backendB2", "nodeN2");
 
@@ -201,13 +200,13 @@ public class Main {
             app.opEnd("frontendF1", "uninstall");
         } catch (FailedOperationException e) {
             //the fault handler now put frontendF1 in the right fault handling state
-            ArrayList<Fault> faultsList = (ArrayList<Fault>) app.getGlobalState().getPendingFaults(frontendF1);
+            ArrayList<Fault> faultsList = (ArrayList<Fault>) app.getGlobalState().getPendingFaults("frontendF1");
             
             //faults list has just one member
             if(faultsList.size() != 1 || faultsList.get(0).getInstanceID().equals("frontendF1") == false)
                 System.out.println("error");
             
-            if(app.getGlobalState().getResolvableFaults(frontendF1).size() != 0)
+            if(app.getGlobalState().getResolvableFaults("frontendF1").size() != 0)
                 System.out.println("error");
 
             app.fault("frontendF1", faultsList.get(0).getReq());
@@ -242,7 +241,7 @@ public class Main {
         app.opStart("nodeN3", "start");
         app.opEnd("nodeN3", "start");
 
-        frontendF1 = app.scaleOut2("frontend", "frontendF1", "nodeN3");
+        app.scaleOut2("frontend", "frontendF1", "nodeN3");
 
         app.opStart("frontendF1", "install");
         app.opEnd("frontendF1", "install");
@@ -253,7 +252,7 @@ public class Main {
         } catch (FailedOperationException e) {
             
             //at this time this fault is a pending, non resolvable, fault
-            if(app.getGlobalState().getPendingFaults(frontendF1).size() != 1 && app.getGlobalState().getResolvableFaults(frontendF1).size() != 0)
+            if(app.getGlobalState().getPendingFaults("frontendF1").size() != 1 && app.getGlobalState().getResolvableFaults("frontendF1").size() != 0)
                 System.out.println("error");
             
             //we put backendB2 in the state where it offers "conn" and see that a 
@@ -265,11 +264,11 @@ public class Main {
             app.opEnd("backendB2", "start");
 
             //now backendB2 offer conn, so frontendF1 has a resolvable Fault
-            if(app.getGlobalState().getPendingFaults(frontendF1).size() != 1 && app.getGlobalState().getResolvableFaults(frontendF1).size() != 1)
+            if(app.getGlobalState().getPendingFaults("frontendF1").size() != 1 && app.getGlobalState().getResolvableFaults("frontendF1").size() != 1)
                 System.out.println("error");
 
             //now we fix the error
-            Fault f = app.getGlobalState().getResolvableFaults(frontendF1).get(0);
+            Fault f = app.getGlobalState().getResolvableFaults("frontendF1").get(0);
             app.autoreconnect("frontendF1", f.getReq());
 
             //and complete the op

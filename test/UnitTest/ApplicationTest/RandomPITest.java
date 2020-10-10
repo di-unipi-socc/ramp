@@ -146,7 +146,7 @@ public class RandomPITest {
             NullPointerException, 
             InstanceUnknownException 
     {
-        ArrayList<NodeInstance> capableInstances = (ArrayList<NodeInstance>) this.testApp.getGlobalState().getCapableInstances(this.instanceA, this.req);
+        ArrayList<NodeInstance> capableInstances = (ArrayList<NodeInstance>) this.testApp.getGlobalState().getCapableInstances("instanceA", this.req);
         
         //the 3 instances of nodeB are capable
         assertTrue(capableInstances.size() == 3);

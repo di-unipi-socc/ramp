@@ -72,8 +72,8 @@ public class OpEndTest {
         testApp.opEnd("", "start");
     }
 
-    //opEnd throws a RuleNotApplicableException when the passed instanceID is not associated with an instance
-    @Test(expected = RuleNotApplicableException.class)
+    //opEnd throws a InstanceUnknownException when the passed instanceID is not associated with an instance
+    @Test(expected = InstanceUnknownException.class)
     public void opEndUnknownInstanceTest()
         throws 
             IllegalArgumentException, 

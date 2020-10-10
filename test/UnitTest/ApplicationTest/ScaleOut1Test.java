@@ -187,7 +187,7 @@ public class ScaleOut1Test {
         this.instanceOfA = this.testApp.scaleOut1("nodeA", "instanceOfA");
         assertNotNull(this.instanceOfA);
         assertTrue(this.testApp.getGlobalState().getActiveNodeInstances().size() == 2);
-        assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.instanceOfA).size() == 1);
+        assertTrue(this.testApp.getGlobalState().getSatisfiedReqs("instanceOfA").size() == 1);
         assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get("instanceOfA").get(0).getReq().getName().equals("req"));
     
         this.testApp.scaleIn("instanceOfA");
@@ -197,6 +197,6 @@ public class ScaleOut1Test {
         this.instanceOfA = this.testApp.scaleOut1("nodeA", "instanceOfA");
         this.instanceOfB = this.testApp.scaleOut1("nodeB", "instanceOfB");
 
-        assertTrue(this.testApp.getGlobalState().getSatisfiedReqs(this.instanceOfA).size() == 0);
+        assertTrue(this.testApp.getGlobalState().getSatisfiedReqs("instanceOfA").size() == 0);
     }
 }

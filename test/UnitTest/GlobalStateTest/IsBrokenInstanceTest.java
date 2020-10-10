@@ -110,7 +110,12 @@ public class IsBrokenInstanceTest {
 
     //isBrokenInstance throws a NullPointerException if the passed instance is null
     @Test(expected = NullPointerException.class)
-    public void isBrokenInstanceNullInstanceTest() {
+    public void isBrokenInstanceNullInstanceTest()
+        throws 
+            NullPointerException, 
+            IllegalArgumentException, 
+            InstanceUnknownException 
+    {
         this.testApp.getGlobalState().isBrokenInstance(null);
     }
 
@@ -125,20 +130,20 @@ public class IsBrokenInstanceTest {
             InstanceUnknownException 
     {
         //instanceOfB is alive and offering the right cap
-        assertFalse(this.testApp.getGlobalState().isBrokenInstance(this.instanceOfA));
-        assertTrue(this.testApp.getGlobalState().getPendingFaults(this.instanceOfA).size() == 0);
+        assertFalse(this.testApp.getGlobalState().isBrokenInstance("instanceOfA"));
+        assertTrue(this.testApp.getGlobalState().getPendingFaults("instanceOfA").size() == 0);
        
         //in state2 instanceOfB do not offer anymore the containment capabilty
         //hence instanceOfA is not a broken instance but a pending fault
-        this.testApp.opStart(this.instanceOfB.getID(), "goToState2");
-        this.testApp.opEnd(this.instanceOfB.getID(), "goToState2");
+        this.testApp.opStart("instanceOfB", "goToState2");
+        this.testApp.opEnd("instanceOfB", "goToState2");
 
-        assertFalse(this.testApp.getGlobalState().isBrokenInstance(this.instanceOfA));
-        assertTrue(this.testApp.getGlobalState().getPendingFaults(this.instanceOfA).size() == 1);
+        assertFalse(this.testApp.getGlobalState().isBrokenInstance("instanceOfA"));
+        assertTrue(this.testApp.getGlobalState().getPendingFaults("instanceOfA").size() == 1);
 
         //now we remove instanceOfB from the active nodes, instanceOfA become a broken instance
         this.testApp.getGlobalState().getActiveNodeInstances().remove("instanceOfB");
-        assertTrue(this.testApp.getGlobalState().isBrokenInstance(this.instanceOfA));
+        assertTrue(this.testApp.getGlobalState().isBrokenInstance("instanceOfA"));
     }
 
 }

@@ -92,24 +92,38 @@ public class RemoveRuntimeBinding {
 
     //removeRuntimeBinding throws a NullPointerException is the passed instance is null
     @Test(expected = NullPointerException.class)
-    public void removeRuntimeBindingInstanceNullTest(){
+    public void removeRuntimeBindingInstanceNullTest()
+        throws 
+            NullPointerException, 
+            IllegalArgumentException, 
+            InstanceUnknownException 
+    {
         this.testApp.getGlobalState().removeRuntimeBinding(null, this.req);
     }   
 
     //removeRuntimeBinding throws a NullPointerException is the passed req is null
     @Test(expected = NullPointerException.class)
-    public void removeRuntimeBindingReqNullTest(){
-        this.testApp.getGlobalState().removeRuntimeBinding(this.instanceOfA, null);
+    public void removeRuntimeBindingReqNullTest()
+        throws 
+            NullPointerException, 
+            IllegalArgumentException, 
+            InstanceUnknownException {
+        this.testApp.getGlobalState().removeRuntimeBinding("instanceOfA", null);
     }
 
     @Test
-    public void removeRuntimeBindingTest(){
+    public void removeRuntimeBindingTest()
+        throws 
+            NullPointerException, 
+            IllegalArgumentException, 
+            InstanceUnknownException 
+    {
         //instanceOfA has a runtime binding with instanceofB
         assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get("instanceOfA").size() == 1);
         assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get("instanceOfA").get(0).getNodeInstanceID().equals(this.instanceOfB.getID()));
 
         //delete the binding
-        this.testApp.getGlobalState().removeRuntimeBinding(this.instanceOfA, this.req);
+        this.testApp.getGlobalState().removeRuntimeBinding("instanceOfA", this.req);
 
         //now instanceOfA has no runtime bindings
         assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get("instanceOfA").size() == 0);

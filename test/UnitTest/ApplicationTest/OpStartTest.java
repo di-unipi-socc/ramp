@@ -82,8 +82,8 @@ public class OpStartTest {
         testApp.opStart("", "start");
     }
 
-    //opStart throws a RuleNotApplicableException when the passed instanceID is not associated with an instance
-    @Test(expected = RuleNotApplicableException.class)
+    //opStart throws a InstanceUnknownException when the passed instanceID is not associated with an instance
+    @Test(expected = InstanceUnknownException.class)
     public void opStartUnknownInstanceTest()
         throws 
             IllegalArgumentException, 
