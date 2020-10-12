@@ -27,7 +27,6 @@ import utilities.ThesisAppFactory;
 
 public class AnalyzerTest {
 
-    public Application app;
     public Analyzer analyzer;
 
     public Application toyApp; //for the create combinations test
@@ -285,4 +284,29 @@ public class AnalyzerTest {
         s = s.concat(" ]");
         return s;
     }
+
+    @Test
+    public void notDetWeaklyValidTest()
+        throws 
+            NullPointerException, 
+            IllegalSequenceElementException, 
+            InstanceUnknownException 
+    {
+        assertTrue(this.analyzer.nonDetIsWeaklyValid(ThesisAppFactory.createApplication(), this.createWeaklyValidSequence()));
+        assertTrue(this.analyzer.nonDetIsWeaklyValid(ThesisAppFactory.createApplication(), this.createValidSequence()));
+    }
+
+
+    @Test
+    public void notDetIsValidTest()
+        throws 
+            NullPointerException, 
+            IllegalSequenceElementException, 
+            InstanceUnknownException 
+    {   
+        assertTrue(this.analyzer.notDetIsValid(ThesisAppFactory.createApplication(), this.createValidSequence()));
+        assertFalse(this.analyzer.notDetIsValid(ThesisAppFactory.createApplication(), this.createWeaklyValidSequence()));
+    }
+
+
 }

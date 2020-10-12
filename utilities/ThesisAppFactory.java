@@ -48,14 +48,13 @@ public class ThesisAppFactory {
         frontend.addState("configured");
         frontend.addState("working");
         frontend.addState("damaged");
-
         frontend.addState("not-installedinstallinstalled");
         frontend.addState("installedconfigconfigured");
         frontend.addState("configuredconfigconfigured");
         frontend.addState("configuredstartworking");
         frontend.addState("workingstopconfigured");
         frontend.addState("installeduninstallnot-installed");
-        frontend.addState("configureduninstallnot-install");
+        frontend.addState("configureduninstallnot-installed");
 
         frontend.addOperation("install");
         frontend.addOperation("config");
@@ -119,7 +118,7 @@ public class ThesisAppFactory {
 
         //frontend do not offer any caps
         for (String state : frontend.getStates())
-            frontendMP.addGammaEntry(state,  new ArrayList<>());
+            frontendMP.addGammaEntry(state, new ArrayList<>());
 
         //phi: state -> list of states for fault handling
         List<String> damagedList = new ArrayList<>();
@@ -150,7 +149,6 @@ public class ThesisAppFactory {
         backend.addState("available");
         backend.addState("running");
         backend.addState("damaged");
-
         backend.addState("unavailableinstallavailable");
         backend.addState("availableuninstallunavailable");
         backend.addState("availablestartrunning");
@@ -211,14 +209,8 @@ public class ThesisAppFactory {
         backendMP.addRhoEntry("runningconfigrunning", requirementsOfConfig);
 
         // gamma: state -> caps offered
-        ArrayList<String> tmp; 
-        for (String state : backend.getStates()){
-            tmp = new ArrayList<>();
-            backendMP.addGammaEntry(state, tmp);
-        }
-
-        for (Transition t : backend.getManagementProtocol().getTransition().values())
-            backendMP.addGammaEntry(t.getName(), new ArrayList<String>());
+        for (String state : backend.getStates())
+            backendMP.addGammaEntry(state, new ArrayList<>());
         
         List<String> capsOfRunning = (ArrayList<String>) backendMP.getGamma().get("running");
         capsOfRunning.add("conn");
@@ -281,15 +273,14 @@ public class ThesisAppFactory {
         ManagementProtocol mongoMP = mongo.getManagementProtocol();
 
         mongo.addState("stopped");
-        mongo.addState("running");
-        
-        mongo.addOperation("start");
-        mongo.addOperation("stop");
-       
+        mongo.addState("running");   
         mongo.addState("stoppedstartrunning");
         mongo.addState("runningstopstopped");
 
         mongo.addCapability("db");
+
+        mongo.addOperation("start");
+        mongo.addOperation("stop");
 
         mongoMP.addTransition("stopped", "start", "running");
         mongoMP.addTransition("running", "stop", "stopped");
@@ -297,16 +288,10 @@ public class ThesisAppFactory {
         // rho: state -> reqs
         for (String state : mongo.getStates())
             mongoMP.addRhoEntry(state, new ArrayList<Requirement>());
-        
-        mongoMP.addRhoEntry("stoppedstartrunning", new ArrayList<Requirement>());
-        mongoMP.addRhoEntry("runningstopstopped", new ArrayList<Requirement>());
 
         // gamma: state -> caps offered
         for (String state : mongo.getStates()) 
-            mongoMP.addGammaEntry(state, new ArrayList<String>());
-        
-        mongoMP.addGammaEntry("stoppedstartrunning", new ArrayList<String>());
-        mongoMP.addGammaEntry("runningstopstopped", new ArrayList<String>());
+            mongoMP.addGammaEntry(state, new ArrayList<>());
 
         List<String> runningCaps = new ArrayList<>();
         runningCaps.add("db");
@@ -315,6 +300,7 @@ public class ThesisAppFactory {
         // phi: state -> list of states for fault handling
         for (String state : mongo.getStates()) 
             mongoMP.addPhiEntry(state, new ArrayList<String>());
+    
         return mongo; 
     }
 

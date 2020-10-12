@@ -544,7 +544,7 @@ public class GlobalState {
 
         NodeInstance ret = this.activeNodeInstances.get(instanceID);
         if(ret == null)
-            throw new InstanceUnknownException("instanceID not matched with an instance");
+            throw new InstanceUnknownException("instanceID: " + instanceID + " is not matched with an instance" );
         
         return ret;
     }

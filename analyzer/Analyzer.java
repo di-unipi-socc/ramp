@@ -43,79 +43,22 @@ public class Analyzer {
             app.execute(seqElement);
         } catch (FailedOperationException e) {
             // keep going, this will be handled by the fault handler or leaved as it is
-        } catch (OperationNotAvailableException e) {
-            return false;
-        } catch (RuleNotApplicableException e) {
-            return false;
-        } catch (InstanceUnknownException e) {
-            return false;
-        } catch (AlreadyUsedIDException e) {
+        } catch (Exception e) {
             return false;
         }
 
-        ArrayList<Fault> pendingFaults = (ArrayList<Fault>) app.getGlobalState().getPendingFaults();
-        ArrayList<NodeInstance> brokenInstances = (ArrayList<NodeInstance>) app.getGlobalState().getBrokeninstances();
-
-        Application cloneApp;
-
-        if (brokenInstances.isEmpty() == false) {
-            cloneApp = app.clone();
-            try {
-                cloneApp.scaleIn(brokenInstances.get(0).getID());
-                if (this.isValidSequence(cloneApp, sequence) == false)
-                    return false;
-
-            } catch (RuleNotApplicableException E) {
-                return false;
-            }
-        }
-        // cloneApp was used if brokenInstances is not empty
-        cloneApp = app.clone();
-
-        // branch where the faults are not handled whatsoever
-        if (this.isValidSequence(cloneApp, sequence) == false)
+        if(this.faultBiforcationValid(app, sequence) == false)
             return false;
-
-        // branch where the faults are hanled by their type
-        if (pendingFaults.isEmpty() == false) {
-            // for each fault check if it is pending or resolvable
-            for (Fault f : pendingFaults) {
-                cloneApp = app.clone();
-
-                if (cloneApp.getGlobalState().isResolvableFault(f) == true) {
-                    try {
-                        cloneApp.autoreconnect(f.getInstanceID(), f.getReq());
-                        // if the fault is resolved keep exploring the branch
-                        if (this.isValidSequence(cloneApp, sequence) == false)
-                            return false;
-
-                    } catch (RuleNotApplicableException e) {
-                        return false;
-                    } catch (InstanceUnknownException e) {
-                        return false;
-                    }
-                } else {
-                    try {
-                        cloneApp.fault(f.getInstanceID(), f.getReq());
-                        if (this.isValidSequence(cloneApp, sequence) == false)
-                            return false;
-
-                    } catch (FailedFaultHandlingExecption e) {
-                        return false;
-                    } catch (RuleNotApplicableException e) {
-                        return false;
-                    } catch (InstanceUnknownException e) {
-                        return false;
-                    }
-                }
-            }
-        }
 
         return true;
     }
 
     public boolean isWeaklyValidSequence(Application app, List<ExecutableElement> sequence)
-            throws IllegalSequenceElementException, NullPointerException, InstanceUnknownException {
+        throws 
+            IllegalSequenceElementException, 
+            NullPointerException,  
+            InstanceUnknownException 
+    {
 
         if (app == null)
             throw new NullPointerException();
@@ -131,68 +74,13 @@ public class Analyzer {
             app.execute(seqElement);
         } catch (FailedOperationException e) {
             // keep going, this will be handled by the fault handler or leaved as it is
-        } catch (OperationNotAvailableException e) {
-            return false;
-        } catch (RuleNotApplicableException e) {
-            return false;
-        } catch (InstanceUnknownException e) {
-            return false;
-        } catch (AlreadyUsedIDException e) {
+        } catch (Exception e) {
             return false;
         }
 
-        ArrayList<Fault> pendingFaults = (ArrayList<Fault>) app.getGlobalState().getPendingFaults();
-        ArrayList<NodeInstance> brokenInstances = (ArrayList<NodeInstance>) app.getGlobalState().getBrokeninstances();
-
-        Application cloneApp;
-
-        if (brokenInstances.isEmpty() == false) {
-            cloneApp = app.clone();
-            try {
-                cloneApp.scaleIn(brokenInstances.get(0).getID());
-                if (this.isWeaklyValidSequence(cloneApp, sequence) == true)
-                    return true;
-
-            } catch (RuleNotApplicableException E) {
-                return false;
-            }
-        }
-
-        cloneApp = app.clone();
-
-        if (this.isWeaklyValidSequence(cloneApp, sequence) == true)
+        if(this.faultBiforcationWeaklyValid(app, sequence) == true)
             return true;
-
-        if (pendingFaults.isEmpty() == false) {
-            // for each fault check if it is pending or resolvable
-            for (Fault f : pendingFaults) {
-                cloneApp = app.clone();
-
-                if (app.getGlobalState().isResolvableFault(f) == true) {
-                    try {
-                        cloneApp.autoreconnect(f.getInstanceID(), f.getReq());
-                        // if the fault is resolved keep exploring the branch
-                        if (this.isWeaklyValidSequence(cloneApp, sequence) == true)
-                            return true;
-                    } catch (RuleNotApplicableException e) {
-                        return false;
-                    }
-
-                } else {
-                    try {
-                        cloneApp.fault(f.getInstanceID(), f.getReq());
-                        // if the fault is resolved keep exploring the branch
-                        if (this.isWeaklyValidSequence(cloneApp, sequence) == true)
-                            return true;
-
-                    } catch (FailedFaultHandlingExecption e) {
-                        return false;
-                    } catch (RuleNotApplicableException e) {
-                        return false;
-                    }
-                }
-            }
-        }
+        
         return false;
     }
 
@@ -201,8 +89,13 @@ public class Analyzer {
         return !this.isWeaklyValidSequence(app, sequence);
     }
 
+    
     public boolean nonDetIsWeaklyValid(Application app, List<ExecutableElement> sequence)
-            throws IllegalSequenceElementException, NullPointerException, InstanceUnknownException {
+        throws 
+            IllegalSequenceElementException, 
+            NullPointerException, 
+            InstanceUnknownException 
+    {
         if (app == null)
             throw new NullPointerException();
 
@@ -210,74 +103,32 @@ public class Analyzer {
             throw new IllegalSequenceElementException();
 
         if (sequence.isEmpty() == true)
-            return true;
-
-        ArrayList<Fault> pendingFaults = (ArrayList<Fault>) app.getGlobalState().getPendingFaults();
-        ArrayList<NodeInstance> brokenInstances = (ArrayList<NodeInstance>) app.getGlobalState().getBrokeninstances();
-
-        Application cloneApp;
-
-        if (brokenInstances.isEmpty() == false) {
-            cloneApp = app.clone();
-            try {
-                cloneApp.scaleIn(brokenInstances.get(0).getID());
-                if (this.nonDetIsWeaklyValid(cloneApp, sequence) == true)
-                    return true;
-
-            } catch (RuleNotApplicableException E) {
-                return false;
-            }
-
-            cloneApp = app.clone(); // clone this to reset the clone well
-        }
-
-        if (pendingFaults.isEmpty() == false) {
-            // for each fault check if it is pending or resolvable
-            for (Fault f : pendingFaults) {
-                cloneApp = app.clone();
-
-                if (app.getGlobalState().isResolvableFault(f) == true) {
-                    try {
-                        cloneApp.autoreconnect(f.getInstanceID(), f.getReq());
-                        // if the fault is resolved keep exploring the branch
-                        if (this.nonDetIsWeaklyValid(cloneApp, sequence) == true)
-                            return true;
-                    } catch (RuleNotApplicableException e) {
-                        return false;
-                    }
-
-                } else {
-                    try {
-                        cloneApp.fault(f.getInstanceID(), f.getReq());
-                        // if the fault is resolved keep exploring the branch
-                        if (this.isWeaklyValidSequence(cloneApp, sequence) == true)
-                            return true;
-
-                    } catch (FailedFaultHandlingExecption e) {
-                        return false;
-                    } catch (RuleNotApplicableException e) {
-                        return false;
-                    }
-                }
-            }
-        }
+            return true;        
 
         List<List<RuntimeBinding>> combinations = null;
+        Application cloneApp = null;
+
+        //needed to times because if there is a fault the control go back to the try catch, which is later than the first control
+        if(sequence.isEmpty() == true)
+            return true;
+        
         ExecutableElement op = sequence.remove(0);
 
         if (op instanceof OpStart) {
             OpStart todo = (OpStart) op;
-            NodeInstance instance = app.getGlobalState().getActiveNodeInstances().get(todo.getInstnaceID());
+            NodeInstance instance = app.getGlobalState().getNodeInstanceByID(todo.getInstnaceID());
 
             List<Requirement> neededReqsBeforeOp = instance.getNeededReqs();
             try {
-                // TODO alcune eccezioni sono date da execute ma qui non dovrebbero essere
-                // catturate, fixare
                 app.execute(todo);
-            } catch (FailedOperationException | RuleNotApplicableException | OperationNotAvailableException
-                    | AlreadyUsedIDException e) {
+            } catch (FailedOperationException e) {
+                // keep going, this will be handled by the fault handler or leaved as it is
+            } catch (Exception e) {
                 return false;
             }
+
+            if(this.faultBiforcationNotDetWeaklyValid(app, sequence) == true)
+                return true;
 
             List<Requirement> neededReqsAfterOp = instance.getNeededReqs();
             List<Requirement> neededReqsBeforeAndAfter = new ArrayList<>();
@@ -287,8 +138,7 @@ public class Analyzer {
                     neededReqsBeforeAndAfter.add(req);
             }
 
-            List<RuntimeBinding> instanceRuntimeBinding = app.getGlobalState().getRuntimeBindings()
-                    .get(instance.getID());
+            List<RuntimeBinding> instanceRuntimeBinding = app.getGlobalState().getRuntimeBindings().get(instance.getID());
             List<RuntimeBinding> runtimeBindingBeforeAndAfter = new ArrayList<>();
 
             for (RuntimeBinding rb : instanceRuntimeBinding) {
@@ -299,6 +149,9 @@ public class Analyzer {
             }
 
             combinations = this.createBindingCombinations(app, todo.getInstnaceID());
+
+            if(combinations.isEmpty() == true)
+                return this.nonDetIsWeaklyValid(app.clone(), sequence);
 
             for (List<RuntimeBinding> comb : combinations) {
                 if (comb.containsAll(runtimeBindingBeforeAndAfter) == true) {
@@ -317,14 +170,17 @@ public class Analyzer {
             NodeInstance instance = app.getGlobalState().getActiveNodeInstances().get(todo.getInstanceID());
 
             List<Requirement> neededReqsBeforeOp = instance.getNeededReqs();
+            
             try {
-                // TODO alcune eccezioni sono date da execute ma qui non dovrebbero essere
-                // catturate, fixare
                 app.execute(todo);
-            } catch (FailedOperationException | RuleNotApplicableException | OperationNotAvailableException
-                    | AlreadyUsedIDException e) {
+            } catch (FailedOperationException e) {
+                // keep going, this will be handled by the fault handler or leaved as it is
+            } catch (Exception e) {
                 return false;
             }
+
+            if(this.faultBiforcationNotDetWeaklyValid(app, sequence) == true)
+                return true;
 
             List<Requirement> neededReqsAfterOp = instance.getNeededReqs();
             List<Requirement> neededReqsBeforeAndAfter = new ArrayList<>();
@@ -346,12 +202,15 @@ public class Analyzer {
 
             combinations = this.createBindingCombinations(app, todo.getInstanceID());
 
+            if(combinations.isEmpty() == true)
+                return this.notDetIsValid(app.clone(), sequence);
+
             for (List<RuntimeBinding> comb : combinations) {
                 if (comb.containsAll(runtimeBindingBeforeAndAfter) == true) {
                     cloneApp = app.clone();
-                    for (RuntimeBinding rb : comb) {
+                    for (RuntimeBinding rb : comb) 
                         cloneApp.getGlobalState().addBinding(instance.getID(), rb.getReq(), rb.getNodeInstanceID());
-                    }
+                    
                     if (this.nonDetIsWeaklyValid(cloneApp, sequence) == true)
                         return true;
                 }
@@ -363,12 +222,17 @@ public class Analyzer {
 
             try {
                 app.execute(todo);
-            } catch (IllegalArgumentException | FailedOperationException | RuleNotApplicableException
-                    | OperationNotAvailableException | AlreadyUsedIDException e) {
+            } catch (FailedOperationException e) {
+                // keep going, this will be handled by the fault handler or leaved as it is
+            } catch (Exception e) {
                 return false;
             }
 
+            if(this.faultBiforcationNotDetWeaklyValid(app, sequence) == true)
+                return true;
+
             cloneApp = app.clone();
+                
             if(this.nonDetIsWeaklyValid(cloneApp, sequence) == true)
                 return true;
             
@@ -379,13 +243,20 @@ public class Analyzer {
 
             try {
                 app.execute(todo);
-            } catch (IllegalArgumentException | FailedOperationException | RuleNotApplicableException
-                    | OperationNotAvailableException | AlreadyUsedIDException e) {
+            } catch (FailedOperationException e) {
+                // keep going, this will be handled by the fault handler or leaved as it is
+            } catch (Exception e) {
                 return false;
             }
+
+            if(this.faultBiforcationNotDetWeaklyValid(app, sequence) == true)
+                return true;
             
             app.getGlobalState().removeAllBindingsBothWays(todo.getIDToAssign());
             combinations = this.createBindingCombinations(app, todo.getIDToAssign());
+
+            if(combinations.isEmpty() == true)
+                return this.nonDetIsWeaklyValid(app.clone(), sequence);
 
             for(List<RuntimeBinding> comb : combinations){
                 cloneApp = app.clone();
@@ -402,12 +273,15 @@ public class Analyzer {
 
             try {
                 app.execute(todo);
-            } catch (IllegalArgumentException | FailedOperationException | RuleNotApplicableException
-                    | OperationNotAvailableException | AlreadyUsedIDException e) {
+            } catch (FailedOperationException e) {
+                // keep going, this will be handled by the fault handler or leaved as it is
+            } catch (Exception e) {
                 return false;
             }
             
-            
+            if(this.faultBiforcationNotDetWeaklyValid(app, sequence) == true)
+                return true;
+
             RuntimeBinding containmentRB = null;
             for(RuntimeBinding rb : app.getGlobalState().getRuntimeBindings().get(todo.getIDToAssign())){
                 if(rb.getReq().isContainment() == true)
@@ -418,6 +292,9 @@ public class Analyzer {
             app.getGlobalState().addBinding(todo.getIDToAssign(), containmentRB.getReq(), todo.getContainerID());
             combinations = this.createBindingCombinations(app, todo.getIDToAssign());
 
+            if(combinations.isEmpty() == true)
+                return this.notDetIsValid(app.clone(), sequence);
+
             for(List<RuntimeBinding> comb : combinations){
                 cloneApp = app.clone();
                 for(RuntimeBinding rb : comb)
@@ -427,8 +304,6 @@ public class Analyzer {
                     return true;
             }
         }
-
-
         return false;
     }
 
@@ -450,6 +325,7 @@ public class Analyzer {
             IllegalArgumentException, 
             InstanceUnknownException 
     {
+        List<List<RuntimeBinding>> combinations = new ArrayList<>();
         NodeInstance instance = app.getGlobalState().getNodeInstanceByID(instanceID);
 
         Map<Requirement, List<NodeInstance>> reqToCapableInstance = new HashMap<>();
@@ -457,7 +333,6 @@ public class Analyzer {
         for(Requirement r : instance.getNeededReqs())
             reqToCapableInstance.put(r, app.getGlobalState().getCapableInstances(instanceID, r));
         
-        int reqsStart = 0; 
         List<Requirement> neededReqs = instance.getNeededReqs();
 
         Requirement containmentReq = null;
@@ -465,15 +340,15 @@ public class Analyzer {
             if(r.isContainment() == true)
                 containmentReq = r;
         }
-        
         //TODO rischiosa con i ref?
         if(containmentReq != null)
             neededReqs.remove(containmentReq);
 
-        int reqsEnd = instance.getNeededReqs().size() - 1; 
+        int reqsStart = 0; 
+        int reqsEnd = neededReqs.size() - 1; 
         
-        List<List<RuntimeBinding>> combinations = new ArrayList<>();
-        List<RuntimeBinding> currentCombination = new ArrayList<>();  
+        if(reqsEnd <= 0)
+            return combinations;
 
         this.recursiveCombinations(
             reqsStart, 
@@ -481,7 +356,7 @@ public class Analyzer {
             neededReqs, 
             reqToCapableInstance, 
             combinations, 
-            currentCombination
+            new ArrayList<RuntimeBinding>()
         );
         
         return combinations;
@@ -527,5 +402,465 @@ public class Analyzer {
         
         return ret;
     }
+
+    public boolean notDetIsValid(Application app, List<ExecutableElement> sequence)
+        throws 
+            IllegalSequenceElementException, 
+            NullPointerException, 
+            InstanceUnknownException 
+    {
+        if (app == null)
+            throw new NullPointerException();
+
+        if (this.wellFormattedSequence(sequence) == false)
+            throw new IllegalSequenceElementException();
+
+        if (sequence.isEmpty() == true)
+            return true;        
+
+        List<List<RuntimeBinding>> combinations = null;
+        Application cloneApp = null;
+
+        //needed to times because if there is a fault the control go back to the try catch, which is later than the first control
+        if(sequence.isEmpty() == true)
+            return true;
+        
+        ExecutableElement op = sequence.remove(0);
+
+        if (op instanceof OpStart) {
+            OpStart todo = (OpStart) op;
+            NodeInstance instance = app.getGlobalState().getNodeInstanceByID(todo.getInstnaceID());
+
+            List<Requirement> neededReqsBeforeOp = instance.getNeededReqs();
+            try {
+                app.execute(todo);
+            } catch (FailedOperationException e) {
+                // keep going, this will be handled by the fault handler or leaved as it is
+            } catch (Exception e) {
+                return false;
+            }
+
+            if(this.faultBiforcationNotDetValid(app, sequence) == false)
+                return false;
+
+            List<Requirement> neededReqsAfterOp = instance.getNeededReqs();
+            List<Requirement> neededReqsBeforeAndAfter = new ArrayList<>();
+
+            for (Requirement req : neededReqsBeforeOp) {
+                if (neededReqsAfterOp.contains(req))
+                    neededReqsBeforeAndAfter.add(req);
+            }
+
+            List<RuntimeBinding> instanceRuntimeBinding = app.getGlobalState().getRuntimeBindings().get(instance.getID());
+            List<RuntimeBinding> runtimeBindingBeforeAndAfter = new ArrayList<>();
+
+            for (RuntimeBinding rb : instanceRuntimeBinding) {
+                for (Requirement req : neededReqsBeforeAndAfter) {
+                    if (req.equals(rb.getReq()))
+                        runtimeBindingBeforeAndAfter.add(rb);
+                }
+            }
+
+            combinations = this.createBindingCombinations(app, todo.getInstnaceID());
+
+            if(combinations.isEmpty() == true)
+                return this.notDetIsValid(app.clone(), sequence);
+
+            for (List<RuntimeBinding> comb : combinations) {
+                if (comb.containsAll(runtimeBindingBeforeAndAfter) == true) {
+                    cloneApp = app.clone();
+                    for (RuntimeBinding rb : comb) 
+                        cloneApp.getGlobalState().addBinding(instance.getID(), rb.getReq(), rb.getNodeInstanceID());
+                    
+                    if (this.notDetIsValid(cloneApp, sequence) == false)
+                        return false;
+                }
+            }
+        }
+
+        if (op instanceof OpEnd) {
+            OpEnd todo = (OpEnd) op;
+            NodeInstance instance = app.getGlobalState().getActiveNodeInstances().get(todo.getInstanceID());
+
+            List<Requirement> neededReqsBeforeOp = instance.getNeededReqs();
+            
+            try {
+                app.execute(todo);
+            } catch (FailedOperationException e) {
+                // keep going, this will be handled by the fault handler or leaved as it is
+            } catch (Exception e) {
+                return false;
+            }
+
+            if(this.faultBiforcationNotDetValid(app, sequence) == false)
+                return false;
+
+            List<Requirement> neededReqsAfterOp = instance.getNeededReqs();
+            List<Requirement> neededReqsBeforeAndAfter = new ArrayList<>();
+
+            for (Requirement req : neededReqsBeforeOp) {
+                if (neededReqsAfterOp.contains(req))
+                    neededReqsBeforeAndAfter.add(req);
+            }
+
+            List<RuntimeBinding> instanceRuntimeBinding = app.getGlobalState().getRuntimeBindings().get(instance.getID());
+            List<RuntimeBinding> runtimeBindingBeforeAndAfter = new ArrayList<>();
+
+            for (RuntimeBinding rb : instanceRuntimeBinding) {
+                for (Requirement req : neededReqsBeforeAndAfter) {
+                    if (req.equals(rb.getReq()))
+                        runtimeBindingBeforeAndAfter.add(rb);
+                }
+            }
+
+            combinations = this.createBindingCombinations(app, todo.getInstanceID());
+
+            if(combinations.isEmpty() == true)
+                return this.notDetIsValid(app.clone(), sequence);
+
+            for (List<RuntimeBinding> comb : combinations) {
+                if (comb.containsAll(runtimeBindingBeforeAndAfter) == true) {
+                    cloneApp = app.clone();
+                    for (RuntimeBinding rb : comb) 
+                        cloneApp.getGlobalState().addBinding(instance.getID(), rb.getReq(), rb.getNodeInstanceID());
+                    
+                    if (this.notDetIsValid(cloneApp, sequence) == false)
+                        return false;
+                }
+            }
+        }
+
+        if (op instanceof ScaleIn) {
+            ScaleIn todo = (ScaleIn) op;
+
+            try {
+                app.execute(todo);
+            } catch (FailedOperationException e) {
+                // keep going, this will be handled by the fault handler or leaved as it is
+            } catch (Exception e) {
+                return false;
+            }
+
+            if(this.faultBiforcationNotDetValid(app, sequence) == false)
+                return false;
+
+            cloneApp = app.clone();
+                
+            if(this.notDetIsValid(cloneApp, sequence) == false)
+                return false;
+            
+        }
+
+        if (op instanceof ScaleOut1) {
+            ScaleOut1 todo = (ScaleOut1) op;
+
+            try {
+                app.execute(todo);
+            } catch (FailedOperationException e) {
+                // keep going, this will be handled by the fault handler or leaved as it is
+            } catch (Exception e) {
+                return false;
+            }
+
+            if(this.faultBiforcationNotDetValid(app, sequence) == false)
+                return false;
+            
+            app.getGlobalState().removeAllBindingsBothWays(todo.getIDToAssign());
+            combinations = this.createBindingCombinations(app, todo.getIDToAssign());
+
+            if(combinations.isEmpty() == true)
+                return this.notDetIsValid(app.clone(), sequence);
+
+            for(List<RuntimeBinding> comb : combinations){
+                cloneApp = app.clone();
+                for(RuntimeBinding rb : comb)
+                    cloneApp.getGlobalState().addBinding(todo.getIDToAssign(), rb.getReq(), rb.getNodeInstanceID());
+                
+                if(this.notDetIsValid(cloneApp, sequence) == false)
+                    return false;
+            }
+        }
+
+        if (op instanceof ScaleOut2){
+            ScaleOut2 todo = (ScaleOut2) op;
+
+            try {
+                app.execute(todo);
+            } catch (FailedOperationException e) {
+                // keep going, this will be handled by the fault handler or leaved as it is
+            } catch (Exception e) {
+                return false;
+            }
+            
+            if(this.faultBiforcationNotDetValid(app, sequence) == false)
+                return false;
+
+            RuntimeBinding containmentRB = null;
+            for(RuntimeBinding rb : app.getGlobalState().getRuntimeBindings().get(todo.getIDToAssign())){
+                if(rb.getReq().isContainment() == true)
+                    containmentRB = rb;
+            }
+
+            app.getGlobalState().removeAllBindingsBothWays(todo.getIDToAssign());
+            app.getGlobalState().addBinding(todo.getIDToAssign(), containmentRB.getReq(), todo.getContainerID());
+            combinations = this.createBindingCombinations(app, todo.getIDToAssign());
+
+            if(combinations.isEmpty() == true)
+                return this.notDetIsValid(app.clone(), sequence);
+
+            for(List<RuntimeBinding> comb : combinations){
+                cloneApp = app.clone();
+                for(RuntimeBinding rb : comb)
+                    cloneApp.getGlobalState().addBinding(todo.getIDToAssign(), rb.getReq(), rb.getNodeInstanceID());
+                
+                if(this.notDetIsValid(cloneApp, sequence) == false)
+                    return false;
+            }
+        }
+
+        return true;
+    }
+
+
+    public boolean faultBiforcationNotDetValid(Application app, List<ExecutableElement> sequence)
+        throws 
+            NullPointerException, 
+            IllegalSequenceElementException, 
+            IllegalArgumentException, 
+            InstanceUnknownException 
+    {
+
+        ArrayList<Fault> pendingFaults = (ArrayList<Fault>) app.getGlobalState().getPendingFaults();
+        ArrayList<NodeInstance> brokenInstances = (ArrayList<NodeInstance>) app.getGlobalState().getBrokeninstances();
+
+        Application cloneApp = null;
+
+        if (brokenInstances.isEmpty() == false) {
+            cloneApp = app.clone();
+            try {
+                cloneApp.scaleIn(brokenInstances.get(0).getID());
+                if (this.notDetIsValid(cloneApp, sequence) == false)
+                    return false;
+
+            } catch (RuleNotApplicableException | InstanceUnknownException e) {
+                return false;
+            }
+            cloneApp = app.clone(); // clone this to reset the clone well
+        }
+
+        cloneApp = app.clone();
+
+        if (this.notDetIsValid(cloneApp, sequence) == false)
+            return false;
+
+        if (pendingFaults.isEmpty() == false) {
+            // for each fault check if it is pending or resolvable
+            for (Fault f : pendingFaults) {
+                cloneApp = app.clone();
+
+                if (app.getGlobalState().isResolvableFault(f) == true) {
+                    try {
+                        cloneApp.autoreconnect(f.getInstanceID(), f.getReq());
+                        // if the fault is resolved keep exploring the branch
+                        if (this.notDetIsValid(cloneApp, sequence) == false)
+                            return false;
+                    } catch (RuleNotApplicableException | InstanceUnknownException e) {
+                        return false;
+                    }
+                } else {
+                    try {
+                        cloneApp.fault(f.getInstanceID(), f.getReq());
+                        // if the fault is resolved keep exploring the branch
+                        if (this.notDetIsValid(cloneApp, sequence) == false)
+                            return false;
+
+                    } catch (FailedFaultHandlingExecption | RuleNotApplicableException | InstanceUnknownException e) {
+                        return false;
+                    } 
+                }
+            }
+        }
+        return true;
+    }
+
+    public boolean faultBiforcationWeaklyValid(Application app, List<ExecutableElement> sequence)
+        throws 
+            NullPointerException, 
+            IllegalArgumentException, 
+            InstanceUnknownException,
+            IllegalSequenceElementException 
+    {
+        ArrayList<Fault> pendingFaults = (ArrayList<Fault>) app.getGlobalState().getPendingFaults();
+        ArrayList<NodeInstance> brokenInstances = (ArrayList<NodeInstance>) app.getGlobalState().getBrokeninstances();
+
+        Application cloneApp = null;
+
+        if (brokenInstances.isEmpty() == false) {
+            cloneApp = app.clone();
+            try {
+                cloneApp.scaleIn(brokenInstances.get(0).getID());
+                if (this.isWeaklyValidSequence(cloneApp, sequence) == true)
+                    return true;
+
+            } catch (RuleNotApplicableException | InstanceUnknownException e) {
+                return false;
+            }
+            cloneApp = app.clone(); // clone this to reset the clone well
+        }
+
+        cloneApp = app.clone();
+
+        if (this.isWeaklyValidSequence(cloneApp, sequence) == true)
+            return true;
+
+        if (pendingFaults.isEmpty() == false) {
+            // for each fault check if it is pending or resolvable
+            for (Fault f : pendingFaults) {
+                cloneApp = app.clone();
+
+                if (app.getGlobalState().isResolvableFault(f) == true) {
+                    try {
+                        cloneApp.autoreconnect(f.getInstanceID(), f.getReq());
+                        // if the fault is resolved keep exploring the branch
+                        if (this.isWeaklyValidSequence(cloneApp, sequence) == true)
+                            return true;
+                    } catch (RuleNotApplicableException | InstanceUnknownException e) {
+                        return false;
+                    }
+                } else {
+                    try {
+                        cloneApp.fault(f.getInstanceID(), f.getReq());
+                        // if the fault is resolved keep exploring the branch
+                        if (this.isWeaklyValidSequence(cloneApp, sequence) == true)
+                            return true;
+
+                    } catch (FailedFaultHandlingExecption | RuleNotApplicableException | InstanceUnknownException e) {
+                        return false;
+                    } 
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean faultBiforcationValid(Application app, List<ExecutableElement> sequence) 
+        throws 
+            NullPointerException,
+            IllegalArgumentException, 
+            InstanceUnknownException, 
+            IllegalSequenceElementException 
+    {
+        ArrayList<Fault> pendingFaults = (ArrayList<Fault>) app.getGlobalState().getPendingFaults();
+        ArrayList<NodeInstance> brokenInstances = (ArrayList<NodeInstance>) app.getGlobalState().getBrokeninstances();
+
+        Application cloneApp = null;
+
+        if (brokenInstances.isEmpty() == false) {
+            cloneApp = app.clone();
+            try {
+                cloneApp.scaleIn(brokenInstances.get(0).getID());
+                if (this.isValidSequence(cloneApp, sequence) == false)
+                    return false;
+
+            } catch (RuleNotApplicableException | InstanceUnknownException e) {
+                return false;
+            }
+            cloneApp = app.clone(); // clone this to reset the clone well
+        }
+
+        cloneApp = app.clone();
+
+        if (this.isValidSequence(cloneApp, sequence) == false)
+            return false;
+
+        if (pendingFaults.isEmpty() == false) {
+            // for each fault check if it is pending or resolvable
+            for (Fault f : pendingFaults) {
+                cloneApp = app.clone();
+
+                if (app.getGlobalState().isResolvableFault(f) == true) {
+                    try {
+                        cloneApp.autoreconnect(f.getInstanceID(), f.getReq());
+                        // if the fault is resolved keep exploring the branch
+                        if (this.isValidSequence(cloneApp, sequence) == false)
+                            return false;
+                    } catch (RuleNotApplicableException | InstanceUnknownException e) {
+                        return false;
+                    }
+                } else {
+                    try {
+                        cloneApp.fault(f.getInstanceID(), f.getReq());
+                        // if the fault is resolved keep exploring the branch
+                        if (this.isValidSequence(cloneApp, sequence) == false)
+                            return false;
+
+                    } catch (FailedFaultHandlingExecption | RuleNotApplicableException | InstanceUnknownException e) {
+                        return false;
+                    } 
+                }
+            }
+        }
+        return true;
+    }
+
+    public boolean faultBiforcationNotDetWeaklyValid(Application app, List<ExecutableElement> sequence)
+        throws 
+            NullPointerException, 
+            IllegalSequenceElementException, 
+            InstanceUnknownException 
+    {
+        ArrayList<Fault> pendingFaults = (ArrayList<Fault>) app.getGlobalState().getPendingFaults();
+        ArrayList<NodeInstance> brokenInstances = (ArrayList<NodeInstance>) app.getGlobalState().getBrokeninstances();
+
+        Application cloneApp = null;
+
+        if (brokenInstances.isEmpty() == false) {
+            cloneApp = app.clone();
+            try {
+                cloneApp.scaleIn(brokenInstances.get(0).getID());
+                if (this.nonDetIsWeaklyValid(cloneApp, sequence) == true)
+                    return true;
+
+            } catch (RuleNotApplicableException | InstanceUnknownException e) {
+                return false;
+            }
+            cloneApp = app.clone(); // clone this to reset the clone well
+        }
+
+        cloneApp = app.clone();
+
+        if (this.nonDetIsWeaklyValid(cloneApp, sequence) == true)
+            return true;
+
+        if (pendingFaults.isEmpty() == false) {
+            // for each fault check if it is pending or resolvable
+            for (Fault f : pendingFaults) {
+                cloneApp = app.clone();
+
+                if (app.getGlobalState().isResolvableFault(f) == true) {
+                    try {
+                        cloneApp.autoreconnect(f.getInstanceID(), f.getReq());
+                        // if the fault is resolved keep exploring the branch
+                        if (this.nonDetIsWeaklyValid(cloneApp, sequence) == true)
+                            return true;
+                    } catch (RuleNotApplicableException | InstanceUnknownException e) {
+                        return false;
+                    }
+                } else {
+                    try {
+                        cloneApp.fault(f.getInstanceID(), f.getReq());
+                        // if the fault is resolved keep exploring the branch
+                        if (this.nonDetIsWeaklyValid(cloneApp, sequence) == true)
+                            return true;
+
+                    } catch (FailedFaultHandlingExecption | RuleNotApplicableException | InstanceUnknownException e) {
+                        return false;
+                    } 
+                }
+            }
+        }
+        return false;
+    }
+
 
 }
