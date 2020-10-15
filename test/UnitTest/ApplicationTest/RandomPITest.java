@@ -53,7 +53,7 @@ public class RandomPITest {
         this.nodeA = this.createNodeA();
         this.nodeB = this.createNodeB();
 
-        this.testApp = new Application("testApp");
+        this.testApp = new Application("testApp", PiVersion.GREEDYPI);
 
         this.testApp.addNode(this.nodeA);
         this.testApp.addNode(this.nodeB);
@@ -154,7 +154,7 @@ public class RandomPITest {
         assertFalse(capableInstances.contains(this.instanceA));
 
         //really a trivial test, TODO implement a real test
-        for(int i = 0; i < 50; i++)
+        for(int i = 0; i < 109; i++)
             assertTrue(capableInstances.contains(this.testApp.randomPI(this.instanceA.getID(), this.req)));
         
     }

@@ -29,7 +29,7 @@ public class OpEndTest {
             InstanceUnknownException, 
             AlreadyUsedIDException 
     {
-        this.testApp = ThesisAppFactory.createApplication();
+        this.testApp = ThesisAppFactory.createApplication(PiVersion.GREEDYPI);
         this.mongoM1 = this.testApp.scaleOut1("mongo", "mongoM1");
 
         this.nodeN3 = this.testApp.scaleOut1("node", "nodeN3");

@@ -39,7 +39,7 @@ public class GetTransitionByOpTest {
             AlreadyUsedIDException 
     {
         this.nodeA = this.createNodeA();
-        this.testApp = new Application("testApp");
+        this.testApp = new Application("testApp", PiVersion.GREEDYPI);
         this.testApp.addNode(this.nodeA);
 
         this.instanceOfA = testApp.scaleOut1("nodeA", "instanceOfA");

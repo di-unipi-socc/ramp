@@ -29,7 +29,6 @@ mentre le operazioni senza fault hanno effetto
 
 - vedi commenti 99-101 analyzer test
 
-
 --> NOTA BENE: ora il discorso di rule not applicable quando instance e' null non vale piu (e viene lanciato InstanceUnknownException)
   - questo perche' con il metodo ausiliario getInstanceByID devo usare quella
     - il codice e' molto piu' leggibile ed elegante

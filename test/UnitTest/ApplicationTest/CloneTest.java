@@ -23,7 +23,7 @@ public class CloneTest {
 
     @Before
     public void setUp() {
-        app = ThesisAppFactory.createApplication();
+        app = ThesisAppFactory.createApplication(PiVersion.GREEDYPI);
     }
 
     @Test

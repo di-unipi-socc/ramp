@@ -35,7 +35,7 @@ public class ScaleOut2Test {
             InstanceUnknownException, 
             AlreadyUsedIDException 
     {
-        this.testApp = ThesisAppFactory.createApplication();
+        this.testApp = ThesisAppFactory.createApplication(PiVersion.GREEDYPI);
        
         this.frontend = testApp.getNodes().get("frontend");
         this.node = testApp.getNodes().get("node");

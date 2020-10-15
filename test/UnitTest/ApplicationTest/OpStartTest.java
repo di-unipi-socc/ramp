@@ -26,7 +26,7 @@ public class OpStartTest {
             InstanceUnknownException, 
             AlreadyUsedIDException 
     {
-        this.testApp = ThesisAppFactory.createApplication();
+        this.testApp = ThesisAppFactory.createApplication(PiVersion.GREEDYPI);
         this.mongoM1 = this.testApp.scaleOut1("mongo", "mongoM1");
     }
 

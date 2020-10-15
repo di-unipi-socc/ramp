@@ -19,14 +19,20 @@ public class Application {
     // set T: all the application's component: node's name -> node
     private Map<String, Node> nodes;
     private GlobalState globalState;
+    private final PiVersion piVersion;
+    private boolean deterministicPi;
 
     // b in the cameriero's thesis. this represent a static binding such as
     // <name of static node n, name of the requirement r of n> -> <name of static
     // node n1 that satify r, capability that satisfy r>
     private Map<StaticBinding, StaticBinding> bindingFunction;
 
-    private int randomIndex(int min, int max){
-        return (int) ((Math.random() * (max - min)) + min); 
+    private int randomIndex(int min, int max) {
+        return (int) ((Math.random() * (max - min)) + min);
+    }
+
+    public boolean isPiDeterministic() {
+        return deterministicPi;
     }
 
     /**
@@ -34,7 +40,7 @@ public class Application {
      * @throws NullPointerException
      * @throws IllegalArgumentException
      */
-    public Application(String name) 
+    public Application(String name, PiVersion piVersion) 
         throws 
             NullPointerException, 
             IllegalArgumentException 
@@ -49,6 +55,8 @@ public class Application {
         this.nodes = new HashMap<>();
         this.globalState = new GlobalState(this);
         this.bindingFunction = new HashMap<>();
+        this.piVersion = piVersion;
+        this.piControlSwitch();
 
         // if pi is null we will use greedyPI
     }
@@ -72,7 +80,7 @@ public class Application {
      * @throws NullPointerException
      * @throws IllegalArgumentException
      */
-    public Application(String name, Map<String, Node> nodes, Map<StaticBinding, StaticBinding> bf)
+    public Application(String name, PiVersion piVersion, Map<String, Node> nodes, Map<StaticBinding, StaticBinding> bf)
         throws 
             NullPointerException, 
             IllegalArgumentException
@@ -93,6 +101,8 @@ public class Application {
         this.nodes = nodes;
         this.globalState = new GlobalState(this);
         this.bindingFunction = bf;
+        this.piVersion = piVersion; 
+        this.piControlSwitch();
     }
 
     /**
@@ -384,7 +394,11 @@ public class Application {
         this.globalState.removeRuntimeBinding(instanceID, req);
 
         //find a new capable instance that can take care of req
-        NodeInstance servingInstance = this.greedyPI(instanceID, req);
+        NodeInstance servingInstance = null;
+        if(this.piVersion == PiVersion.GREEDYPI)
+            servingInstance = this.greedyPI(instanceID, req);
+        if(this.piVersion == PiVersion.RANDOMPI)
+            servingInstance = this.randomPI(instanceID, req);
 
         //servingInstance cant be null, otherwise req wouldn't be resolvable
         this.globalState.addBinding(instanceID, req, servingInstance.getID());
@@ -588,7 +602,7 @@ public class Application {
      * clones the application (recursivly, hence clone the global state and so on)
      */
     public Application clone(){
-        Application clone = new Application(this.name);
+        Application clone = new Application(this.name, this.piVersion);
 
         Collection<Node> appNodesCollection =  this.nodes.values();
         ArrayList<Node> appNodes = new ArrayList<>(appNodesCollection);
@@ -732,6 +746,18 @@ public class Application {
             case "scaleOut2": 
                 ScaleOut2 el4 = (ScaleOut2) element;
                 this.scaleOut2(el4.getNodeName(), el4.getIDToAssign(), el4.getContainerID());
+            default:
+                break;
+        }
+    }
+
+    private void piControlSwitch(){
+        switch (this.piVersion) {
+            case GREEDYPI:
+                this.deterministicPi = true;
+                break;
+            case RANDOMPI:
+                this.deterministicPi = false;
             default:
                 break;
         }

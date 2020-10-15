@@ -5,14 +5,14 @@ import java.util.*;
 
 public class ThesisAppFactory {
 
-    public static Application createApplication(){
+    public static Application createApplication(PiVersion piVersion){
         //static setup of the application
         Node frontend = createFrontend();
         Node backend = createBackend();
         Node node = createNode();
         Node mongo = createMongo();
         
-        Application testApp = new Application("testApp");
+        Application testApp = new Application("testApp", piVersion);
         testApp.addNode(frontend);
         testApp.addNode(backend);
         testApp.addNode(node);

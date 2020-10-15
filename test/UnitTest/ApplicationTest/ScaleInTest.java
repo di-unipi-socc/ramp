@@ -64,7 +64,7 @@ public class ScaleInTest {
         this.unkwownNode = this.createUnknownNode();
         this.unknownInstance = new NodeInstance(this.unkwownNode, "state1", "AAAAAAAA");
 
-        this.testApp = new Application("testApp");
+        this.testApp = new Application("testApp", PiVersion.GREEDYPI);
         this.testApp.addNode(this.nodeA);
         this.testApp.addNode(this.nodeB);
         this.testApp.addNode(this.nodeC);

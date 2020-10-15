@@ -36,7 +36,7 @@ public class ScaleOut1Test {
         this.nodeB = this.createNodeB();
         this.nodeC = this.createNodeC();
 
-        this.testApp = new Application("testApp");
+        this.testApp = new Application("testApp", PiVersion.GREEDYPI);
         this.testApp.addNode(this.nodeA);
         this.testApp.addNode(this.nodeB);
         this.testApp.addNode(this.nodeC);

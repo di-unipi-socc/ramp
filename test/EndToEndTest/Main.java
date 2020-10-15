@@ -54,7 +54,7 @@ public class Main {
             throws NullPointerException, RuleNotApplicableException, IllegalArgumentException,
             OperationNotAvailableException, FailedOperationException, InstanceUnknownException, AlreadyUsedIDException 
     {
-        Application app = ThesisAppFactory.createApplication();
+        Application app = ThesisAppFactory.createApplication(PiVersion.GREEDYPI);
         
         System.out.println("before start, no active nodes \n");
 
@@ -140,7 +140,7 @@ public class Main {
                 FailedFaultHandlingExecption, InstanceUnknownException, AlreadyUsedIDException 
     {
 
-        Application app = ThesisAppFactory.createApplication();
+        Application app = ThesisAppFactory.createApplication(PiVersion.GREEDYPI);
     
         // NodeInstance nodeN3;
         // NodeInstance nodeN2;

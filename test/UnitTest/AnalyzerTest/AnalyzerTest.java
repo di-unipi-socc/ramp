@@ -19,6 +19,7 @@ import exceptions.RuleNotApplicableException;
 import model.Application;
 import model.ManagementProtocol;
 import model.Node;
+import model.PiVersion;
 import model.Requirement;
 import model.RequirementSort;
 import model.RuntimeBinding;
@@ -53,8 +54,10 @@ public class AnalyzerTest {
             InstanceUnknownException
              
     {    
-        assertTrue(analyzer.isValidSequence(ThesisAppFactory.createApplication(), this.createValidSequence()));
-        assertFalse(analyzer.isValidSequence(ThesisAppFactory.createApplication(), this.createWeaklyValidSequence()));
+        assertTrue(analyzer.isValidSequence(ThesisAppFactory.createApplication(PiVersion.GREEDYPI), this.createValidSequence()));
+        assertFalse(analyzer.isValidSequence(ThesisAppFactory.createApplication(PiVersion.GREEDYPI), this.createWeaklyValidSequence()));
+        assertTrue(analyzer.isValidSequence(ThesisAppFactory.createApplication(PiVersion.RANDOMPI), this.createValidSequence()));
+        assertFalse(analyzer.isValidSequence(ThesisAppFactory.createApplication(PiVersion.RANDOMPI), this.createWeaklyValidSequence()));
     }
 
     @Test
@@ -65,9 +68,10 @@ public class AnalyzerTest {
             RuleNotApplicableException, 
             InstanceUnknownException
     {
-        assertTrue(analyzer.isWeaklyValidSequence(ThesisAppFactory.createApplication(), this.createValidSequence())); 
-        assertTrue(analyzer.isWeaklyValidSequence(ThesisAppFactory.createApplication(), this.createWeaklyValidSequence()));
-
+        assertTrue(analyzer.isWeaklyValidSequence(ThesisAppFactory.createApplication(PiVersion.GREEDYPI), this.createValidSequence())); 
+        assertTrue(analyzer.isWeaklyValidSequence(ThesisAppFactory.createApplication(PiVersion.GREEDYPI), this.createWeaklyValidSequence()));
+        assertTrue(analyzer.isWeaklyValidSequence(ThesisAppFactory.createApplication(PiVersion.RANDOMPI), this.createValidSequence())); 
+        assertTrue(analyzer.isWeaklyValidSequence(ThesisAppFactory.createApplication(PiVersion.RANDOMPI), this.createWeaklyValidSequence()));
     }
 
     public ArrayList<ExecutableElement> createValidSequence(){
@@ -163,7 +167,7 @@ public class AnalyzerTest {
 
     //creates the simple applications to use for the test of create combinations
     public Application createToyApp(){
-        Application ret = new Application("toy");
+        Application ret = new Application("toy", PiVersion.GREEDYPI);
 
         Node nodeA = this.createNodeA();
         Node nodeB = this.createNodeB();
@@ -284,29 +288,5 @@ public class AnalyzerTest {
         s = s.concat(" ]");
         return s;
     }
-
-    @Test
-    public void notDetWeaklyValidTest()
-        throws 
-            NullPointerException, 
-            IllegalSequenceElementException, 
-            InstanceUnknownException 
-    {
-        assertTrue(this.analyzer.nonDetIsWeaklyValid(ThesisAppFactory.createApplication(), this.createWeaklyValidSequence()));
-        assertTrue(this.analyzer.nonDetIsWeaklyValid(ThesisAppFactory.createApplication(), this.createValidSequence()));
-    }
-
-
-    @Test
-    public void notDetIsValidTest()
-        throws 
-            NullPointerException, 
-            IllegalSequenceElementException, 
-            InstanceUnknownException 
-    {   
-        assertTrue(this.analyzer.notDetIsValid(ThesisAppFactory.createApplication(), this.createValidSequence()));
-        assertFalse(this.analyzer.notDetIsValid(ThesisAppFactory.createApplication(), this.createWeaklyValidSequence()));
-    }
-
 
 }

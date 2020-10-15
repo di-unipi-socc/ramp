@@ -47,7 +47,7 @@ public class GreedyPITest {
         this.nodeA = this.createNodeA();
         this.nodeB = this.createNodeB();
 
-        this.testApp = new Application("testApp");
+        this.testApp = new Application("testApp", PiVersion.GREEDYPI);
 
         this.testApp.addNode(this.nodeA);
         this.testApp.addNode(this.nodeB);

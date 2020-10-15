@@ -47,7 +47,7 @@ public class GetSatisfiedReqsTest {
         this.nodeAsking = this.createNodeAsking();
         this.nodeServer = this.createNodeServer();
 
-        this.testApp = new Application("testApp");
+        this.testApp = new Application("testApp", PiVersion.GREEDYPI);
         this.testApp.addNode(this.nodeAsking);
         this.testApp.addNode(this.nodeServer);
 
