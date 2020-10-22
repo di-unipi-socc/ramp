@@ -15,8 +15,7 @@ public class GlobalState {
     // active node instances: <instance unique id, NodeInstance>
     Map<String, NodeInstance> activeNodeInstances;
 
-    // <node instance "n" id -> list of runtime binding <req r of n, server instance
-    // of r>
+    // <node instance "n" id -> list of runtime binding <req r of n, server instance of r>
     Map<String, List<RuntimeBinding>> runtimeBindings;
 
     /**

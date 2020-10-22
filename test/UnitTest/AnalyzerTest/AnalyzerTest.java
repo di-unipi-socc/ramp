@@ -10,6 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import analyzer.Analyzer;
+import analyzer.Constraint;
 import analyzer.executable_element.*;
 
 import exceptions.AlreadyUsedIDException;
@@ -270,7 +271,7 @@ public class AnalyzerTest {
         List<List<RuntimeBinding>> combinations = analyzer.createBindingCombinations(this.toyApp, "instanceA");
         assertTrue(combinations.size() == 9);
 
-        //assertTrue(printCombinations(combinations), false);
+        assertTrue(printCombinations(combinations), true);
     }
 
     public String printCombinations(List<List<RuntimeBinding>> combinations){
@@ -281,6 +282,96 @@ public class AnalyzerTest {
             s = s.concat("[");
             for (RuntimeBinding runBinding : list) {
                 s = s.concat("<" + runBinding.getNodeInstanceID() + " " + runBinding.getReq().getName() + "> "); 
+            }
+            s = s.concat("] ");
+        }
+
+        s = s.concat(" ]");
+        return s;
+    }
+
+    @Test
+    public void constrainCombinationTest(){
+
+        ExecutableElement e1 = new ScaleOut1("node", "n1");
+        ExecutableElement e2 = new ScaleOut1("mongo", "m1");
+        ExecutableElement e3 = new ScaleOut2("backend", "b1", "n1");
+        ExecutableElement e4 = new ScaleOut2("frontend", "f1", "n1");
+        ExecutableElement e5 = new ScaleIn("n1");
+        ExecutableElement e6 = new ScaleIn("m1");
+        ExecutableElement e7 = new ScaleIn("f1");
+        ExecutableElement e8 = new ScaleIn("b1");
+
+        Constraint c1 = new Constraint(e1, e2);
+        Constraint c2 = new Constraint(e3, e4);
+        Constraint c3 = new Constraint(e5, e6);
+        Constraint c4 = new Constraint(e7, e8);
+
+        List<Constraint> constraints = new ArrayList<>();
+        constraints.add(c1);
+        constraints.add(c2);
+        constraints.add(c3);
+        constraints.add(c4);
+
+        List<List<Constraint>> constraintsComb = analyzer.generatePerm(constraints);
+        assertTrue(constraintsComb.size() == 24);
+    }
+
+    @Test
+    public void generateSequencesTest(){
+
+        List<List<ExecutableElement>> sequences = new ArrayList<>();
+        List<ExecutableElement> baseSequence = new ArrayList<>();
+        
+        ExecutableElement e1 = new ScaleOut1("node", "n1");
+        ExecutableElement e2 = new OpStart("mongo", "m1");
+        ExecutableElement e3 = new OpEnd("backend", "b1");
+
+        ExecutableElement e4 = new ScaleIn("id");
+        ExecutableElement e5 = new ScaleOut2("frontend", "f1", "n1");
+
+
+        baseSequence.add(e1);
+        baseSequence.add(e2);
+        baseSequence.add(e3);
+
+        List<ExecutableElement> freeExecutableElement = new ArrayList<>();
+        freeExecutableElement.add(e4);
+        freeExecutableElement.add(e5);
+
+        analyzer.generateSequences(sequences, baseSequence, freeExecutableElement);
+
+        for (List<ExecutableElement> sequence : sequences) {
+            assertTrue(sequence.size() == 5);
+        }
+
+    }
+
+    public String printConstraintComb(List<List<Constraint>> combs){
+        String s = "";
+
+        s = s.concat("[ ");
+        for (List<Constraint> list : combs) {
+            s = s.concat("[");
+            for (Constraint constraint : list) {
+                s = s.concat("<" + constraint.getBefore().getRule() + ", " + constraint.getAfter().getRule() + "> "); 
+            }
+            s = s.concat("] ");
+        }
+
+        s = s.concat(" ]");
+        return s;
+    }
+
+
+    public String printSequences(List<List<ExecutableElement>> sequences){
+        String s = "";
+
+        s = s.concat("[ ");
+        for (List<ExecutableElement> list : sequences) {
+            s = s.concat("[");
+            for (ExecutableElement ex : list) {
+                s = s.concat(ex.getRule() + " "); 
             }
             s = s.concat("] ");
         }

@@ -1,9 +1,14 @@
 package analyzer;
 
+import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import javax.sound.midi.Sequence;
 
 import analyzer.executable_element.*;
 import exceptions.*;
@@ -133,15 +138,6 @@ public class Analyzer {
         return false;
     }
 
-    private boolean deterministicIsNotValidSequence(Application app, List<ExecutableElement> sequence)
-        throws 
-            NullPointerException, 
-            IllegalSequenceElementException, 
-            InstanceUnknownException 
-    {
-        return !this.deterministicIsWeaklyValidSequence(app, sequence);
-    }
-
     private boolean nonDeterministicIsWeaklyValidSeq(Application app, List<ExecutableElement> sequence)
         throws 
             IllegalSequenceElementException, 
@@ -183,7 +179,6 @@ public class Analyzer {
             //check the fault branches
             if(this.checkFaultsWeaklyValid(app, sequence, false) == true)
                 return true;
-
             //requirements needed after doing the op
             List<Requirement> neededReqsAfterOp = instance.getNeededReqs();
 
@@ -410,6 +405,7 @@ public class Analyzer {
             if(r.isContainment() == true)
                 containmentReq = r;
         }
+
         //TODO rischiosa con i ref?
         if(containmentReq != null)
             neededReqs.remove(containmentReq);
@@ -920,7 +916,128 @@ public class Analyzer {
         }
     }
   
-    
+
+    public boolean validPlan(Application app, List<List<ExecutableElement>> plan, List<Constraint> constraints)
+        throws 
+            NullPointerException, 
+            IllegalArgumentException, 
+            IllegalSequenceElementException,
+            InstanceUnknownException 
+    {
+        List<ExecutableElement> planExecutableElements = new ArrayList<>();
+        List<ExecutableElement> constraintsExecutableElements = new ArrayList<>();
+
+        List<ExecutableElement> freeExecutableElements = new ArrayList<>();
+
+        for (List<ExecutableElement> list : plan) {
+            for (ExecutableElement element : list) {
+                planExecutableElements.add(element);
+            }
+        }
+
+        for(Constraint constraint : constraints){
+            constraintsExecutableElements.add(constraint.getBefore());
+            constraintsExecutableElements.add(constraint.getAfter());
+        }
+
+        for(ExecutableElement element : planExecutableElements){
+            //TODO: ridefinisci equals e hashmap di executableelements
+            //forse non serve, usa quelli di object
+            if(constraintsExecutableElements.contains(element) == false)
+                freeExecutableElements.add(element);
+        }
+
+        List<List<Constraint>> permutationsOfConstraints = this.generatePerm(constraints);
+        List<List<ExecutableElement>> sequences = new ArrayList<>();
+
+        for(List<Constraint> perm : permutationsOfConstraints){
+            List<ExecutableElement> baseSequence = new ArrayList<>();
+
+            for(Constraint constraint : perm){
+                baseSequence.add(constraint.getBefore());
+                baseSequence.add(constraint.getAfter());
+            }
+
+            this.generateSequences(sequences, baseSequence, freeExecutableElements);
+        }
+
+        for(List<ExecutableElement> sequence : sequences){
+            if(this.isValidSequence(app, sequence) == false)
+                return false;
+        }
+
+        return true;
+
+    }
+
+    public void generateSequences(List<List<ExecutableElement>> sequences, List<ExecutableElement> baseSequence, List<ExecutableElement> freeExecutableElement){
+        
+        int currentMixing = 0;
+
+        List<ExecutableElement> currentSequence = new ArrayList<>(baseSequence);
+
+        if(freeExecutableElement.size() == 1){
+            List<ExecutableElement> currentClone = this.cloneExElementList(currentSequence);
+
+            for(int j = 0; j < currentClone.size() + 1; j ++){
+                List<ExecutableElement> finalClone = this.cloneExElementList(currentClone);
+                finalClone.add(j, freeExecutableElement.get(currentMixing));
+                sequences.add(finalClone);
+            }
+
+            return;
+        }
+
+        while(currentMixing != freeExecutableElement.size()){
+
+            List<ExecutableElement> currentClone = this.cloneExElementList(currentSequence);
+
+            for(int i = 0; i < freeExecutableElement.size(); i++){
+                if(i != currentMixing)
+                    currentClone.add(freeExecutableElement.get(i));
+            }
+
+            for(int j = 0; j < currentClone.size() + 1; j ++){
+                List<ExecutableElement> finalClone = this.cloneExElementList(currentClone);
+                finalClone.add(j, freeExecutableElement.get(currentMixing));
+                sequences.add(finalClone);
+            }
+
+            currentMixing ++;
+        }
+        return;
+    }
+
+    public <E> List<List<E>> generatePerm(List<E> original) {
+        if (original.isEmpty()) {
+          List<List<E>> result = new ArrayList<>(); 
+          result.add(new ArrayList<>()); 
+          return result; 
+        }
+
+        E firstElement = original.remove(0);
+        List<List<E>> returnValue = new ArrayList<>();
+        List<List<E>> permutations = generatePerm(original);
+
+        for (List<E> smallerPermutated : permutations) {
+          for (int index=0; index <= smallerPermutated.size(); index++) {
+            List<E> temp = new ArrayList<>(smallerPermutated);
+            temp.add(index, firstElement);
+            returnValue.add(temp);
+          }
+        }
+        return returnValue;
+      }
+
+
+    private List<ExecutableElement> cloneExElementList(List<ExecutableElement> list){
+        List<ExecutableElement> clone = new ArrayList<>();
+
+        for(ExecutableElement element : list)
+            clone.add(element);
+        
+        return clone;
+    }
 
 
 }
