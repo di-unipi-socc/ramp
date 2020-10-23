@@ -31,7 +31,7 @@ public class AnalyzerTest {
 
     public Analyzer analyzer;
 
-    public Application toyApp; //for the create combinations test
+    public Application toyApp; //for the create permutations test
 
     @Before
     public void setUp()
@@ -166,7 +166,7 @@ public class AnalyzerTest {
         sequence.add(opEnd);
     }
 
-    //creates the simple applications to use for the test of create combinations
+    //creates the simple applications to use for the test of create permutations
     public Application createToyApp(){
         Application ret = new Application("toy", PiVersion.GREEDYPI);
 
@@ -255,7 +255,7 @@ public class AnalyzerTest {
     }
 
     @Test
-    public void recursiveCombinationsTest() throws NullPointerException, IllegalArgumentException,
+    public void recursiveRunBindingPerm() throws NullPointerException, IllegalArgumentException,
             RuleNotApplicableException, InstanceUnknownException, AlreadyUsedIDException {
 
         this.toyApp.scaleOut1("nodeC", "instanceC1");
@@ -268,17 +268,17 @@ public class AnalyzerTest {
 
         this.toyApp.scaleOut1("nodeA", "instanceA");
 
-        List<List<RuntimeBinding>> combinations = analyzer.createBindingCombinations(this.toyApp, "instanceA");
-        assertTrue(combinations.size() == 9);
+        List<List<RuntimeBinding>> permutations = analyzer.createRunBindingPerms(this.toyApp, "instanceA");
+        assertTrue(permutations.size() == 9);
 
-        assertTrue(printCombinations(combinations), true);
+        assertTrue(printPermutations(permutations), true);
     }
 
-    public String printCombinations(List<List<RuntimeBinding>> combinations){
+    public String printPermutations(List<List<RuntimeBinding>> permutations){
         String s = "";
 
         s = s.concat("[ ");
-        for (List<RuntimeBinding> list : combinations) {
+        for (List<RuntimeBinding> list : permutations) {
             s = s.concat("[");
             for (RuntimeBinding runBinding : list) {
                 s = s.concat("<" + runBinding.getNodeInstanceID() + " " + runBinding.getReq().getName() + "> "); 
