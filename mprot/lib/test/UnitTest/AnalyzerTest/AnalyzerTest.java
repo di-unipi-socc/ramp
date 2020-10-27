@@ -3,6 +3,8 @@ package mprot.lib.test.UnitTest.AnalyzerTest;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -282,6 +284,8 @@ public class AnalyzerTest {
         return s;
     }
 
+
+    
     @Test
     public void checkConstraintTest(){
         ExecutableElement e1 = new ScaleOut1("nodeName", "idToAssign");
@@ -295,29 +299,45 @@ public class AnalyzerTest {
         planExElements.add(e3);
         planExElements.add(e4);
 
-        Map<ExecutableElement, List<ExecutableElement>> constraintsMap = new HashMap<>();
+        List<ExecutableElement> planExElements1 = new ArrayList<>();
+        planExElements1.add(e1);
+        planExElements1.add(e2);
+        planExElements1.add(e3);
+        planExElements1.add(e4);
 
-        for (ExecutableElement executableElement : planExElements) 
-            constraintsMap.put(executableElement, new ArrayList<>());
 
-        List<ExecutableElement> afterE3 = constraintsMap.get(e3);
-        afterE3.add(e4);
+        List<List<ExecutableElement>> perms = analyzer.generatePerm(planExElements1, planExElements.size());
 
-        List<ExecutableElement> afterE1 = constraintsMap.get(e1);
-        afterE1.add(e2);
+        List<List<ExecutableElement>> slave = new ArrayList<>();
+        List<List<ExecutableElement>> myPerms = new ArrayList<>();
 
-        //assertTrue(constraintsMap.get(e4).size() + "", false);
+        analyzer.eePerms(planExElements, slave , 4, myPerms);
 
-        List<List<ExecutableElement>> permutations = analyzer.generatePerm(planExElements);
+        assertTrue(this.printEEPerms(myPerms).equals(this.printEEPerms(perms)));
 
-        List<List<ExecutableElement>> output = new ArrayList<>();
+        // Map<ExecutableElement, List<ExecutableElement>> constraintsMap = new HashMap<>();
 
-        for(List<ExecutableElement> perm : permutations){
-            if(analyzer.checkConstraints(perm, constraintsMap) == true)
-                output.add(perm);
-        }
+        // for (ExecutableElement executableElement : planExElements) 
+        //     constraintsMap.put(executableElement, new ArrayList<>());
 
-        assertTrue(printEEPerms(output), true);
+        // List<ExecutableElement> afterE3 = constraintsMap.get(e3);
+        // afterE3.add(e4);
+
+        // List<ExecutableElement> afterE1 = constraintsMap.get(e1);
+        // afterE1.add(e2);
+
+        // //assertTrue(constraintsMap.get(e4).size() + "", false);
+
+        // List<List<ExecutableElement>> permutations = analyzer.generatePerm(planExElements);
+
+        // List<List<ExecutableElement>> output = new ArrayList<>();
+
+        // for(List<ExecutableElement> perm : permutations){
+        //     if(analyzer.checkConstraints(perm, constraintsMap) == true)
+        //         output.add(perm);
+        // }
+
+        // assertTrue(printEEPerms(output), true);
     }   
 
     public String printEEPerms(List<List<ExecutableElement>> permutations){

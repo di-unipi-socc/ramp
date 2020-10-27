@@ -1,5 +1,7 @@
 package mprot.lib.analyzer;
 
+import static org.junit.Assert.fail;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -62,14 +64,23 @@ public class Analyzer {
             IllegalSequenceElementException, 
             InstanceUnknownException 
     {
-
         if(app.isPiDeterministic() == true)
             return this.deterministicIsWeaklyValidSequence(app, sequence);
         else
             return this.nonDeterministicIsWeaklyValidSeq(app, sequence);
-
     }
 
+    public boolean isNotValidSequence(Application app, List<ExecutableElement> sequence)
+        throws 
+            NullPointerException, 
+            IllegalSequenceElementException, 
+            InstanceUnknownException 
+    {
+        if(app.isPiDeterministic() == true)
+            return !this.deterministicIsWeaklyValidSequence(app, sequence);
+        else
+            return !this.nonDeterministicIsWeaklyValidSeq(app, sequence);
+    }
 
     private boolean deterministicIsValidSequence(Application app, List<ExecutableElement> sequence)
         throws 
@@ -218,7 +229,6 @@ public class Analyzer {
 
         return true;
     }
-
 
     private boolean wellFormattedSequence(List<ExecutableElement> sequence){
         boolean res = true;
@@ -547,17 +557,9 @@ public class Analyzer {
         }
     }
 
-    public boolean isValidPlan(Application app, List<ExecutableElement> planExecutableElements, List<Constraint> constraints)
-        throws 
-            NullPointerException, 
-            IllegalArgumentException, 
-            IllegalSequenceElementException,
-            InstanceUnknownException 
-    {
-        
-        //e1 -> [e2, e3, ...]: match e1 with the executable elements that must be executed after e1
-        Map<ExecutableElement, List<ExecutableElement>> constraintsMap = new HashMap<>();
+    private Map<ExecutableElement, List<ExecutableElement>> buildConstraintMap(List<ExecutableElement> planExecutableElements, List<Constraint> constraints){
 
+        Map<ExecutableElement, List<ExecutableElement>> constraintsMap = new HashMap<>();
         for(ExecutableElement elem : planExecutableElements)
             constraintsMap.put(elem, new ArrayList<ExecutableElement>());
 
@@ -573,14 +575,31 @@ public class Analyzer {
     
         }
 
-        List<List<ExecutableElement>> permutations = this.generatePerm(planExecutableElements);
+        return constraintsMap;
+    }
 
-        for(List<ExecutableElement> perm : permutations){
-            if(this.checkConstraints(perm, constraintsMap) == true){
-                if(this.isValidSequence(app, perm) == false)
-                    return false;
-            }
-        }
+
+    private boolean isValidPlan(Application app, List<ExecutableElement> planExecutableElements, List<Constraint> constraints)
+        throws 
+            NullPointerException, 
+            IllegalArgumentException, 
+            IllegalSequenceElementException,
+            InstanceUnknownException 
+    {
+        
+        //e1 -> [e2, e3, ...]: match e1 with the executable elements that must be executed after e1
+        Map<ExecutableElement, List<ExecutableElement>> constraintsMap = this.buildConstraintMap(planExecutableElements, constraints);
+
+        
+        //TODO scommenta
+        // List<List<ExecutableElement>> permutations = this.generatePerm(planExecutableElements);
+
+        // for(List<ExecutableElement> perm : permutations){
+        //     if(this.checkConstraints(perm, constraintsMap) == true){
+        //         if(this.isValidSequence(app, perm) == false)
+        //             return false;
+        //     }
+        // }
 
         return true;
     }
@@ -609,17 +628,27 @@ public class Analyzer {
     
         }
 
-        List<List<ExecutableElement>> permutations = this.generatePerm(planExecutableElements);
+        //TODO scommenta
+        // List<List<ExecutableElement>> permutations = this.generatePerm(planExecutableElements);
 
-        for(List<ExecutableElement> perm : permutations){
-            if(this.checkConstraints(perm, constraintsMap) == true){
-                if(this.isWeaklyValidSequence(app, perm) == true)
-                    return true;
-            }
-        }
+        // for(List<ExecutableElement> perm : permutations){
+        //     if(this.checkConstraints(perm, constraintsMap) == true){
+        //         if(this.isWeaklyValidSequence(app, perm) == true)
+        //             return true;
+        //     }
+        // }
 
         return false;
     
+    }
+
+    public boolean isNotValidPlan(Application app, List<ExecutableElement> planExecutableElements, List<Constraint> constraints)
+        throws 
+            NullPointerException, 
+            IllegalSequenceElementException, 
+            InstanceUnknownException 
+    {
+        return !this.isWeaklyValidPlan(app, planExecutableElements, constraints);
     }
 
     public boolean checkConstraints(List<ExecutableElement> sequence, Map<ExecutableElement, List<ExecutableElement>> constraintsMap){
@@ -646,26 +675,108 @@ public class Analyzer {
         return true;
     }
 
-    public <E> List<List<E>> generatePerm(List<E> original) {
+    public void eePerms(List<ExecutableElement> original, List<List<ExecutableElement>> perms, int fullPerm){
         if (original.isEmpty()) {
-          List<List<E>> result = new ArrayList<>(); 
-          result.add(new ArrayList<>()); 
-          return result; 
+
+            perms.add(new ArrayList<>());
+            return;
+            // List<List<ExecutableElement>> result = new ArrayList<>(); 
+            // result.add(new ArrayList<>()); 
+            // return result; 
+        }
+
+        ExecutableElement firstElement = original.remove(0);
+        //List<List<ExecutableElement>> returnValue = new ArrayList<>();
+        eePerms(original, perms, fullPerm);
+
+        for(List<ExecutableElement> smallPermuted : this.clonePerms(perms)){
+            for(int i = 0; i <= smallPermuted.size(); i ++){
+                List<ExecutableElement> tmp = new ArrayList<>(smallPermuted);
+                tmp.add(i, firstElement);
+                perms.add(tmp);
+
+                if(tmp.size() == fullPerm);
+                    //result.add(tmp);
+            }
+        }
+
+
+    }
+
+
+    //for testing
+    // public void eePerms(List<ExecutableElement> original, List<List<ExecutableElement>> perms, int fullPerm, List<List<ExecutableElement>> result){
+    //     if (original.isEmpty()) {
+
+    //         perms.add(new ArrayList<>());
+    //         return;
+    //         // List<List<ExecutableElement>> result = new ArrayList<>(); 
+    //         // result.add(new ArrayList<>()); 
+    //         // return result; 
+    //     }
+
+    //     ExecutableElement firstElement = original.remove(0);
+    //     //List<List<ExecutableElement>> returnValue = new ArrayList<>();
+    //     eePerms(original, perms, fullPerm, result);
+
+    //     for(List<ExecutableElement> smallPermuted : this.clonePerms(perms)){
+    //         for(int i = 0; i <= smallPermuted.size(); i ++){
+    //             List<ExecutableElement> tmp = new ArrayList<>(smallPermuted);
+    //             tmp.add(i, firstElement);
+    //             perms.add(tmp);
+
+    //             if(tmp.size() == fullPerm)
+    //                 result.add(tmp);
+    //         }
+    //     }
+
+
+    // }
+
+    public List<List<ExecutableElement>> clonePerms(List<List<ExecutableElement>> perms){
+        List<List<ExecutableElement>> clone = new ArrayList<>();
+
+        for (List<ExecutableElement> list : perms) {
+            
+            List<ExecutableElement> innerListClone = new ArrayList<>();
+
+            for(ExecutableElement elem : list)
+                innerListClone.add(elem);
+
+            clone.add(innerListClone);
+        }
+
+        return clone;
+    }
+
+
+    public <E> List<List<E>> generatePerm(List<E> original, int size) {
+        if (original.isEmpty()) {
+            List<List<E>> result = new ArrayList<>(); 
+            result.add(new ArrayList<>()); 
+            return result; 
         }
 
         E firstElement = original.remove(0);
         List<List<E>> returnValue = new ArrayList<>();
-        List<List<E>> permutations = generatePerm(original);
+        List<List<E>> permutations = generatePerm(original, size);
 
         for (List<E> smallerPermutated : permutations) {
-          for (int index=0; index <= smallerPermutated.size(); index++) {
-            List<E> temp = new ArrayList<>(smallerPermutated);
-            temp.add(index, firstElement);
-            returnValue.add(temp);
-          }
+            for (int index=0; index <= smallerPermutated.size(); index++) {
+                List<E> temp = new ArrayList<>(smallerPermutated);
+                temp.add(index, firstElement);
+                returnValue.add(temp);
+                
+                //if(temp.size() == size)
+                    //this is a full perm
+                    
+                
+            }
         }
+
+
         return returnValue;
-      }
+    }
 
     private boolean nonDetOpStartOpEnd(Application app, ExecutableElement op, boolean weaklyValid, List<ExecutableElement> sequence)
         throws 
