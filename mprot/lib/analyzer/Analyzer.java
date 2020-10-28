@@ -1,12 +1,10 @@
 package mprot.lib.analyzer;
 
-import static org.junit.Assert.fail;
-
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 
 import mprot.lib.analyzer.execptions.*;
 import mprot.lib.model.exceptions.*;
@@ -23,7 +21,10 @@ import mprot.lib.analyzer.executable_element.*;
 
 public class Analyzer {
 
+    public Map<String, AnalysisFailReport> fails; 
+
     public Analyzer() throws NullPointerException {
+        this.fails = new HashMap<>();
     }
 
     /**
@@ -50,198 +51,8 @@ public class Analyzer {
 
     }
 
-    /**
-     * @param app application on which the analysis will be executed
-     * @param sequence sequence of "operation" of which the validity check is needed
-     * @return
-     * @throws NullPointerException
-     * @throws IllegalSequenceElementException
-     * @throws InstanceUnknownException
-     */
-    public boolean isWeaklyValidSequence(Application app, List<ExecutableElement> sequence)
-        throws 
-            NullPointerException, 
-            IllegalSequenceElementException, 
-            InstanceUnknownException 
-    {
-        if(app.isPiDeterministic() == true)
-            return this.deterministicIsWeaklyValidSequence(app, sequence);
-        else
-            return this.nonDeterministicIsWeaklyValidSeq(app, sequence);
-    }
-
-    public boolean isNotValidSequence(Application app, List<ExecutableElement> sequence)
-        throws 
-            NullPointerException, 
-            IllegalSequenceElementException, 
-            InstanceUnknownException 
-    {
-        if(app.isPiDeterministic() == true)
-            return !this.deterministicIsWeaklyValidSequence(app, sequence);
-        else
-            return !this.nonDeterministicIsWeaklyValidSeq(app, sequence);
-    }
-
-    private boolean deterministicIsValidSequence(Application app, List<ExecutableElement> sequence)
-        throws 
-            IllegalSequenceElementException, 
-            NullPointerException, 
-            IllegalArgumentException,
-            InstanceUnknownException 
-    {
-        if (app == null)
-            throw new NullPointerException();
-
-        if (this.wellFormattedSequence(sequence) == false)
-            throw new IllegalSequenceElementException();
-
-        if (sequence.isEmpty() == true)
-            return true;
-
-        //pop one element from the sequence than execute it
-        ExecutableElement seqElement = sequence.remove(0);
-        try {
-            app.execute(seqElement);
-        } catch (FailedOperationException e) {
-            // keep going, this will be handled by the fault handler or leaved as it is
-        } catch (Exception e) {
-            return false;
-        }
-
-        //for every fault the tree has n new biforcation to check
-        if(this.checkFaultsValid(app, sequence, true) == false)
-            return false;
-
-        return true;
-    }
-
-    private boolean deterministicIsWeaklyValidSequence(Application app, List<ExecutableElement> sequence)
-        throws 
-            IllegalSequenceElementException, 
-            NullPointerException,  
-            InstanceUnknownException 
-    {
-
-        if (app == null)
-            throw new NullPointerException();
-
-        if (this.wellFormattedSequence(sequence) == false)
-            throw new IllegalSequenceElementException();
-
-        if (sequence.isEmpty() == true)
-            return true;
-
-        ExecutableElement seqElement = sequence.remove(0);
-        try {
-            app.execute(seqElement);
-        } catch (FailedOperationException e) {
-            // keep going, this will be handled by the fault handler or leaved as it is
-        } catch (Exception e) {
-            return false;
-        }
-
-        if(this.checkFaultsWeaklyValid(app, sequence, true) == true)
-            return true;
-        
-        return false;
-    }
-
-    private boolean nonDeterministicIsWeaklyValidSeq(Application app, List<ExecutableElement> sequence)
-        throws 
-            IllegalSequenceElementException, 
-            NullPointerException, 
-            InstanceUnknownException 
-    {
-        if (app == null)
-            throw new NullPointerException();
-
-        if (this.wellFormattedSequence(sequence) == false)
-            throw new IllegalSequenceElementException();
-
-        if (sequence.isEmpty() == true)
-            return true;        
-
-        ExecutableElement op = sequence.remove(0);
-
-        //for each kind of op there is a specific check
-        //TODO passa i clone delle app
-        if (op instanceof OpStart) {
-            if(this.nonDetOpStartOpEnd(app, op, true, sequence) == true)
-                return true;
-        }
-        if (op instanceof OpEnd) {
-            if(this.nonDetOpStartOpEnd(app, op, true, sequence) == true)
-                return true;
-        }
-        if (op instanceof ScaleIn) {
-            if(this.nonDetScaleIn(app, op, true, sequence) == true)
-                return true;
-        }
-        if (op instanceof ScaleOut1) {
-            if(this.nonDetScaleOut1(app, op, true, sequence) == true)
-                return true;
-        }
-        if (op instanceof ScaleOut2){
-            if(this.nonDetScaleOut2(app, op, true, sequence) == true)
-                return true;
-        }
-
-        return false;
-    }
-
-    private boolean nonDeterministicIsValidSeq(Application app, List<ExecutableElement> sequence)
-        throws 
-            IllegalSequenceElementException, 
-            NullPointerException, 
-            InstanceUnknownException 
-    {
-        if (app == null)
-            throw new NullPointerException();
-
-        if (this.wellFormattedSequence(sequence) == false)
-            throw new IllegalSequenceElementException();
-
-        if (sequence.isEmpty() == true)
-            return true;        
-        
-        ExecutableElement op = sequence.remove(0);
-
-        if (op instanceof OpStart) {
-            if(this.nonDetOpStartOpEnd(app, op, false, sequence) == false)
-                return false;
-        }
-        if (op instanceof OpEnd) {
-            if(this.nonDetOpStartOpEnd(app, op, false, sequence) == false)
-                return false;
-        }
-        if (op instanceof ScaleIn) {
-            if(this.nonDetScaleIn(app, op, false, sequence) == false)
-                return false;
-        }
-        if (op instanceof ScaleOut1) {
-            if(this.nonDetScaleOut1(app, op, false, sequence) == false)
-                return false;
-        }
-        if (op instanceof ScaleOut2){
-            if(this.nonDetScaleOut2(app, op, false, sequence) == false)
-                return false;
-        }
-
-        return true;
-    }
-
-    private boolean wellFormattedSequence(List<ExecutableElement> sequence){
-        boolean res = true;
-        
-        for (ExecutableElement element : sequence) { 
-            if (element.wellFormattedSequenceElement() == false)
-                res = false;
-        }
-
-        return res;
-    }
-    
-    public List<List<RuntimeBinding>> createRunBindingPerms(Application app, String instanceID)
+    //TODO da eliminare
+    public List<List<RuntimeBinding>> createRunBindingCombs(Application app, String instanceID)
         throws 
             NullPointerException, 
             IllegalArgumentException, 
@@ -328,6 +139,205 @@ public class Analyzer {
         return ret;
     }
 
+
+
+    /**
+     * @param app application on which the analysis will be executed
+     * @param sequence sequence of "operation" of which the validity check is needed
+     * @return
+     * @throws NullPointerException
+     * @throws IllegalSequenceElementException
+     * @throws InstanceUnknownException
+     */
+    public boolean isWeaklyValidSequence(Application app, List<ExecutableElement> sequence)
+        throws 
+            NullPointerException, 
+            IllegalSequenceElementException, 
+            InstanceUnknownException 
+    {
+        if(app.isPiDeterministic() == true)
+            return this.deterministicIsWeaklyValidSequence(app, sequence);
+        else
+            return this.nonDeterministicIsWeaklyValidSeq(app, sequence);
+    }
+
+    public boolean isNotValidSequence(Application app, List<ExecutableElement> sequence)
+        throws 
+            NullPointerException, 
+            IllegalSequenceElementException, 
+            InstanceUnknownException 
+    {
+        if(app.isPiDeterministic() == true)
+            return !this.deterministicIsWeaklyValidSequence(app, sequence);
+        else
+            return !this.nonDeterministicIsWeaklyValidSeq(app, sequence);
+    }
+
+    private boolean deterministicIsValidSequence(Application app, List<ExecutableElement> sequence)
+        throws 
+            IllegalSequenceElementException, 
+            NullPointerException, 
+            IllegalArgumentException,
+            InstanceUnknownException 
+    {
+        if (app == null)
+            throw new NullPointerException();
+
+        if (this.wellFormattedSequence(sequence) == false)
+            throw new IllegalSequenceElementException();
+
+        if (sequence.isEmpty() == true)
+            return true;
+
+        //pop one element from the sequence than execute it
+        ExecutableElement seqElement = sequence.remove(0);
+        try {
+            app.execute(seqElement);
+        } catch (FailedOperationException e) {
+            // keep going, this will be handled by the fault handler or leaved as it is
+        } catch (Exception e) {
+            fails.put(app.getName(), new AnalysisFailReport(sequence, seqElement, e));
+            return false;
+        }
+
+        //for every fault the tree has n new biforcation to check
+        if(this.checkFaultsValid(app, sequence, true) == false)
+            return false;
+
+        return true;
+    }
+
+    private boolean deterministicIsWeaklyValidSequence(Application app, List<ExecutableElement> sequence)
+        throws 
+            IllegalSequenceElementException, 
+            NullPointerException,  
+            InstanceUnknownException 
+    {
+
+        if (app == null)
+            throw new NullPointerException();
+
+        if (this.wellFormattedSequence(sequence) == false)
+            throw new IllegalSequenceElementException();
+
+        if (sequence.isEmpty() == true)
+            return true;
+
+        ExecutableElement seqElement = sequence.remove(0);
+        try {
+            app.execute(seqElement);
+        } catch (FailedOperationException e) {
+            // keep going, this will be handled by the fault handler or leaved as it is
+        } catch (Exception e) {
+            fails.put(app.getName(), new AnalysisFailReport(sequence, seqElement, e));
+            return false;
+        }
+
+        if(this.checkFaultsWeaklyValid(app, sequence, true) == true)
+            return true;
+        
+        return false;
+    }
+
+    private boolean nonDeterministicIsWeaklyValidSeq(Application app, List<ExecutableElement> sequence)
+        throws 
+            IllegalSequenceElementException, 
+            NullPointerException, 
+            InstanceUnknownException 
+    {
+        if (app == null)
+            throw new NullPointerException();
+
+        if (this.wellFormattedSequence(sequence) == false)
+            throw new IllegalSequenceElementException();
+
+        if (sequence.isEmpty() == true)
+            return true;        
+
+        ExecutableElement op = sequence.remove(0);
+
+        //for each kind of op there is a specific check
+        if (op instanceof OpStart) {
+            if(this.nonDetOpStartOpEnd(app, op, true, sequence) == true)
+                return true;
+        }
+        if (op instanceof OpEnd) {
+            if(this.nonDetOpStartOpEnd(app, op, true, sequence) == true)
+                return true;
+        }
+        if (op instanceof ScaleIn) {
+            if(this.nonDetScaleIn(app, op, true, sequence) == true)
+                return true;
+        }
+        if (op instanceof ScaleOut1) {
+            if(this.nonDetScaleOut1(app, op, true, sequence) == true)
+                return true;
+        }
+        if (op instanceof ScaleOut2){
+            if(this.nonDetScaleOut2(app, op, true, sequence) == true)
+                return true;
+        }
+
+        return false;
+    }
+
+    private boolean nonDeterministicIsValidSeq(Application app, List<ExecutableElement> sequence)
+        throws 
+            IllegalSequenceElementException, 
+            NullPointerException, 
+            InstanceUnknownException 
+    {
+        if (app == null)
+            throw new NullPointerException();
+
+        if (this.wellFormattedSequence(sequence) == false)
+            throw new IllegalSequenceElementException();
+
+        if (sequence.isEmpty() == true)
+            return true;        
+        
+        ExecutableElement op = sequence.remove(0);
+
+        if (op instanceof OpStart) {
+            if(this.nonDetOpStartOpEnd(app, op, false, sequence) == false)
+                return false;
+        }
+
+        if (op instanceof OpEnd) {
+            if(this.nonDetOpStartOpEnd(app, op, false, sequence) == false)
+                return false;
+            
+        }
+        if (op instanceof ScaleIn){
+            if(this.nonDetScaleIn(app, op, false, sequence) == false)
+                return false;
+        
+        }
+        if (op instanceof ScaleOut1) {
+            if(this.nonDetScaleOut1(app, op, false, sequence) == false)
+                return false;
+            
+        }
+        if (op instanceof ScaleOut2){
+            if(this.nonDetScaleOut2(app, op, false, sequence) == false)
+                return false;
+            
+        }
+
+        return true;
+    }
+
+    private boolean wellFormattedSequence(List<ExecutableElement> sequence){
+        boolean res = true;
+        
+        for (ExecutableElement element : sequence) { 
+            if (element.wellFormattedSequenceElement() == false)
+                res = false;
+        }
+
+        return res;
+    }
+    
     private boolean checkFaultsValid(Application app, List<ExecutableElement> sequence, boolean isDeterministic)
         throws 
             NullPointerException, 
@@ -343,12 +353,15 @@ public class Analyzer {
     
             if (brokenInstances.isEmpty() == false) {
                 cloneApp = app.clone();
+
+                String toKillID = brokenInstances.get(0).getID();
                 try {
-                    cloneApp.scaleIn(brokenInstances.get(0).getID());
+                    cloneApp.scaleIn(toKillID);
                     if (this.nonDeterministicIsValidSeq(cloneApp, sequence) == false)
                         return false;
     
                 } catch (RuleNotApplicableException | InstanceUnknownException e) {
+                    this.fails.put(app.getName(), new AnalysisFailReport(sequence, toKillID, e));
                     return false;
                 }
                 cloneApp = app.clone(); // clone this to reset the clone well
@@ -371,6 +384,7 @@ public class Analyzer {
                             if (this.nonDeterministicIsValidSeq(cloneApp, sequence) == false)
                                 return false;
                         } catch (RuleNotApplicableException | InstanceUnknownException e) {
+                            fails.put(app.getName(), new AnalysisFailReport(sequence, e, f));
                             return false;
                         }
                     } else {
@@ -381,6 +395,7 @@ public class Analyzer {
                                 return false;
     
                         } catch (FailedFaultHandlingExecption | RuleNotApplicableException | InstanceUnknownException e) {
+                            fails.put(app.getName(), new AnalysisFailReport(sequence, e, f));
                             return false;
                         } 
                     }
@@ -395,12 +410,14 @@ public class Analyzer {
 
             if (brokenInstances.isEmpty() == false) {
                 cloneApp = app.clone();
+                String toKillID = brokenInstances.get(0).getID();
                 try {
-                    cloneApp.scaleIn(brokenInstances.get(0).getID());
+                    cloneApp.scaleIn(toKillID);
                     if (this.deterministicIsValidSequence(cloneApp, sequence) == false)
                         return false;
 
                 } catch (RuleNotApplicableException | InstanceUnknownException e) {
+                    this.fails.put(app.getName(), new AnalysisFailReport(sequence, toKillID, e));
                     return false;
                 }
                 cloneApp = app.clone(); // clone this to reset the clone well
@@ -423,6 +440,7 @@ public class Analyzer {
                             if (this.deterministicIsValidSequence(cloneApp, sequence) == false)
                                 return false;
                         } catch (RuleNotApplicableException | InstanceUnknownException e) {
+                            fails.put(app.getName(), new AnalysisFailReport(sequence, e, f));
                             return false;
                         }
                     } else {
@@ -433,6 +451,7 @@ public class Analyzer {
                                 return false;
 
                         } catch (FailedFaultHandlingExecption | RuleNotApplicableException | InstanceUnknownException e) {
+                            fails.put(app.getName(), new AnalysisFailReport(sequence, e, f));
                             return false;
                         } 
                     }
@@ -458,12 +477,15 @@ public class Analyzer {
     
             if (brokenInstances.isEmpty() == false) {
                 cloneApp = app.clone();
+
+                String toKillID = brokenInstances.get(0).getID();
                 try {
                     cloneApp.scaleIn(brokenInstances.get(0).getID());
                     if (this.nonDeterministicIsWeaklyValidSeq(cloneApp, sequence) == true)
                         return true;
     
                 } catch (RuleNotApplicableException | InstanceUnknownException e) {
+                    this.fails.put(app.getName(), new AnalysisFailReport(sequence, toKillID, e));
                     return false;
                 }
                 cloneApp = app.clone(); // clone this to reset the clone well
@@ -486,6 +508,7 @@ public class Analyzer {
                             if (this.nonDeterministicIsWeaklyValidSeq(cloneApp, sequence) == true)
                                 return true;
                         } catch (RuleNotApplicableException | InstanceUnknownException e) {
+                            fails.put(app.getName(), new AnalysisFailReport(sequence, e, f));
                             return false;
                         }
                     } else {
@@ -496,6 +519,7 @@ public class Analyzer {
                                 return true;
     
                         } catch (FailedFaultHandlingExecption | RuleNotApplicableException | InstanceUnknownException e) {
+                            fails.put(app.getName(), new AnalysisFailReport(sequence, e, f));
                             return false;
                         } 
                     }
@@ -510,12 +534,15 @@ public class Analyzer {
 
             if (brokenInstances.isEmpty() == false) {
                 cloneApp = app.clone();
+
+                String toKillID = brokenInstances.get(0).getID();
                 try {
                     cloneApp.scaleIn(brokenInstances.get(0).getID());
                     if (this.deterministicIsWeaklyValidSequence(cloneApp, sequence) == true)
                         return true;
 
                 } catch (RuleNotApplicableException | InstanceUnknownException e) {
+                    this.fails.put(app.getName(), new AnalysisFailReport(sequence, toKillID, e));
                     return false;
                 }
                 cloneApp = app.clone(); // clone this to reset the clone well
@@ -538,6 +565,7 @@ public class Analyzer {
                             if (this.deterministicIsWeaklyValidSequence(cloneApp, sequence) == true)
                                 return true;
                         } catch (RuleNotApplicableException | InstanceUnknownException e) {
+                            fails.put(app.getName(), new AnalysisFailReport(sequence, e, f));
                             return false;
                         }
                     } else {
@@ -548,6 +576,7 @@ public class Analyzer {
                                 return true;
 
                         } catch (FailedFaultHandlingExecption | RuleNotApplicableException | InstanceUnknownException e) {
+                            fails.put(app.getName(), new AnalysisFailReport(sequence, e, f));
                             return false;
                         } 
                     }
@@ -557,29 +586,21 @@ public class Analyzer {
         }
     }
 
-    private Map<ExecutableElement, List<ExecutableElement>> buildConstraintMap(List<ExecutableElement> planExecutableElements, List<Constraint> constraints){
+    public Map<ExecutableElement, List<ExecutableElement>> buildConstraintMap(List<ExecutableElement> planExecutableElements, List<Constraint> constraints){
 
         Map<ExecutableElement, List<ExecutableElement>> constraintsMap = new HashMap<>();
+
         for(ExecutableElement elem : planExecutableElements)
             constraintsMap.put(elem, new ArrayList<ExecutableElement>());
 
-        for(ExecutableElement elem : planExecutableElements){
-        
-            for(Constraint constraint : constraints){
-                if(elem.equals(constraint.getBefore()) == true){
-                    List<ExecutableElement> afterElem = constraintsMap.get(elem);
-                    afterElem.add(constraint.getAfter());
-                    constraintsMap.put(elem, afterElem);
-                }
-            }
-    
-        }
+        for(Constraint constraint : constraints)
+            constraintsMap.get(constraint.getBefore()).add(constraint.getAfter());
 
         return constraintsMap;
     }
 
-
-    private boolean isValidPlan(Application app, List<ExecutableElement> planExecutableElements, List<Constraint> constraints)
+    
+    public boolean planValidity(Application app, boolean weaklyValid, List<ExecutableElement> planExecutableElements, Map<ExecutableElement, List<ExecutableElement>> constraintsMap)
         throws 
             NullPointerException, 
             IllegalArgumentException, 
@@ -587,21 +608,60 @@ public class Analyzer {
             InstanceUnknownException 
     {
         
+        if(this.checkConstraints(planExecutableElements, constraintsMap) == true){
+            if(weaklyValid == true)
+                return this.isWeaklyValidSequence(app, planExecutableElements);
+            else
+                return this.isValidSequence(app, planExecutableElements);
+        }
+
+        int permSize = planExecutableElements.size();
+
+        //creates all perms and check one by one (heap algorithm)
+        int[] c = new int[permSize];        
+        for(int i = 0; i < permSize; i++)
+            c[i] = 0;
+        
+        int i = 0;
+        while(i < permSize){
+            
+            if(c[i] < i){
+                
+                if(i % 2 == 0)
+                    Collections.swap(planExecutableElements, 0, i);
+                else
+                    Collections.swap(planExecutableElements, i, c[i]);
+
+                if(this.checkConstraints(planExecutableElements, constraintsMap) == true){
+                    if(weaklyValid == true)
+                        return this.isWeaklyValidSequence(app, planExecutableElements);
+                    else
+                        return this.isValidSequence(app, planExecutableElements);
+                }
+                
+                c[i]++;
+                i = 0;
+            
+            }else{
+                c[i] = 0;
+                i++;
+            }
+                                
+        }
+        
+        return true;
+    }
+
+
+    public boolean isValidPlan(Application app, List<ExecutableElement> planExecutableElements, List<Constraint> constraints)
+        throws 
+            NullPointerException, 
+            IllegalSequenceElementException, 
+            InstanceUnknownException 
+    {   
         //e1 -> [e2, e3, ...]: match e1 with the executable elements that must be executed after e1
         Map<ExecutableElement, List<ExecutableElement>> constraintsMap = this.buildConstraintMap(planExecutableElements, constraints);
-
-        
-        //TODO scommenta
-        // List<List<ExecutableElement>> permutations = this.generatePerm(planExecutableElements);
-
-        // for(List<ExecutableElement> perm : permutations){
-        //     if(this.checkConstraints(perm, constraintsMap) == true){
-        //         if(this.isValidSequence(app, perm) == false)
-        //             return false;
-        //     }
-        // }
-
-        return true;
+        return this.planValidity(app, false, planExecutableElements, constraintsMap);
     }
 
     public boolean isWeaklyValidPlan(Application app, List<ExecutableElement> planExecutableElements, List<Constraint> constraints)
@@ -611,34 +671,8 @@ public class Analyzer {
             InstanceUnknownException 
     {
         //e1 -> [e2, e3, ...]: match e1 with the executable elements that must be executed after e1
-        Map<ExecutableElement, List<ExecutableElement>> constraintsMap = new HashMap<>();
-
-        for(ExecutableElement elem : planExecutableElements)
-            constraintsMap.put(elem, new ArrayList<ExecutableElement>());
-
-        for(ExecutableElement elem : planExecutableElements){
-        
-            for(Constraint constraint : constraints){
-                if(elem.equals(constraint.getBefore()) == true){
-                    List<ExecutableElement> afterElem = constraintsMap.get(elem);
-                    afterElem.add(constraint.getAfter());
-                    constraintsMap.put(elem, afterElem);
-                }
-            }
-    
-        }
-
-        //TODO scommenta
-        // List<List<ExecutableElement>> permutations = this.generatePerm(planExecutableElements);
-
-        // for(List<ExecutableElement> perm : permutations){
-        //     if(this.checkConstraints(perm, constraintsMap) == true){
-        //         if(this.isWeaklyValidSequence(app, perm) == true)
-        //             return true;
-        //     }
-        // }
-
-        return false;
+        Map<ExecutableElement, List<ExecutableElement>> constraintsMap = this.buildConstraintMap(planExecutableElements, constraints);
+        return this.planValidity(app, true, planExecutableElements, constraintsMap);
     
     }
 
@@ -652,7 +686,7 @@ public class Analyzer {
     }
 
     public boolean checkConstraints(List<ExecutableElement> sequence, Map<ExecutableElement, List<ExecutableElement>> constraintsMap){
-
+        
         for(ExecutableElement elem : sequence){
 
             List<ExecutableElement> afterElements = constraintsMap.get(elem);
@@ -669,114 +703,11 @@ public class Analyzer {
                         return false;
                 }
             }
-
         }
 
         return true;
     }
 
-    public void eePerms(List<ExecutableElement> original, List<List<ExecutableElement>> perms, int fullPerm){
-        if (original.isEmpty()) {
-
-            perms.add(new ArrayList<>());
-            return;
-            // List<List<ExecutableElement>> result = new ArrayList<>(); 
-            // result.add(new ArrayList<>()); 
-            // return result; 
-        }
-
-        ExecutableElement firstElement = original.remove(0);
-        //List<List<ExecutableElement>> returnValue = new ArrayList<>();
-        eePerms(original, perms, fullPerm);
-
-        for(List<ExecutableElement> smallPermuted : this.clonePerms(perms)){
-            for(int i = 0; i <= smallPermuted.size(); i ++){
-                List<ExecutableElement> tmp = new ArrayList<>(smallPermuted);
-                tmp.add(i, firstElement);
-                perms.add(tmp);
-
-                if(tmp.size() == fullPerm);
-                    //result.add(tmp);
-            }
-        }
-
-
-    }
-
-
-    //for testing
-    // public void eePerms(List<ExecutableElement> original, List<List<ExecutableElement>> perms, int fullPerm, List<List<ExecutableElement>> result){
-    //     if (original.isEmpty()) {
-
-    //         perms.add(new ArrayList<>());
-    //         return;
-    //         // List<List<ExecutableElement>> result = new ArrayList<>(); 
-    //         // result.add(new ArrayList<>()); 
-    //         // return result; 
-    //     }
-
-    //     ExecutableElement firstElement = original.remove(0);
-    //     //List<List<ExecutableElement>> returnValue = new ArrayList<>();
-    //     eePerms(original, perms, fullPerm, result);
-
-    //     for(List<ExecutableElement> smallPermuted : this.clonePerms(perms)){
-    //         for(int i = 0; i <= smallPermuted.size(); i ++){
-    //             List<ExecutableElement> tmp = new ArrayList<>(smallPermuted);
-    //             tmp.add(i, firstElement);
-    //             perms.add(tmp);
-
-    //             if(tmp.size() == fullPerm)
-    //                 result.add(tmp);
-    //         }
-    //     }
-
-
-    // }
-
-    public List<List<ExecutableElement>> clonePerms(List<List<ExecutableElement>> perms){
-        List<List<ExecutableElement>> clone = new ArrayList<>();
-
-        for (List<ExecutableElement> list : perms) {
-            
-            List<ExecutableElement> innerListClone = new ArrayList<>();
-
-            for(ExecutableElement elem : list)
-                innerListClone.add(elem);
-
-            clone.add(innerListClone);
-        }
-
-        return clone;
-    }
-
-
-    public <E> List<List<E>> generatePerm(List<E> original, int size) {
-        if (original.isEmpty()) {
-            List<List<E>> result = new ArrayList<>(); 
-            result.add(new ArrayList<>()); 
-            return result; 
-        }
-
-        E firstElement = original.remove(0);
-        List<List<E>> returnValue = new ArrayList<>();
-        List<List<E>> permutations = generatePerm(original, size);
-
-        for (List<E> smallerPermutated : permutations) {
-            for (int index=0; index <= smallerPermutated.size(); index++) {
-                List<E> temp = new ArrayList<>(smallerPermutated);
-                temp.add(index, firstElement);
-                returnValue.add(temp);
-                
-                //if(temp.size() == size)
-                    //this is a full perm
-                    
-                
-            }
-        }
-
-
-        return returnValue;
-    }
 
     private boolean nonDetOpStartOpEnd(Application app, ExecutableElement op, boolean weaklyValid, List<ExecutableElement> sequence)
         throws 
@@ -787,6 +718,7 @@ public class Analyzer {
     {
 
         if(op instanceof OpStart){
+
             OpStart todo = (OpStart) op;
             NodeInstance instance = app.getGlobalState().getNodeInstanceByID(todo.getInstnaceID());
     
@@ -797,6 +729,7 @@ public class Analyzer {
             } catch (FailedOperationException e) {
                 // keep going, this will be handled by the fault handler or leaved as it is
             } catch (Exception e) {
+                fails.put(app.getName(), new AnalysisFailReport(sequence, todo, e));
                 return false;
             }
             
@@ -832,9 +765,9 @@ public class Analyzer {
                         runtimeBindingBeforeAndAfter.add(rb);
                 }
             }
-    
-            List<List<RuntimeBinding>> combinations = this.createRunBindingPerms(app, todo.getInstnaceID());
-    
+            
+            List<List<RuntimeBinding>> combinations = this.createRunBindingCombs(app, todo.getInstnaceID());
+
             if(weaklyValid == true){
                 if(combinations.isEmpty() == true)
                     return this.nonDeterministicIsWeaklyValidSeq(app.clone(), sequence);
@@ -842,6 +775,8 @@ public class Analyzer {
                 if(combinations.isEmpty() == true)
                     return this.nonDeterministicIsValidSeq(app.clone(), sequence);
             }
+
+
 
             Application cloneApp = null;
 
@@ -858,11 +793,12 @@ public class Analyzer {
                             return true;
                     }else{
                         if(this.nonDeterministicIsValidSeq(cloneApp, sequence) == false)
-                            return false;
+                        return false;
                     }
                     
                 }
             }
+
         }else if(op instanceof OpEnd){
 
             OpEnd todo = (OpEnd) op;
@@ -875,6 +811,7 @@ public class Analyzer {
             } catch (FailedOperationException e) {
                 // keep going, this will be handled by the fault handler or leaved as it is
             } catch (Exception e) {
+                fails.put(app.getName(), new AnalysisFailReport(sequence, todo, e));
                 return false;
             }
 
@@ -905,7 +842,8 @@ public class Analyzer {
                 }
             }
 
-            List<List<RuntimeBinding>> combinations = this.createRunBindingPerms(app, todo.getInstanceID());
+
+            List<List<RuntimeBinding>> combinations = this.createRunBindingCombs(app, todo.getInstanceID());
 
             if(weaklyValid == true){
                 if(combinations.isEmpty() == true)
@@ -950,6 +888,7 @@ public class Analyzer {
         } catch (FailedOperationException e) {
             // keep going, this will be handled by the fault handler or leaved as it is
         } catch (Exception e) {
+            fails.put(app.getName(), new AnalysisFailReport(sequence, todo, e));
             return false;
         }
 
@@ -986,6 +925,7 @@ public class Analyzer {
         } catch (FailedOperationException e) {
             // keep going, this will be handled by the fault handler or leaved as it is
         } catch (Exception e) {
+            fails.put(app.getName(), new AnalysisFailReport(sequence, todo, e));
             return false;
         }
 
@@ -1002,7 +942,8 @@ public class Analyzer {
         //TODO: chiedi se e' giusto both ways oppure quelli devono essere lasciati
         app.getGlobalState().removeAllBindingsBothWays(todo.getIDToAssign());
 
-        List<List<RuntimeBinding>> combinations = this.createRunBindingPerms(app, todo.getIDToAssign());
+        List<List<RuntimeBinding>> combinations = this.createRunBindingCombs(app, todo.getIDToAssign());
+
         Application cloneApp = null;
         
         if(combinations.isEmpty() == true){
@@ -1042,6 +983,7 @@ public class Analyzer {
         } catch (FailedOperationException e) {
             // keep going, this will be handled by the fault handler or leaved as it is
         } catch (Exception e) {
+            fails.put(app.getName(), new AnalysisFailReport(sequence, todo, e));
             return false;
         }
         
@@ -1063,7 +1005,8 @@ public class Analyzer {
         app.getGlobalState().removeAllBindingsBothWays(todo.getIDToAssign());
         app.getGlobalState().addBinding(todo.getIDToAssign(), containmentRB.getReq(), todo.getContainerID());
 
-        List<List<RuntimeBinding>>combinations = this.createRunBindingPerms(app, todo.getIDToAssign());
+        
+        List<List<RuntimeBinding>>combinations = this.createRunBindingCombs(app, todo.getIDToAssign());
 
         if(combinations.isEmpty() == true){
             if(weaklyValid == true)

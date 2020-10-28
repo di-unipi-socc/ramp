@@ -1,12 +1,11 @@
 package mprot.lib.test.UnitTest.AnalyzerTest;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -40,6 +39,22 @@ public class AnalyzerTest {
     }
 
     @Test
+    public void analysisFailReportTest() 
+        throws 
+            NullPointerException, 
+            IllegalArgumentException,
+            IllegalSequenceElementException, 
+            InstanceUnknownException 
+    {    
+        //returns false, because a weakly valid sequence is not a valid sequence, hence there will be a report;
+        Application testApp = ThesisAppFactory.createApplication(PiVersion.GREEDYPI);
+        analyzer.isValidSequence(testApp, this.createWeaklyValidSequence());
+
+        assertNotNull(analyzer.fails.get(testApp.getName()));
+    }
+
+
+    @Test
     // a valid sequence is declared valid
     public void validSequenceTest() 
         throws 
@@ -53,6 +68,8 @@ public class AnalyzerTest {
         assertFalse(analyzer.isValidSequence(ThesisAppFactory.createApplication(PiVersion.GREEDYPI), this.createWeaklyValidSequence()));
         assertTrue(analyzer.isValidSequence(ThesisAppFactory.createApplication(PiVersion.RANDOMPI), this.createValidSequence()));
         assertFalse(analyzer.isValidSequence(ThesisAppFactory.createApplication(PiVersion.RANDOMPI), this.createWeaklyValidSequence()));
+    
+    
     }
 
     @Test
@@ -90,8 +107,8 @@ public class AnalyzerTest {
         this.addOpStartEnd(validSequence, "f1", "config");
         this.addOpStartEnd(validSequence, "b1", "stop");
 
-        this.addOpStartEnd(validSequence, "f1", "start"); //creates fault (hence biforcation)
-        //after the fault f1 is in the transitional state configured-start-working
+        //creates fault (hence biforcation) (f1 needs conn from b1)
+        this.addOpStartEnd(validSequence, "f1", "start"); 
 
         //this two ops will be tested among two brenches (the one where the 
         //pending fault created is handled and the one where it is not)
@@ -254,16 +271,14 @@ public class AnalyzerTest {
 
         this.toyApp.scaleOut1("nodeC", "instanceC1");
         this.toyApp.scaleOut1("nodeC", "instanceC2");
-        this.toyApp.scaleOut1("nodeC", "instanceC3");
 
         this.toyApp.scaleOut1("nodeB", "instanceB1");
         this.toyApp.scaleOut1("nodeB", "instanceB2");
-        this.toyApp.scaleOut1("nodeB", "instanceB3");
 
         this.toyApp.scaleOut1("nodeA", "instanceA");
 
-        List<List<RuntimeBinding>> permutations = analyzer.createRunBindingPerms(this.toyApp, "instanceA");
-        assertTrue(permutations.size() == 9);
+        List<List<RuntimeBinding>> permutations = analyzer.createRunBindingCombs(this.toyApp, "instanceA");
+        assertTrue(permutations.size() == 4);
 
         assertTrue(printRunBindingPermutations(permutations), true);
     }
@@ -287,7 +302,7 @@ public class AnalyzerTest {
 
     
     @Test
-    public void checkConstraintTest(){
+    public void buildConstraintMapTest(){
         ExecutableElement e1 = new ScaleOut1("nodeName", "idToAssign");
         ExecutableElement e2 = new ScaleOut2("nodeName", "idToAssign", "containerID");
         ExecutableElement e3 = new ScaleIn("instanceID");
@@ -299,46 +314,92 @@ public class AnalyzerTest {
         planExElements.add(e3);
         planExElements.add(e4);
 
-        List<ExecutableElement> planExElements1 = new ArrayList<>();
-        planExElements1.add(e1);
-        planExElements1.add(e2);
-        planExElements1.add(e3);
-        planExElements1.add(e4);
+        Constraint c1 = new Constraint(e1, e2);
+        Constraint c2 = new Constraint(e1, e3);
+        Constraint c3 = new Constraint(e2, e3);
+
+        List<Constraint> constraints = new ArrayList<>();
+        constraints.add(c1);
+        constraints.add(c2);
+        constraints.add(c3);
+
+        Map<ExecutableElement, List<ExecutableElement>> constraintsMap = analyzer.buildConstraintMap(planExElements, constraints);
+
+        assertTrue(constraintsMap.get(e1).size() == 2);
+        assertTrue(constraintsMap.get(e1).contains(e2) && constraintsMap.get(e1).contains(e2));
+        assertTrue(constraintsMap.get(e4).size() == 0);
+        assertTrue(constraintsMap.get(e2).contains(e3));
+    }
+    
+    @Test
+    public void createPermsTest(){
+        ExecutableElement e1 = new ScaleOut1("nodeName", "idToAssign");
+        ExecutableElement e2 = new ScaleOut2("nodeName", "idToAssign", "containerID");
+        ExecutableElement e3 = new ScaleIn("instanceID");
+
+        List<ExecutableElement> planExElements = new ArrayList<>();
+        planExElements.add(e1);
+        planExElements.add(e2);
+        planExElements.add(e3);
+
+        Constraint c1 = new Constraint(e1, e2);
+        Constraint c2 = new Constraint(e1, e3);
+        Constraint c3 = new Constraint(e2, e3);
+
+        List<Constraint> constraints = new ArrayList<>();
+        constraints.add(c1);
+        constraints.add(c2);
+        constraints.add(c3);
 
 
-        List<List<ExecutableElement>> perms = analyzer.generatePerm(planExElements1, planExElements.size());
+        List<List<ExecutableElement>> allPerms = new ArrayList<>();
+        allPerms.add(this.clonePerm(planExElements));
+        int permSize = planExElements.size();
 
-        List<List<ExecutableElement>> slave = new ArrayList<>();
-        List<List<ExecutableElement>> myPerms = new ArrayList<>();
+        int[] c = new int[permSize];        
+        for(int i = 0; i < permSize; i++)
+            c[i] = 0;
+        
+        int i = 0;
+        while(i < permSize){
+            
+            if(c[i] < i){
+                
+                if(i % 2 == 0)
+                    Collections.swap(planExElements, 0, i);
+                else
+                    Collections.swap(planExElements, i, c[i]);
 
-        analyzer.eePerms(planExElements, slave , 4, myPerms);
+                //permutation complete;
+                allPerms.add(this.clonePerm(planExElements));
+                
+                c[i]++;
+                i = 0;
+            
+            }else{
+                c[i] = 0;
+                i++;
+            }
+                                
+        }
+        
+        assertFalse("size: " + allPerms.size() + " " +   printEEPerms(allPerms), false);
+    }
 
-        assertTrue(this.printEEPerms(myPerms).equals(this.printEEPerms(perms)));
 
-        // Map<ExecutableElement, List<ExecutableElement>> constraintsMap = new HashMap<>();
+    private List<ExecutableElement> clonePerm(List<ExecutableElement> perm){
 
-        // for (ExecutableElement executableElement : planExElements) 
-        //     constraintsMap.put(executableElement, new ArrayList<>());
+        List<ExecutableElement> clone = new ArrayList<>();
 
-        // List<ExecutableElement> afterE3 = constraintsMap.get(e3);
-        // afterE3.add(e4);
+        for (ExecutableElement executableElement : perm) 
+            clone.add(executableElement);
+        
+        return clone;
 
-        // List<ExecutableElement> afterE1 = constraintsMap.get(e1);
-        // afterE1.add(e2);
+    }
 
-        // //assertTrue(constraintsMap.get(e4).size() + "", false);
 
-        // List<List<ExecutableElement>> permutations = analyzer.generatePerm(planExElements);
 
-        // List<List<ExecutableElement>> output = new ArrayList<>();
-
-        // for(List<ExecutableElement> perm : permutations){
-        //     if(analyzer.checkConstraints(perm, constraintsMap) == true)
-        //         output.add(perm);
-        // }
-
-        // assertTrue(printEEPerms(output), true);
-    }   
 
     public String printEEPerms(List<List<ExecutableElement>> permutations){
         String s = "";
