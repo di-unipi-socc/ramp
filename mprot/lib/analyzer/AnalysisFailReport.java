@@ -7,7 +7,7 @@ import mprot.lib.model.Fault;
 
 public class AnalysisFailReport {
 
-    private final List<ExecutableElement> sequence;
+    private  List<ExecutableElement> sequence;
     private final Exception failException;
 
     private final ExecutableElement failedElement;
@@ -18,11 +18,9 @@ public class AnalysisFailReport {
 
     private final FailType fail;
 
-    public AnalysisFailReport(List<ExecutableElement> sequence, ExecutableElement failedElement,
-            Exception failException) {
+    public AnalysisFailReport(ExecutableElement failedElement, Exception failException) {
         this.fail = FailType.OPERATION;
 
-        this.sequence = sequence;
         this.failException = failException;
         this.failedElement = failedElement;
 
@@ -30,10 +28,9 @@ public class AnalysisFailReport {
         this.fatalFault = null;
     }
 
-    public AnalysisFailReport(List<ExecutableElement> sequence, String brokenInstanceID, Exception failException) {
+    public AnalysisFailReport(String brokenInstanceID, Exception failException) {
         this.fail = FailType.BROKENINSTANCE;
 
-        this.sequence = sequence;
         this.failException = failException;
         this.failedBrokenInstanceID = brokenInstanceID;
 
@@ -42,9 +39,8 @@ public class AnalysisFailReport {
 
     }
 
-    public AnalysisFailReport(List<ExecutableElement> sequence, Exception failException, Fault fatalFault) {
+    public AnalysisFailReport(Exception failException, Fault fatalFault) {
         this.fail = FailType.FAULT;
-        this.sequence = sequence;
         this.failException = failException;
         this.fatalFault = fatalFault;
 
@@ -72,8 +68,12 @@ public class AnalysisFailReport {
         return failedBrokenInstanceID;
     }
 
-    public FailType getFail() {
+    public FailType getFailType() {
         return fail;
+    }
+
+    public void setSequence(List<ExecutableElement> sequence){
+        this.sequence = sequence;
     }
 
 }

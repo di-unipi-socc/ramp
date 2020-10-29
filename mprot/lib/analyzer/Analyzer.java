@@ -21,14 +21,18 @@ import mprot.lib.analyzer.executable_element.*;
 
 public class Analyzer {
 
-    public Map<String, AnalysisFailReport> fails; 
+    private Map<String, AnalysisFailReport> fails;
+
+    public Map<String, AnalysisFailReport> getFailReports() {
+        return this.fails;
+    }
 
     public Analyzer() throws NullPointerException {
         this.fails = new HashMap<>();
     }
 
     /**
-     * @param app application on which the analysis will be executed
+     * @param app      application on which the analysis will be executed
      * @param sequence sequence of "operation" of which the validity check is needed
      * @return
      * @throws NullPointerException
@@ -44,105 +48,105 @@ public class Analyzer {
             InstanceUnknownException 
     {
 
-        if(app.isPiDeterministic() == true)
-            return this.deterministicIsValidSequence(app, sequence);
-        else
-            return this.nonDeterministicIsValidSeq(app, sequence);
+        List<ExecutableElement> backupSequence = this.clonePerm(sequence);
+        if (app.isPiDeterministic() == true){
 
+            if(this.deterministicIsValidSequence(app, sequence) == false){
+                AnalysisFailReport fail = fails.get(app.getName());
+                fail.setSequence(backupSequence);
+                return false;
+            }
+
+        }
+        else{
+            if(this.nonDeterministicIsValidSeq(app, sequence) == false){
+                AnalysisFailReport fail = fails.get(app.getName());
+                fail.setSequence(backupSequence);
+                return false;
+            }
+        }
+
+        return true;
     }
 
-    //TODO da eliminare
     public List<List<RuntimeBinding>> createRunBindingCombs(Application app, String instanceID)
-        throws 
-            NullPointerException, 
-            IllegalArgumentException, 
-            InstanceUnknownException 
-    {
+            throws NullPointerException, IllegalArgumentException, InstanceUnknownException {
         List<List<RuntimeBinding>> combinations = new ArrayList<>();
         NodeInstance instance = app.getGlobalState().getNodeInstanceByID(instanceID);
 
         Map<Requirement, List<NodeInstance>> reqToCapableInstance = new HashMap<>();
 
-        for(Requirement r : instance.getNeededReqs())
+        for (Requirement r : instance.getNeededReqs())
             reqToCapableInstance.put(r, app.getGlobalState().getCapableInstances(instanceID, r));
-        
-        List<Requirement> neededReqs = instance.getNeededReqs();
+
+        // cloning the neededReqs of instance to avoid the removal of the containment
+        // req
+        List<Requirement> neededReqs = new ArrayList<>();
+        for (Requirement r : instance.getNeededReqs())
+            neededReqs.add(r);
 
         Requirement containmentReq = null;
-        for(Requirement r : neededReqs){
-            if(r.isContainment() == true)
+        for (Requirement r : neededReqs) {
+            if (r.isContainment() == true)
                 containmentReq = r;
         }
 
-        //TODO rischiosa con i ref?
-        if(containmentReq != null)
+        if (containmentReq != null)
             neededReqs.remove(containmentReq);
 
-        int reqsStart = 0; 
-        int reqsEnd = neededReqs.size() - 1; 
-        
-        if(reqsEnd <= 0)
+        int reqsStart = 0;
+        int reqsEnd = neededReqs.size() - 1;
+
+        if (reqsEnd <= 0)
             return combinations;
 
-        this.recursiveRunBindingPerm(
-            reqsStart, 
-            reqsEnd, 
-            neededReqs, 
-            reqToCapableInstance, 
-            combinations, 
-            new ArrayList<RuntimeBinding>()
-        );
-        
+        this.recursiveRunBindingPerm(reqsStart, reqsEnd, neededReqs, reqToCapableInstance, combinations,
+                new ArrayList<RuntimeBinding>());
+
         return combinations;
     }
 
-    public void recursiveRunBindingPerm(
-        int reqsStart, 
-        int reqsEnd, 
-        List<Requirement> neededReqs, 
-        Map<Requirement, List<NodeInstance>> reqToCapableInstance, 
-        List<List<RuntimeBinding>> combinations, 
-        List<RuntimeBinding> currentCombination)
-    {
+    public void recursiveRunBindingPerm(int reqsStart, int reqsEnd, List<Requirement> neededReqs,
+            Map<Requirement, List<NodeInstance>> reqToCapableInstance, List<List<RuntimeBinding>> combinations,
+            List<RuntimeBinding> currentCombination) {
 
         Requirement req = neededReqs.get(reqsStart);
         ArrayList<NodeInstance> capableInstance = (ArrayList<NodeInstance>) reqToCapableInstance.get(req);
-        
+
         List<RuntimeBinding> combination = null;
 
-        if(reqsEnd == reqsStart){
-            for(NodeInstance i : capableInstance){
+        if (reqsEnd == reqsStart) {
+            for (NodeInstance i : capableInstance) {
                 RuntimeBinding newRunBinding = new RuntimeBinding(req, i.getID());
 
                 combination = this.cloneList(currentCombination);
                 combination.add(newRunBinding);
                 combinations.add(combination);
             }
-            return; 
-            
-        }else{
-            for(NodeInstance i : capableInstance){
+            return;
+
+        } else {
+            for (NodeInstance i : capableInstance) {
                 combination = this.cloneList(currentCombination);
                 combination.add(new RuntimeBinding(req, i.getID()));
-                this.recursiveRunBindingPerm(reqsStart + 1, reqsEnd, neededReqs, reqToCapableInstance, combinations, combination);
+                this.recursiveRunBindingPerm(reqsStart + 1, reqsEnd, neededReqs, reqToCapableInstance, combinations,
+                        combination);
             }
-        }   
+        }
         return;
     }
 
-    private List<RuntimeBinding> cloneList(List<RuntimeBinding> currentCombination){
+    private List<RuntimeBinding> cloneList(List<RuntimeBinding> currentCombination) {
         List<RuntimeBinding> ret = new ArrayList<>();
 
-        for (RuntimeBinding runtimeBinding : currentCombination) 
+        for (RuntimeBinding runtimeBinding : currentCombination)
             ret.add(new RuntimeBinding(runtimeBinding.getReq(), runtimeBinding.getNodeInstanceID()));
-        
+
         return ret;
     }
 
-
-
     /**
-     * @param app application on which the analysis will be executed
+     * @param app      application on which the analysis will be executed
      * @param sequence sequence of "operation" of which the validity check is needed
      * @return
      * @throws NullPointerException
@@ -154,11 +158,22 @@ public class Analyzer {
             NullPointerException, 
             IllegalSequenceElementException, 
             InstanceUnknownException 
+    
     {
-        if(app.isPiDeterministic() == true)
-            return this.deterministicIsWeaklyValidSequence(app, sequence);
-        else
-            return this.nonDeterministicIsWeaklyValidSeq(app, sequence);
+        List<ExecutableElement> backupSequence = this.clonePerm(sequence);
+
+        if (app.isPiDeterministic() == true){
+            if(this.deterministicIsWeaklyValidSequence(app, sequence) == true)
+                return true;
+
+        } else{
+            if(this.nonDeterministicIsWeaklyValidSeq(app, sequence) == true)
+                return true;
+        }
+
+        AnalysisFailReport fail = fails.get(app.getName());
+        fail.setSequence(backupSequence);
+        return false;
     }
 
     public boolean isNotValidSequence(Application app, List<ExecutableElement> sequence)
@@ -167,7 +182,7 @@ public class Analyzer {
             IllegalSequenceElementException, 
             InstanceUnknownException 
     {
-        if(app.isPiDeterministic() == true)
+        if (app.isPiDeterministic() == true)
             return !this.deterministicIsWeaklyValidSequence(app, sequence);
         else
             return !this.nonDeterministicIsWeaklyValidSeq(app, sequence);
@@ -177,8 +192,9 @@ public class Analyzer {
         throws 
             IllegalSequenceElementException, 
             NullPointerException, 
-            IllegalArgumentException,
-            InstanceUnknownException 
+            IllegalArgumentException, 
+            InstanceUnknownException
+            
     {
         if (app == null)
             throw new NullPointerException();
@@ -189,14 +205,14 @@ public class Analyzer {
         if (sequence.isEmpty() == true)
             return true;
 
-        //pop one element from the sequence than execute it
+        // pop one element from the sequence than execute it
         ExecutableElement seqElement = sequence.remove(0);
         try {
             app.execute(seqElement);
-        } catch (FailedOperationException e) {
+        } catch(FailedOperationException e){
             // keep going, this will be handled by the fault handler or leaved as it is
         } catch (Exception e) {
-            fails.put(app.getName(), new AnalysisFailReport(sequence, seqElement, e));
+            fails.put(app.getName(), new AnalysisFailReport(seqElement, e));
             return false;
         }
 
@@ -229,7 +245,7 @@ public class Analyzer {
         } catch (FailedOperationException e) {
             // keep going, this will be handled by the fault handler or leaved as it is
         } catch (Exception e) {
-            fails.put(app.getName(), new AnalysisFailReport(sequence, seqElement, e));
+            fails.put(app.getName(), new AnalysisFailReport(seqElement, e));
             return false;
         }
 
@@ -361,7 +377,7 @@ public class Analyzer {
                         return false;
     
                 } catch (RuleNotApplicableException | InstanceUnknownException e) {
-                    this.fails.put(app.getName(), new AnalysisFailReport(sequence, toKillID, e));
+                    this.fails.put(app.getName(), new AnalysisFailReport(toKillID, e));
                     return false;
                 }
                 cloneApp = app.clone(); // clone this to reset the clone well
@@ -384,7 +400,7 @@ public class Analyzer {
                             if (this.nonDeterministicIsValidSeq(cloneApp, sequence) == false)
                                 return false;
                         } catch (RuleNotApplicableException | InstanceUnknownException e) {
-                            fails.put(app.getName(), new AnalysisFailReport(sequence, e, f));
+                            fails.put(app.getName(), new AnalysisFailReport(e, f));
                             return false;
                         }
                     } else {
@@ -395,7 +411,7 @@ public class Analyzer {
                                 return false;
     
                         } catch (FailedFaultHandlingExecption | RuleNotApplicableException | InstanceUnknownException e) {
-                            fails.put(app.getName(), new AnalysisFailReport(sequence, e, f));
+                            fails.put(app.getName(), new AnalysisFailReport(e, f));
                             return false;
                         } 
                     }
@@ -417,7 +433,7 @@ public class Analyzer {
                         return false;
 
                 } catch (RuleNotApplicableException | InstanceUnknownException e) {
-                    this.fails.put(app.getName(), new AnalysisFailReport(sequence, toKillID, e));
+                    this.fails.put(app.getName(), new AnalysisFailReport(toKillID, e));
                     return false;
                 }
                 cloneApp = app.clone(); // clone this to reset the clone well
@@ -440,7 +456,7 @@ public class Analyzer {
                             if (this.deterministicIsValidSequence(cloneApp, sequence) == false)
                                 return false;
                         } catch (RuleNotApplicableException | InstanceUnknownException e) {
-                            fails.put(app.getName(), new AnalysisFailReport(sequence, e, f));
+                            fails.put(app.getName(), new AnalysisFailReport(e, f));
                             return false;
                         }
                     } else {
@@ -451,7 +467,7 @@ public class Analyzer {
                                 return false;
 
                         } catch (FailedFaultHandlingExecption | RuleNotApplicableException | InstanceUnknownException e) {
-                            fails.put(app.getName(), new AnalysisFailReport(sequence, e, f));
+                            fails.put(app.getName(), new AnalysisFailReport(e, f));
                             return false;
                         } 
                     }
@@ -485,7 +501,7 @@ public class Analyzer {
                         return true;
     
                 } catch (RuleNotApplicableException | InstanceUnknownException e) {
-                    this.fails.put(app.getName(), new AnalysisFailReport(sequence, toKillID, e));
+                    this.fails.put(app.getName(), new AnalysisFailReport(toKillID, e));
                     return false;
                 }
                 cloneApp = app.clone(); // clone this to reset the clone well
@@ -508,7 +524,7 @@ public class Analyzer {
                             if (this.nonDeterministicIsWeaklyValidSeq(cloneApp, sequence) == true)
                                 return true;
                         } catch (RuleNotApplicableException | InstanceUnknownException e) {
-                            fails.put(app.getName(), new AnalysisFailReport(sequence, e, f));
+                            fails.put(app.getName(), new AnalysisFailReport(e, f));
                             return false;
                         }
                     } else {
@@ -519,7 +535,7 @@ public class Analyzer {
                                 return true;
     
                         } catch (FailedFaultHandlingExecption | RuleNotApplicableException | InstanceUnknownException e) {
-                            fails.put(app.getName(), new AnalysisFailReport(sequence, e, f));
+                            fails.put(app.getName(), new AnalysisFailReport(e, f));
                             return false;
                         } 
                     }
@@ -542,7 +558,7 @@ public class Analyzer {
                         return true;
 
                 } catch (RuleNotApplicableException | InstanceUnknownException e) {
-                    this.fails.put(app.getName(), new AnalysisFailReport(sequence, toKillID, e));
+                    this.fails.put(app.getName(), new AnalysisFailReport(toKillID, e));
                     return false;
                 }
                 cloneApp = app.clone(); // clone this to reset the clone well
@@ -565,7 +581,7 @@ public class Analyzer {
                             if (this.deterministicIsWeaklyValidSequence(cloneApp, sequence) == true)
                                 return true;
                         } catch (RuleNotApplicableException | InstanceUnknownException e) {
-                            fails.put(app.getName(), new AnalysisFailReport(sequence, e, f));
+                            fails.put(app.getName(), new AnalysisFailReport(e, f));
                             return false;
                         }
                     } else {
@@ -576,7 +592,7 @@ public class Analyzer {
                                 return true;
 
                         } catch (FailedFaultHandlingExecption | RuleNotApplicableException | InstanceUnknownException e) {
-                            fails.put(app.getName(), new AnalysisFailReport(sequence, e, f));
+                            fails.put(app.getName(), new AnalysisFailReport(e, f));
                             return false;
                         } 
                     }
@@ -585,6 +601,8 @@ public class Analyzer {
             return false;
         }
     }
+
+
 
     public Map<ExecutableElement, List<ExecutableElement>> buildConstraintMap(List<ExecutableElement> planExecutableElements, List<Constraint> constraints){
 
@@ -599,7 +617,19 @@ public class Analyzer {
         return constraintsMap;
     }
 
+    private List<ExecutableElement> clonePerm(List<ExecutableElement> perm){
+
+        List<ExecutableElement> clone = new ArrayList<>();
+
+        for (ExecutableElement executableElement : perm) 
+            clone.add(executableElement);
+        
+        return clone;
+
+    }
+
     
+    //planExecutableElement is going to be altered, if needed always pass a clone
     public boolean planValidity(Application app, boolean weaklyValid, List<ExecutableElement> planExecutableElements, Map<ExecutableElement, List<ExecutableElement>> constraintsMap)
         throws 
             NullPointerException, 
@@ -609,10 +639,14 @@ public class Analyzer {
     {
         
         if(this.checkConstraints(planExecutableElements, constraintsMap) == true){
-            if(weaklyValid == true)
-                return this.isWeaklyValidSequence(app, planExecutableElements);
-            else
-                return this.isValidSequence(app, planExecutableElements);
+            if(weaklyValid == true){
+                if(this.isWeaklyValidSequence(app.clone(), this.clonePerm(planExecutableElements)) == true)
+                    return true;
+            }
+            else{
+                if(this.isValidSequence(app.clone(), this.clonePerm(planExecutableElements)) == false)
+                    return false;
+            }
         }
 
         int permSize = planExecutableElements.size();
@@ -633,10 +667,14 @@ public class Analyzer {
                     Collections.swap(planExecutableElements, i, c[i]);
 
                 if(this.checkConstraints(planExecutableElements, constraintsMap) == true){
-                    if(weaklyValid == true)
-                        return this.isWeaklyValidSequence(app, planExecutableElements);
-                    else
-                        return this.isValidSequence(app, planExecutableElements);
+                    if(weaklyValid == true){
+                        if(this.isWeaklyValidSequence(app.clone(), this.clonePerm(planExecutableElements)) == true)
+                            return true;
+                    }
+                    else{
+                        if(this.isValidSequence(app.clone(), this.clonePerm(planExecutableElements)) == false)
+                            return false;
+                    }
                 }
                 
                 c[i]++;
@@ -729,7 +767,7 @@ public class Analyzer {
             } catch (FailedOperationException e) {
                 // keep going, this will be handled by the fault handler or leaved as it is
             } catch (Exception e) {
-                fails.put(app.getName(), new AnalysisFailReport(sequence, todo, e));
+                fails.put(app.getName(), new AnalysisFailReport(todo, e));
                 return false;
             }
             
@@ -811,7 +849,7 @@ public class Analyzer {
             } catch (FailedOperationException e) {
                 // keep going, this will be handled by the fault handler or leaved as it is
             } catch (Exception e) {
-                fails.put(app.getName(), new AnalysisFailReport(sequence, todo, e));
+                fails.put(app.getName(), new AnalysisFailReport(todo, e));
                 return false;
             }
 
@@ -888,7 +926,7 @@ public class Analyzer {
         } catch (FailedOperationException e) {
             // keep going, this will be handled by the fault handler or leaved as it is
         } catch (Exception e) {
-            fails.put(app.getName(), new AnalysisFailReport(sequence, todo, e));
+            fails.put(app.getName(), new AnalysisFailReport(todo, e));
             return false;
         }
 
@@ -925,7 +963,7 @@ public class Analyzer {
         } catch (FailedOperationException e) {
             // keep going, this will be handled by the fault handler or leaved as it is
         } catch (Exception e) {
-            fails.put(app.getName(), new AnalysisFailReport(sequence, todo, e));
+            fails.put(app.getName(), new AnalysisFailReport(todo, e));
             return false;
         }
 
@@ -983,7 +1021,7 @@ public class Analyzer {
         } catch (FailedOperationException e) {
             // keep going, this will be handled by the fault handler or leaved as it is
         } catch (Exception e) {
-            fails.put(app.getName(), new AnalysisFailReport(sequence, todo, e));
+            fails.put(app.getName(), new AnalysisFailReport(todo, e));
             return false;
         }
         

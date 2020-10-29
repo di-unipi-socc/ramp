@@ -24,7 +24,7 @@ public class AnalyzerTest {
 
     public Analyzer analyzer;
 
-    public Application toyApp; //for the create permutations test
+    public Application toyApp; //for the runtime binding create permutations test
 
     @Before
     public void setUp()
@@ -47,10 +47,64 @@ public class AnalyzerTest {
             InstanceUnknownException 
     {    
         //returns false, because a weakly valid sequence is not a valid sequence, hence there will be a report;
-        Application testApp = ThesisAppFactory.createApplication(PiVersion.GREEDYPI);
-        analyzer.isValidSequence(testApp, this.createWeaklyValidSequence());
+        //Application testApp = ThesisAppFactory.createApplication(PiVersion.GREEDYPI);
+        Application nonDetTestApp = ThesisAppFactory.createApplication(PiVersion.RANDOMPI);
 
-        assertNotNull(analyzer.fails.get(testApp.getName()));
+        analyzer.isValidSequence(nonDetTestApp, this.createWeaklyValidSequence());
+        
+        assertNotNull(analyzer.getFailReports().get(nonDetTestApp.getName()));
+        assertTrue(analyzer.getFailReports().get(nonDetTestApp.getName()).getFailType() == FailType.OPERATION);
+
+        Application nonDetTestApp1 = ThesisAppFactory.createApplication(PiVersion.RANDOMPI);
+        nonDetTestApp1.setName("nuovaAPP");
+        analyzer.isValidSequence(nonDetTestApp, this.createValidSequence());
+
+        assertTrue(analyzer.getFailReports().containsKey("nuovaAPP") == false);
+
+    }
+
+    @Test
+    public void planValidityTest()
+        throws 
+            NullPointerException, 
+            IllegalSequenceElementException, 
+            InstanceUnknownException, 
+            RuleNotApplicableException, 
+            AlreadyUsedIDException 
+    {
+        //creates a valid plan
+        List<ExecutableElement> planExecutableElements = new ArrayList<>();
+        List<Constraint> constraints = new ArrayList<>();
+
+        ExecutableElement e1 = new ScaleOut1("node", "n1");
+        ExecutableElement e2 = new ScaleOut1("mongo", "m1");
+        ExecutableElement e3 = new ScaleOut2("backend", "b1", "n1");
+        ExecutableElement e4 = new ScaleOut2("frontend", "f1", "n1");
+
+        planExecutableElements.add(e1);
+        planExecutableElements.add(e2);
+        planExecutableElements.add(e3);
+        planExecutableElements.add(e4);
+
+        //backend and frontend are in a containment relation with node
+        Constraint c1 = new Constraint(e1, e3);
+        Constraint c2 = new Constraint(e1, e4);
+        constraints.add(c1);
+        constraints.add(c2);
+
+        assertTrue(analyzer.isValidPlan(ThesisAppFactory.createApplication(PiVersion.RANDOMPI), this.clonePerm(planExecutableElements), constraints));
+        assertTrue(analyzer.isWeaklyValidPlan(ThesisAppFactory.createApplication(PiVersion.RANDOMPI), this.clonePerm(planExecutableElements), constraints));
+        assertTrue(analyzer.isValidPlan(ThesisAppFactory.createApplication(PiVersion.GREEDYPI), this.clonePerm(planExecutableElements), constraints));
+        assertTrue(analyzer.isWeaklyValidPlan(ThesisAppFactory.createApplication(PiVersion.GREEDYPI), this.clonePerm(planExecutableElements), constraints));
+
+        //now remove one constraint and the plan becomes only weakly valid
+        constraints.remove(c1);
+        assertTrue(constraints.size() == 1);
+
+        assertFalse(analyzer.isValidPlan(ThesisAppFactory.createApplication(PiVersion.RANDOMPI), this.clonePerm(planExecutableElements), constraints));
+        assertTrue(analyzer.isWeaklyValidPlan(ThesisAppFactory.createApplication(PiVersion.RANDOMPI), this.clonePerm(planExecutableElements), constraints));
+        assertFalse(analyzer.isValidPlan(ThesisAppFactory.createApplication(PiVersion.GREEDYPI), this.clonePerm(planExecutableElements), constraints));
+        assertTrue(analyzer.isWeaklyValidPlan(ThesisAppFactory.createApplication(PiVersion.GREEDYPI), this.clonePerm(planExecutableElements), constraints));
     }
 
 
@@ -352,6 +406,13 @@ public class AnalyzerTest {
         constraints.add(c3);
 
 
+        List<List<ExecutableElement>> allPerms = this.createExElementsPerm(planExElements);
+        
+        assertFalse("size: " + allPerms.size() + " " +   printEEPerms(allPerms), false);
+    }
+
+    //basically the same algorithm used in analyzer. usefull for testing
+    private List<List<ExecutableElement>> createExElementsPerm(List<ExecutableElement> planExElements){
         List<List<ExecutableElement>> allPerms = new ArrayList<>();
         allPerms.add(this.clonePerm(planExElements));
         int permSize = planExElements.size();
@@ -382,10 +443,9 @@ public class AnalyzerTest {
             }
                                 
         }
-        
-        assertFalse("size: " + allPerms.size() + " " +   printEEPerms(allPerms), false);
-    }
 
+        return allPerms;
+    } 
 
     private List<ExecutableElement> clonePerm(List<ExecutableElement> perm){
 
@@ -399,7 +459,27 @@ public class AnalyzerTest {
     }
 
 
+    public String printEEPerm(List<ExecutableElement> perm){
+        String s = "";
 
+        s = s.concat("\n[");
+        for (ExecutableElement ee : perm){
+            if(ee instanceof ScaleOut1){
+                ScaleOut1 print = (ScaleOut1) ee;
+                s = s.concat("<" + print.getRule() + " " + print.getIDToAssign() + "> "); 
+            }
+            if(ee instanceof ScaleOut2){
+                ScaleOut2 print = (ScaleOut2) ee;
+                s = s.concat("<" + print.getRule() + " " + print.getIDToAssign() + "> "); 
+            }
+
+
+        }
+            
+        s = s.concat("] \n");
+
+       return s;
+    }
 
     public String printEEPerms(List<List<ExecutableElement>> permutations){
         String s = "";
@@ -407,9 +487,9 @@ public class AnalyzerTest {
         s = s.concat("[ ");
         for (List<ExecutableElement> list : permutations) {
             s = s.concat("\n[");
-            for (ExecutableElement ee : list) {
+            for (ExecutableElement ee : list) 
                 s = s.concat(ee.getRule() + " "); 
-            }
+                
             s = s.concat("] \n");
         }
 

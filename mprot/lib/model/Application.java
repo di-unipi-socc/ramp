@@ -9,13 +9,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
-
 //represents the whole application
 public class Application {
 
     // name of the application
-    private final String name;
+    private String name;
     // set T: all the application's component: node's name -> node
     private Map<String, Node> nodes;
     private GlobalState globalState;
@@ -149,6 +147,10 @@ public class Application {
      */
     public String getName() {
         return name;
+    }
+
+    public void setName(String name){
+        this.name = name;
     }
 
     /**
@@ -469,8 +471,10 @@ public class Application {
             AlreadyUsedIDException, 
             InstanceUnknownException
     {
+
         if(nodeName == null)
             throw new NullPointerException("nodeName null");
+
         if(nodeName.isEmpty() == true)
             throw new IllegalArgumentException("nodeName empty");
 
@@ -746,6 +750,8 @@ public class Application {
             case "scaleOut2": 
                 ScaleOut2 el4 = (ScaleOut2) element;
                 this.scaleOut2(el4.getNodeName(), el4.getIDToAssign(), el4.getContainerID());
+                break;
+
             default:
                 break;
         }

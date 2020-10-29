@@ -537,14 +537,19 @@ public class GlobalState {
             IllegalArgumentException,
             InstanceUnknownException
     {
+
         if(instanceID == null)
             throw new NullPointerException("instanceID null");
         if(instanceID.isEmpty() == true)
             throw new IllegalArgumentException("instanceID empty");
 
+
         NodeInstance ret = this.activeNodeInstances.get(instanceID);
-        if(ret == null)
+
+        if(ret == null){
+            //fail("OOOOOO");
             throw new InstanceUnknownException("instanceID: " + instanceID + " is not matched with an instance" );
+        }
         
         return ret;
     }
