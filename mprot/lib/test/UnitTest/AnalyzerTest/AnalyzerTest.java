@@ -111,6 +111,9 @@ public class AnalyzerTest {
         assertTrue(analyzer.isWeaklyValidPlan(ThesisAppFactory.createApplication(PiVersion.RANDOMPI), planExecutableElements, constraints));
         assertFalse(analyzer.isValidPlan(ThesisAppFactory.createApplication(PiVersion.GREEDYPI), planExecutableElements, constraints));
         assertTrue(analyzer.isWeaklyValidPlan(ThesisAppFactory.createApplication(PiVersion.GREEDYPI), planExecutableElements, constraints));
+    
+        assertTrue(analyzer.isValidPlan(ThesisAppFactory.createApplication(PiVersion.RANDOMPI), new ArrayList<>(), constraints));
+    
     }
 
     @Test

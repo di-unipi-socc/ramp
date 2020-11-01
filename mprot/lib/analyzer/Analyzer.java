@@ -827,6 +827,9 @@ public class Analyzer {
             IllegalSequenceElementException, 
             InstanceUnknownException 
     {   
+        if(planExecutableElements.isEmpty())
+            return true;
+        
         //e1 -> [e2, e3, ...]: match e1 with the executable elements that must be executed after e1
         Map<ExecutableElement, List<ExecutableElement>> constraintsMap = this.buildConstraintMap(planExecutableElements, constraints);
         
@@ -848,6 +851,9 @@ public class Analyzer {
             IllegalSequenceElementException, 
             InstanceUnknownException 
     {
+        if(planExecutableElements.isEmpty())
+            return true;
+        
         //e1 -> [e2, e3, ...]: match e1 with the executable elements that must be executed after e1
         Map<ExecutableElement, List<ExecutableElement>> constraintsMap = this.buildConstraintMap(planExecutableElements, constraints);
         
