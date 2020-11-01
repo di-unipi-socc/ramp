@@ -19,7 +19,6 @@ import mprot.lib.model.*;
 import mprot.lib.model.exceptions.*;
 import mprot.lib.test.utilities.ThesisAppFactory;
 
-
 public class AnalyzerTest {
 
     public Analyzer analyzer;
@@ -60,7 +59,6 @@ public class AnalyzerTest {
         analyzer.isValidSequence(nonDetTestApp, this.createValidSequence());
 
         assertTrue(analyzer.getFailReports().containsKey("nuovaAPP") == false);
-
     }
 
     @Test
@@ -72,6 +70,14 @@ public class AnalyzerTest {
             RuleNotApplicableException, 
             AlreadyUsedIDException 
     {
+
+        //before real tests we check the base cases
+        assertTrue(analyzer.isValidPlan(ThesisAppFactory.createApplication(PiVersion.GREEDYPI), new ArrayList<>(), new ArrayList<>()));
+        assertTrue(analyzer.isValidPlan(ThesisAppFactory.createApplication(PiVersion.RANDOMPI), new ArrayList<>(), new ArrayList<>()));
+
+        assertTrue(analyzer.isWeaklyValidPlan(ThesisAppFactory.createApplication(PiVersion.GREEDYPI), new ArrayList<>(), new ArrayList<>()));
+        assertTrue(analyzer.isWeaklyValidPlan(ThesisAppFactory.createApplication(PiVersion.RANDOMPI), new ArrayList<>(), new ArrayList<>()));
+
         //creates a valid plan
         List<ExecutableElement> planExecutableElements = new ArrayList<>();
         List<Constraint> constraints = new ArrayList<>();
@@ -80,7 +86,7 @@ public class AnalyzerTest {
         ExecutableElement e2 = new ScaleOut1("mongo", "m1");
         ExecutableElement e3 = new ScaleOut2("backend", "b1", "n1");
         ExecutableElement e4 = new ScaleOut2("frontend", "f1", "n1");
-
+        
         planExecutableElements.add(e1);
         planExecutableElements.add(e2);
         planExecutableElements.add(e3);
@@ -92,21 +98,20 @@ public class AnalyzerTest {
         constraints.add(c1);
         constraints.add(c2);
 
-        assertTrue(analyzer.isValidPlan(ThesisAppFactory.createApplication(PiVersion.RANDOMPI), this.clonePerm(planExecutableElements), constraints));
-        assertTrue(analyzer.isWeaklyValidPlan(ThesisAppFactory.createApplication(PiVersion.RANDOMPI), this.clonePerm(planExecutableElements), constraints));
-        assertTrue(analyzer.isValidPlan(ThesisAppFactory.createApplication(PiVersion.GREEDYPI), this.clonePerm(planExecutableElements), constraints));
-        assertTrue(analyzer.isWeaklyValidPlan(ThesisAppFactory.createApplication(PiVersion.GREEDYPI), this.clonePerm(planExecutableElements), constraints));
+        assertTrue(analyzer.isValidPlan(ThesisAppFactory.createApplication(PiVersion.RANDOMPI), planExecutableElements, constraints));
+        assertTrue(analyzer.isWeaklyValidPlan(ThesisAppFactory.createApplication(PiVersion.RANDOMPI), planExecutableElements, constraints));
+        assertTrue(analyzer.isValidPlan(ThesisAppFactory.createApplication(PiVersion.GREEDYPI), planExecutableElements, constraints));
+        assertTrue(analyzer.isWeaklyValidPlan(ThesisAppFactory.createApplication(PiVersion.GREEDYPI), planExecutableElements, constraints));
 
         //now remove one constraint and the plan becomes only weakly valid
         constraints.remove(c1);
         assertTrue(constraints.size() == 1);
 
-        assertFalse(analyzer.isValidPlan(ThesisAppFactory.createApplication(PiVersion.RANDOMPI), this.clonePerm(planExecutableElements), constraints));
-        assertTrue(analyzer.isWeaklyValidPlan(ThesisAppFactory.createApplication(PiVersion.RANDOMPI), this.clonePerm(planExecutableElements), constraints));
-        assertFalse(analyzer.isValidPlan(ThesisAppFactory.createApplication(PiVersion.GREEDYPI), this.clonePerm(planExecutableElements), constraints));
-        assertTrue(analyzer.isWeaklyValidPlan(ThesisAppFactory.createApplication(PiVersion.GREEDYPI), this.clonePerm(planExecutableElements), constraints));
+        assertFalse(analyzer.isValidPlan(ThesisAppFactory.createApplication(PiVersion.RANDOMPI), planExecutableElements, constraints));
+        assertTrue(analyzer.isWeaklyValidPlan(ThesisAppFactory.createApplication(PiVersion.RANDOMPI), planExecutableElements, constraints));
+        assertFalse(analyzer.isValidPlan(ThesisAppFactory.createApplication(PiVersion.GREEDYPI), planExecutableElements, constraints));
+        assertTrue(analyzer.isWeaklyValidPlan(ThesisAppFactory.createApplication(PiVersion.GREEDYPI), planExecutableElements, constraints));
     }
-
 
     @Test
     // a valid sequence is declared valid
@@ -117,13 +122,13 @@ public class AnalyzerTest {
             IllegalArgumentException, 
             InstanceUnknownException
              
-    {    
+    {   
+        assertTrue(analyzer.isValidSequence(ThesisAppFactory.createApplication(PiVersion.GREEDYPI), new ArrayList<>()));
+        
         assertTrue(analyzer.isValidSequence(ThesisAppFactory.createApplication(PiVersion.GREEDYPI), this.createValidSequence()));
         assertFalse(analyzer.isValidSequence(ThesisAppFactory.createApplication(PiVersion.GREEDYPI), this.createWeaklyValidSequence()));
         assertTrue(analyzer.isValidSequence(ThesisAppFactory.createApplication(PiVersion.RANDOMPI), this.createValidSequence()));
         assertFalse(analyzer.isValidSequence(ThesisAppFactory.createApplication(PiVersion.RANDOMPI), this.createWeaklyValidSequence()));
-    
-    
     }
 
     @Test
@@ -134,10 +139,64 @@ public class AnalyzerTest {
             RuleNotApplicableException, 
             InstanceUnknownException
     {
+        assertTrue(analyzer.isWeaklyValidSequence(ThesisAppFactory.createApplication(PiVersion.GREEDYPI), new ArrayList<>()));
+
         assertTrue(analyzer.isWeaklyValidSequence(ThesisAppFactory.createApplication(PiVersion.GREEDYPI), this.createValidSequence())); 
         assertTrue(analyzer.isWeaklyValidSequence(ThesisAppFactory.createApplication(PiVersion.GREEDYPI), this.createWeaklyValidSequence()));
         assertTrue(analyzer.isWeaklyValidSequence(ThesisAppFactory.createApplication(PiVersion.RANDOMPI), this.createValidSequence())); 
         assertTrue(analyzer.isWeaklyValidSequence(ThesisAppFactory.createApplication(PiVersion.RANDOMPI), this.createWeaklyValidSequence()));
+    }
+
+    @Test 
+    public void isNotValidSequenceTest()
+        throws 
+            NullPointerException, 
+            IllegalSequenceElementException, 
+            InstanceUnknownException 
+    {
+        assertFalse(analyzer.isNotValidSequence(ThesisAppFactory.createApplication(PiVersion.GREEDYPI), new ArrayList<>()));
+        assertFalse(analyzer.isNotValidSequence(ThesisAppFactory.createApplication(PiVersion.GREEDYPI), this.createValidSequence())); 
+
+        assertTrue(analyzer.isNotValidSequence(ThesisAppFactory.createApplication(PiVersion.GREEDYPI), this.createNotValidSequence()));
+    }
+
+
+    public ArrayList<ExecutableElement> createNotValidSequence(){
+        ArrayList<ExecutableElement> notValidSequence = new ArrayList<>();
+
+        ExecutableElement e1 = new ScaleOut1("node", "n1");
+        ExecutableElement e2 = new ScaleOut1("mongo", "m1");
+        ExecutableElement e3 = new ScaleOut2("backend", "b1", "n1");
+        ExecutableElement e4 = new ScaleOut2("frontend", "f1", "n1");
+
+        notValidSequence.add(e1);
+        notValidSequence.add(e2);
+        notValidSequence.add(e3);
+        notValidSequence.add(e4);
+        
+        this.addOpStartEnd(notValidSequence, "n1", "start");
+        this.addOpStartEnd(notValidSequence, "m1", "start");
+        this.addOpStartEnd(notValidSequence, "b1", "install");
+        this.addOpStartEnd(notValidSequence, "b1", "start");
+        this.addOpStartEnd(notValidSequence, "f1", "install");
+        this.addOpStartEnd(notValidSequence, "f1", "config");
+        this.addOpStartEnd(notValidSequence, "b1", "stop");
+
+        this.addOpStartEnd(notValidSequence, "f1", "install"); 
+        //creates fault (hence biforcation)
+        //after the fault f1 is in the transitional state configured-start-working
+        //after fault() f1 goes in configured
+        //f1 for start requires conn that backend is not providing since it's stopped
+
+        /**
+         * not valid because install is an op not available in the "configured", which 
+         * is reached if the fault handler is executed (that put f1 in configured)
+         * if the fault handler is or is not executed there is not a global state to go either
+         */
+        this.addOpStartEnd(notValidSequence, "f1", "install");
+        this.addOpStartEnd(notValidSequence, "n1", "stop");
+
+        return notValidSequence;
     }
 
     public ArrayList<ExecutableElement> createValidSequence(){
@@ -170,10 +229,11 @@ public class AnalyzerTest {
         this.addOpStartEnd(validSequence, "m1", "stop");
         this.addOpStartEnd(validSequence, "n1", "stop");
 
-        ExecutableElement e5 = new ScaleIn("n1");
-        ExecutableElement e6 = new ScaleIn("m1");
         ExecutableElement e7 = new ScaleIn("f1");
         ExecutableElement e8 = new ScaleIn("b1");
+        ExecutableElement e5 = new ScaleIn("n1");
+        ExecutableElement e6 = new ScaleIn("m1");
+        
 
         //inverted order for broken instances
         //mind that if there is a broke instance there will be scaleIn on cascade

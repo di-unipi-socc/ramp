@@ -7,16 +7,13 @@ import mprot.lib.model.Fault;
 
 public class AnalysisFailReport {
 
+    private final FailType fail;
+    
     private  List<ExecutableElement> sequence;
     private final Exception failException;
-
     private final ExecutableElement failedElement;
-
     private final String failedBrokenInstanceID;
-
     private final Fault fatalFault;
-
-    private final FailType fail;
 
     public AnalysisFailReport(ExecutableElement failedElement, Exception failException) {
         this.fail = FailType.OPERATION;

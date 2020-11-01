@@ -3,6 +3,8 @@ package mprot.lib.model;
 import mprot.lib.model.exceptions.*;
 import mprot.lib.analyzer.executable_element.*;
 
+import static org.junit.Assert.fail;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -365,6 +367,9 @@ public class Application {
 
         //we apply the rule
         instance.setCurrentState(rightState);
+
+        //fail(instance.getPossibleTransitions().size() + "");
+
         this.globalState.removeOldBindings(instanceID);
         this.globalState.addNewBindings(instanceID);
     }
@@ -540,7 +545,7 @@ public class Application {
         this.globalState.activeNodeInstances.remove(instanceID);
 
         //remove the bindings that took care of instance's req and the ones where instance was the server
-        this.globalState.removeAllBindingsBothWays(instanceID);
+        this.globalState.removeAllRunBindingsBothWays(instanceID);
 
         //if instance was a container the contained instance must be destroyed too
         this.autodestroy();
@@ -733,7 +738,20 @@ public class Application {
         switch (element.getRule()) {
             case "opStart":
                 OpStart el = (OpStart) element;
-                this.opStart(el.getInstnaceID(), el.getOp());                    
+                this.opStart(el.getInstnaceID(), el.getOp());
+                
+                int count = 0;
+
+                if(el.getOp().equals("install") && el.getInstnaceID().equals("f1")){
+                   count ++;
+                }   
+                
+                if(count == 2){
+                    NodeInstance instance = this.globalState.getNodeInstanceByID(el.getInstnaceID());
+                    fail(instance.getCurrentState());
+                }
+
+            
                 break;
             case "opEnd":
                 OpEnd el1 = (OpEnd) element;

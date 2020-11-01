@@ -234,8 +234,13 @@ public class GlobalState {
 
         if(badBinding != null)
             instanceRunBindings.remove(badBinding);  
-
     }
+
+    public void removeAllRunBindings(String instanceID){
+        this.runtimeBindings.replace(instanceID, new ArrayList<>());
+    }
+
+
 
     /**
      * given a node instance n this remove all the binding such as <n, *, *> and <*, *, n>
@@ -244,7 +249,7 @@ public class GlobalState {
      * @throws IllegalArgumentException
      * @throws NullPoninterException
      */
-    public void removeAllBindingsBothWays(String targetInstanceID)
+    public void removeAllRunBindingsBothWays(String targetInstanceID)
         throws 
             NullPointerException, 
             IllegalArgumentException
@@ -261,7 +266,7 @@ public class GlobalState {
             this.runtimeBindings.remove(targetInstanceID);
         else
             //for some reason all bindings of targetInstance must be eliminated  
-            this.runtimeBindings.replace(targetInstanceID, new ArrayList<>());
+            this.removeAllRunBindings(targetInstanceID);
         
         //other way; delete those runtime bindings that have targetInstance as the server of a requirement
         ArrayList<RuntimeBinding> otherWayBadBindings = new ArrayList<>();

@@ -142,7 +142,7 @@ public class IsResolvableFaultTest {
         assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get("instanceOfA").get(0).getNodeInstanceID().equals(this.instanceOfB.getID()));
 
         //now we kill instanceOfB and we get a fault (resolvable, thanks to secondInstanceOfB)
-        this.testApp.scaleIn(this.instanceOfB.getID());
+        this.testApp.scaleIn("instanceOfB");
         assertTrue(this.testApp.getGlobalState().getPendingFaults("instanceOfA").size() == 1);
         Fault f = this.testApp.getGlobalState().getResolvableFaults("instanceOfA").get(0);
         assertTrue(this.testApp.getGlobalState().isResolvableFault(f));

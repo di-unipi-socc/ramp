@@ -11,7 +11,7 @@ import org.junit.Test;
 import mprot.lib.model.*;
 import mprot.lib.model.exceptions.*;
 
-public class RemoveAllBindingsBothWaysTest {
+public class RemoveAllRunBindingsBothWaysTest {
 
     public Application testApp;
 
@@ -34,7 +34,7 @@ public class RemoveAllBindingsBothWaysTest {
     /**
      * create a simple custom application with three nodes, nodeA, nodeB and nodeC
      * nodeA has a requirement that is satisfied by nodeB and nodeC has a reuirement
-     * that is satisfied by nodeC. we see how removeAllBindingsBothWays remove from
+     * that is satisfied by nodeC. we see how removeAllRunBindingsBothWays remove from
      * the global state the runtime bindings <instanceOfA, req> -> <instanceOfB,
      * cap> AND <instanceOfC, req> -> <instanceOfA, cap>
      * 
@@ -183,19 +183,19 @@ public class RemoveAllBindingsBothWaysTest {
         return ret;
     }
 
-    //removeAllBindingsBothWays throws NullPointerException if the passed instance is null
+    //removeAllRunBindingsBothWays throws NullPointerException if the passed instance is null
     @Test(expected = NullPointerException.class)
-    public void removeAllBindingsBothWaysNullInstanceTest()
+    public void removeAllRunBindingsBothWaysNullInstanceTest()
         throws 
             NullPointerException, 
             IllegalArgumentException, 
             InstanceUnknownException 
     {
-        this.testApp.getGlobalState().removeAllBindingsBothWays(null);
+        this.testApp.getGlobalState().removeAllRunBindingsBothWays(null);
     }
 
     @Test
-    public void removeAllBindingsBothWaysTest()
+    public void removeAllRunBindingsBothWaysTest()
         throws 
             NullPointerException, 
             IllegalArgumentException, 
@@ -203,9 +203,9 @@ public class RemoveAllBindingsBothWaysTest {
     {
         assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get("instanceOfA").size() == 3);
         assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get("instanceOfC").size() == 3);
-        this.testApp.getGlobalState().removeAllBindingsBothWays("instanceOfA");
+        this.testApp.getGlobalState().removeAllRunBindingsBothWays("instanceOfA");
 
-        //mind that removeAllBindingsBothWays remove even the containment binding (in fact this method is 
+        //mind that removeAllRunBindingsBothWays remove even the containment binding (in fact this method is 
         //called only after the scaleIn())
         assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get("instanceOfA").size() == 0);
         assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get("instanceOfC").size() == 0);

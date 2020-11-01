@@ -87,20 +87,17 @@ public class NodeInstance {
         Collection<Transition> transitionsCollection = this.getNodeType().getManagementProtocol().getTransition().values();
         ArrayList<Transition> transitions = new ArrayList<Transition>(transitionsCollection);
 
-        //for each transition we check if it starts in the current state, if so it is a 
-        //(theorically) possible transition
+        //for each transition we check if it starts in the current state, if so it is a (theorically) possible transition
         for(Transition t : transitions){
             if(t.getStartingState().equals(this.currentState))
                 possibleTransitions.add(t);
         }
 
-        if(possibleTransitions.isEmpty() == true)
-            possibleTransitions = null;
-
         return possibleTransitions;
     }
 
     public Transition getTransitionByOp(String op){
+
         if(op == null)
             throw new NullPointerException("op null");
         if(op.isEmpty() == true)
@@ -108,12 +105,12 @@ public class NodeInstance {
     
         Transition ret = null;
         ArrayList<Transition> possibleTransitions = (ArrayList<Transition>) this.getPossibleTransitions();
-        if(possibleTransitions != null){
-            for (Transition transition : possibleTransitions){
-                if(transition.getOp().equals(op) == true && transition.getStartingState().equals(this.currentState))
-                    ret = transition;   
-            }
+
+        for (Transition transition : possibleTransitions){
+            if(transition.getOp().equals(op) == true)
+                ret = transition;   
         }
+        
         return ret;
     }
 

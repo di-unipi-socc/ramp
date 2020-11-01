@@ -1,6 +1,5 @@
 package mprot.lib.test.UnitTest.NodeInstanceTest;
 
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -101,6 +100,6 @@ public class GetPossibleTransitionsTest {
         this.testApp.opStart("instanceOfA", "goToState2");
         this.testApp.opEnd("instanceOfA", "goToState2");
 
-        assertNull(this.instanceOfA.getPossibleTransitions());
+        assertTrue(this.instanceOfA.getPossibleTransitions().size() == 0);
     }
 }
