@@ -14,6 +14,12 @@ import java.util.Map;
 //represents the whole application
 public class Application {
 
+    private List<StaticBinding> allStaticBindins;
+
+    public List<StaticBinding> getAllStaticBindings(){
+        return this.allStaticBindins;
+    }
+
     // name of the application
     private String name;
     // set T: all the application's component: node's name -> node
@@ -56,6 +62,7 @@ public class Application {
         this.globalState = new GlobalState(this);
         this.bindingFunction = new HashMap<>();
         this.piVersion = piVersion;
+        this.allStaticBindins = null;
         this.piControlSwitch();
 
         // if pi is null we will use greedyPI
@@ -620,10 +627,10 @@ public class Application {
         for (Node n : appNodes) {
             ManagementProtocol nMP = n.getManagementProtocol();
 
-            HashMap<String, Transition> nTransitions = (HashMap<String, Transition>) nMP.getTransition();
-            HashMap<String, List<Requirement>> nRho = (HashMap<String, List<Requirement>>) nMP.getRho();
-            HashMap<String, List<String>> nGamma = (HashMap<String, List<String>>) nMP.getGamma();
-            HashMap<String, List<String>> nPhi = (HashMap<String, List<String>>) nMP.getPhi();
+            Map<String, Transition> nTransitions =  nMP.getTransition();
+            Map<String, List<Requirement>> nRho = nMP.getRho();
+            Map<String, List<String>> nGamma =  nMP.getGamma();
+            Map<String, List<String>> nPhi = nMP.getPhi();
 
             ManagementProtocol cloneMp = new ManagementProtocol();
 
@@ -775,7 +782,7 @@ public class Application {
         }
     }
 
-    private void piControlSwitch(){
+    public void piControlSwitch(){
         switch (this.piVersion) {
             case GREEDYPI:
                 this.deterministicPi = true;
@@ -786,4 +793,42 @@ public class Application {
                 break;
         }
     }
+
+    @Override
+    /**
+     */
+    public boolean equals(Object f){
+        Application toCheck = (Application) f;
+        boolean ret = true;
+
+        if(this.deterministicPi != toCheck.deterministicPi)
+            ret = false;
+
+        if(this.bindingFunction.equals(toCheck.getBindingFunction()) == false)
+            ret = false;
+        
+        if(this.globalState.equals(toCheck.getGlobalState()) == false)
+            ret = false;
+
+        if(this.nodes.equals(toCheck.getNodes()) == false)
+            ret = false;
+
+        if(this.name.equals(toCheck.getName()) == false)
+            ret = false;
+            
+        return ret;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 17;
+        result = 31 * result + this.name.hashCode();
+        result = 31 * result + this.bindingFunction.hashCode();
+        result = 31 * result + this.globalState.hashCode();
+        result = 31 * result + this.nodes.hashCode();
+        result = 31 * result + this.piVersion.hashCode();
+
+        return result;
+    }
+
 }

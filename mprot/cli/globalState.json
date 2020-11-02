@@ -1,0 +1,63 @@
+{
+    "app" : {},
+    "activeNodeInstances" : {
+        "frontendF1" : {
+            "currentState" : "not-installed",
+            "id" : "frontendF1", 
+            "node" : {},
+            "nodeTypeName" : "frontend"
+        },
+        "backendB1" : {
+            "currentState" : "unavailable",
+            "id" : "backendB1", 
+            "node" : {},
+            "nodeTypeName" : "backend"
+        },
+        "backendB2" : {
+            "currentState" : "unavailable",
+            "id" : "backendB2", 
+            "node" : {},
+            "nodeTypeName" : "backend"
+        },
+        "nodeN1" : {
+            "currentState" : "stopped",
+            "id" : "nodeN1", 
+            "node" : {},
+            "nodeTypeName" : "node"
+        },
+        "nodeN2" : {
+            "currentState" : "stopped",
+            "id" : "nodeN2", 
+            "node" : {},
+            "nodeTypeName" : "node"
+        },
+        "nodeN3" : {
+            "currentState" : "stopped",
+            "id" : "nodeN3", 
+            "node" : {},
+            "nodeTypeName" : "node"
+        },
+        "mongoM1" : {
+            "currentState" : "stopped",
+            "id" : "mongoM1", 
+            "node" : {},
+            "nodeTypeName" : "mongo"
+        }
+    },
+    "runtimeBindings" : {
+        "frontendF1" : [
+            {"instanceID": "nodeN1", "req": {"name" : "host", "reqSort" : "CONTAINMENT"}}
+        ],
+        "backendB1" : [
+            {"instanceID": "nodeN1", "req": {"name" : "host", "reqSort" : "CONTAINMENT"}}
+        ],
+        "backendB2" : [
+            {"instanceID": "nodeN2", "req": {"name" : "host", "reqSort" : "CONTAINMENT"}}
+        ],
+        "nodeN1" : [],
+        "nodeN2" : [],
+        "nodeN3" : [],
+        "mongoM1" : []
+    }
+
+}

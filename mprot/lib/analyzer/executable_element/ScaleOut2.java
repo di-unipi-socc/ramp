@@ -67,4 +67,9 @@ public class ScaleOut2 extends ExecutableElement {
         return result;
     }
 
+    @Override
+    public void setRule() {
+        this.rule = "scaleOut2";
+    }
+
 }

@@ -70,4 +70,9 @@ public class OpStart extends ExecutableElement{
         return result;
     }
 
+    @Override
+    public void setRule() {
+        this.rule = "opStart";
+    }
+
 }

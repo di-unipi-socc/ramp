@@ -1,4 +1,4 @@
-package mprot.lib.test.UnitTest.NodeInstanceTest;
+package mprot.lib.test.unitTest.nodeInstanceTest;
 
 import static org.junit.Assert.assertTrue;
 

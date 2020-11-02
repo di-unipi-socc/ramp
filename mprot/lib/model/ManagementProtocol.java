@@ -152,4 +152,36 @@ public class ManagementProtocol {
         this.transition.put(source+op+target, new Transition(source+op+target, source, op, target));
     }
 
+    @Override
+    /**
+     */
+    public boolean equals(Object f){
+        ManagementProtocol toCheck = (ManagementProtocol) f;
+        boolean ret = true;
+
+        if(this.transition.equals(toCheck.getTransition()) == false)
+            ret = false;
+
+        if(this.gamma.equals(toCheck.getGamma()) == false)
+            ret = false;
+        
+        if(this.phi.equals(toCheck.getPhi()) == false)
+            ret = false;
+        
+        if(this.rho.equals(toCheck.getRho()) == false)
+            ret = false;
+        
+        return ret;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 17;
+        result = 31 * result + this.transition.hashCode();
+        result = 31 * result + this.gamma.hashCode();
+        result = 31 * result + this.phi.hashCode();
+        result = 31 * result + this.rho.hashCode();
+        return result;
+    }
+
 }

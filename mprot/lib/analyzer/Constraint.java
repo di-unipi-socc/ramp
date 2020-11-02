@@ -19,4 +19,26 @@ public class Constraint {
         return before;
     }
 
+    @Override
+    /**
+     */
+    public boolean equals(Object f){
+        Constraint toCheck = (Constraint) f;
+        boolean ret = false;
+
+        if(this.before.equals(toCheck.getBefore()) && this.after.equals(toCheck.getAfter()))
+            ret = true;
+        
+        return ret;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 17;
+        result = 31 * result + this.before.hashCode();
+        result = 31 * result + this.after.hashCode();
+        return result;
+    }
+
+
 }

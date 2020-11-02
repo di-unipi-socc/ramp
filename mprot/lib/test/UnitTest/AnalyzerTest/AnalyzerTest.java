@@ -1,9 +1,10 @@
-package mprot.lib.test.UnitTest.AnalyzerTest;
+package mprot.lib.test.unitTest.analyzerTest;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -18,6 +19,7 @@ import mprot.lib.analyzer.executable_element.*;
 import mprot.lib.model.*;
 import mprot.lib.model.exceptions.*;
 import mprot.lib.test.utilities.ThesisAppFactory;
+
 
 public class AnalyzerTest {
 
@@ -68,7 +70,8 @@ public class AnalyzerTest {
             IllegalSequenceElementException, 
             InstanceUnknownException, 
             RuleNotApplicableException, 
-            AlreadyUsedIDException 
+            AlreadyUsedIDException, 
+            IOException
     {
 
         //before real tests we check the base cases

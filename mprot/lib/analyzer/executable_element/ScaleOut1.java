@@ -5,8 +5,6 @@ public class ScaleOut1 extends ExecutableElement {
     private String nodeName;
     private String idToAssign;
     
-    
-
     public ScaleOut1(String nodeName, String idToAssign){
         this.rule = "scaleOut1";
         this.nodeName = nodeName;
@@ -58,6 +56,11 @@ public class ScaleOut1 extends ExecutableElement {
         result = 31 * result + this.nodeName.hashCode();
 
         return result;
+    }
+
+    @Override
+    public void setRule() {
+        this.rule = "scaleOut1";
     }
 
 }

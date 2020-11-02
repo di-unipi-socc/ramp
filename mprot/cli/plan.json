@@ -1,0 +1,19 @@
+{
+    "planExecutableElements" : [
+        {"rule" : "scaleOut1", "nodeName" : "node", "idToAssign" : "n1"},
+        {"rule" : "scaleOut1", "nodeName" : "mongo", "idToAssign" : "m1"},
+        {"rule" : "scaleOut2", "nodeName" : "backend", "idToAssign" : "b1", "containerID" : "n1"},
+        {"rule" : "scaleOut2", "nodeName" : "frontend", "idToAssign" : "f1", "containerID" : "n1"}
+    ], 
+    "constraints" : [
+        {
+            "before" : {"rule" : "scaleOut1", "nodeName" : "node", "idToAssign" : "n1"},
+            "after" : {"rule" : "scaleOut2", "nodeName" : "backend", "idToAssign" : "b1", "containerID" : "n1"}
+        },
+        {
+            "before" : {"rule" : "scaleOut1", "nodeName" : "node", "idToAssign" : "n1"},
+            "after" : {"rule" : "scaleOut2", "nodeName" : "frontend", "idToAssign" : "f1", "containerID" : "n1"}
+        }
+    ], 
+    "isSequence" : "false"
+}

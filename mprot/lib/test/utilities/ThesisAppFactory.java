@@ -226,6 +226,8 @@ public class ThesisAppFactory {
         backendMP.addPhiEntry("unavailable"+"install"+"available", damagedList);
         backendMP.addPhiEntry("available"+"uninstall"+"unavailable", damagedList);
         backendMP.addPhiEntry("running"+"config"+"running", damagedList);
+
+        
         backendMP.addPhiEntry("running", availableList);
         backendMP.addPhiEntry("available"+"start"+"running", availableList);
         backendMP.addPhiEntry("running"+"stop"+"available", availableList);

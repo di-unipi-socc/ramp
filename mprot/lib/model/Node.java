@@ -182,4 +182,45 @@ public class Node {
 
         this.caps.add(cap);
     }
+
+    @Override
+    /**
+     */
+    public boolean equals(Object f){
+        Node toCheck = (Node) f;
+        boolean ret = true;
+
+        if(this.initialState.equals(toCheck.getInitialState()) == false)
+            ret = false;
+        
+        if(this.name.equals(toCheck.getName()) == false)
+            ret = false;
+            
+        if(this.ops.equals(toCheck.getOps()) == false)
+            ret = false;
+        
+        if(this.caps.equals(toCheck.getCaps()) == false)
+            ret = false;
+
+        if(this.reqs.equals(toCheck.getReqs()) == false)
+            ret = false;
+
+        if(this.mp.equals(toCheck.getManagementProtocol()) == false)
+            ret = false;
+        
+        return ret;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 17;
+        result = 31 * result + this.initialState.hashCode();
+        result = 31 * result + this.name.hashCode();
+        result = 31 * result + this.ops.hashCode();
+        result = 31 * result + this.caps.hashCode();
+        result = 31 * result + this.reqs.hashCode();
+        result = 31 * result + this.mp.hashCode();
+
+        return result;
+    }
 }

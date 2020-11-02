@@ -1,4 +1,4 @@
-package mprot.lib.test.UnitTest.GlobalStateTest;
+package mprot.lib.test.unitTest.globalStateTest;
 
 import java.util.ArrayList;
 import java.util.List;

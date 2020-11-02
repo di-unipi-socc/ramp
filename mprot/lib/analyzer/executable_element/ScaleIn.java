@@ -48,4 +48,9 @@ public class ScaleIn extends ExecutableElement {
         return result;
     }
 
+    @Override
+    public void setRule() {
+        this.rule = "scaleIn";
+    }
+
 }

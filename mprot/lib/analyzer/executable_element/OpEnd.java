@@ -56,4 +56,9 @@ public class OpEnd extends ExecutableElement {
 
         return result;
     }
+
+    @Override
+    public void setRule() {
+        this.rule = "opEnd";
+    }
 }

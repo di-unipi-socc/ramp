@@ -6,7 +6,18 @@ import java.util.List;
 
 //represent the runtime istances of a Node
 public class NodeInstance {
-    private final Node nodeType;
+
+    private final String nodeTypeName; //for json parsing
+
+    public void setNodeType(Node n){
+        this.nodeType = n;
+    }
+
+    public String getNodeTypeName(){
+        return this.nodeTypeName;
+    }
+
+    private Node nodeType;
     private String currentState;
     private final String id;
 
@@ -38,6 +49,7 @@ public class NodeInstance {
         //TODO: come arrivo in questo stato? Ci saranno un set di op da fare (chain di transizioni ottimistiche)
         this.id = id;
         this.nodeType = node;
+        this.nodeTypeName = this.nodeType.getName();
     }
     
     /**

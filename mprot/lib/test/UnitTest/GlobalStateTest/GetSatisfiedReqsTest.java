@@ -1,4 +1,4 @@
-package mprot.lib.test.UnitTest.GlobalStateTest;
+package mprot.lib.test.unitTest.globalStateTest;
 
 import org.junit.Before;
 import org.junit.Test;

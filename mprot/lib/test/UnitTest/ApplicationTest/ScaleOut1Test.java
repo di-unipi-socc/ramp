@@ -1,4 +1,4 @@
-package mprot.lib.test.UnitTest.ApplicationTest;
+package mprot.lib.test.unitTest.applicationTest;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;

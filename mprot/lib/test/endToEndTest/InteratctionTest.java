@@ -1,60 +1,26 @@
-package mprot.lib.test.EndToEndTest;
+package mprot.lib.test.endToEndTest;
 
 import java.util.ArrayList;
-import java.util.Collection;
 
 import mprot.lib.model.*;
 import mprot.lib.model.exceptions.*;
-import mprot.lib.test.utilities.*;
+import mprot.lib.test.utilities.PrintingUtilities;
 
-
-public class Main {
-
-    public static void main(String[] args)
+public class InteratctionTest {
+    
+    public static void testbookAppStart(Application app)
         throws 
             NullPointerException, 
             RuleNotApplicableException, 
             IllegalArgumentException,
             OperationNotAvailableException, 
             FailedOperationException, 
-            FailedFaultHandlingExecption,
             InstanceUnknownException, 
             AlreadyUsedIDException 
-    {
-        testbookAppStart();
-        errorsTest();
-    }
-
-    public static void printRuntimeBindings(Application app) {
-
-        System.out.println("ALL RUNTIME BINDINGS");
-
-        Collection<NodeInstance> activeInstancesCollection = app.getGlobalState().getActiveNodeInstances().values();
-        ArrayList<NodeInstance> activeInstances = new ArrayList<>(activeInstancesCollection);
-
-        for (NodeInstance instance : activeInstances) {
-            ArrayList<RuntimeBinding> runtimeBindings = (ArrayList<RuntimeBinding>) app.getGlobalState().getRuntimeBindings().get(instance.getID());
-
-            System.out.println(instance.getID());
-            if (runtimeBindings.size() == 0)
-                System.out.println("     " + "none");
-
-            for (RuntimeBinding binding : runtimeBindings) 
-                System.out.printf("\t" + "%-10s" + "%-10s" + "\n", binding.getReq().getName(), binding.getNodeInstanceID());            
-        }
-
-        System.out.println("\n");
-    }
-
-    public static void testbookAppStart()
-            throws NullPointerException, RuleNotApplicableException, IllegalArgumentException,
-            OperationNotAvailableException, FailedOperationException, InstanceUnknownException, AlreadyUsedIDException 
-    {
-        Application app = ThesisAppFactory.createApplication(PiVersion.GREEDYPI);
-        
+    { 
         System.out.println("before start, no active nodes \n");
 
-        printActiveNodes(app);
+        PrintingUtilities.printActiveNodes(app);
 
         app.scaleOut1("mongo", "mongoM1");
         app.scaleOut1("node", "nodeN1");
@@ -66,8 +32,8 @@ public class Main {
 
         System.out.println("scaled out all nodes, 3 of them have a containment requirement \n");
 
-        printActiveNodes(app);
-        printRuntimeBindings(app);
+        PrintingUtilities.printActiveNodes(app);
+        PrintingUtilities.printRuntimeBindings(app);
 
         System.out.println("all instances going in working states");
 
@@ -86,6 +52,7 @@ public class Main {
 
         // asking instances go
         app.opStart("backendB1", "install");
+
         app.opEnd("backendB1", "install");
 
         app.opStart("backendB1", "start");
@@ -106,14 +73,14 @@ public class Main {
         app.opStart("frontendF1", "start");
         app.opEnd("frontendF1", "start");
 
-        printActiveNodes(app);
-        printRuntimeBindings(app);
+        PrintingUtilities.printActiveNodes(app);
+        PrintingUtilities.printRuntimeBindings(app);
 
         System.out.println("scale in nodeN1, that destroy nodeN1 and frontendF1");
         app.scaleIn("nodeN1");
 
-        printActiveNodes(app);
-        printRuntimeBindings(app);
+        PrintingUtilities.printActiveNodes(app);
+        PrintingUtilities.printRuntimeBindings(app);
 
         System.out.println("scale in everything, no active instances");
 
@@ -122,11 +89,11 @@ public class Main {
         app.scaleIn("frontendF1");
         app.scaleIn("nodeN3");
 
-        printActiveNodes(app);
-        printRuntimeBindings(app);
+        PrintingUtilities.printActiveNodes(app);
+        PrintingUtilities.printRuntimeBindings(app);
     }
 
-    public static void errorsTest()
+    public static void errorsTest(Application app)
             throws
                 NullPointerException, 
                 RuleNotApplicableException, 
@@ -135,21 +102,11 @@ public class Main {
                 OperationNotAvailableException, 
                 FailedFaultHandlingExecption, InstanceUnknownException, AlreadyUsedIDException 
     {
-
-        Application app = ThesisAppFactory.createApplication(PiVersion.GREEDYPI);
     
-        // NodeInstance nodeN3;
-        // NodeInstance nodeN2;
-        // NodeInstance nodeN1;
-        // NodeInstance mongoM1;
-        // NodeInstance backendB1;
-        // NodeInstance backendB2;
-
         System.out.println("before start, no active nodes");
 
-        printActiveNodes(app);
-        printRuntimeBindings(app);
-
+        PrintingUtilities.printActiveNodes(app);
+        PrintingUtilities.printRuntimeBindings(app);
         
         app.scaleOut1("mongo", "mongoM1");
         app.scaleOut1("node", "nodeN1");
@@ -161,8 +118,8 @@ public class Main {
 
         System.out.println("scaled out all nodes");
 
-        printActiveNodes(app);
-        printRuntimeBindings(app);
+        PrintingUtilities.printActiveNodes(app);
+        PrintingUtilities.printRuntimeBindings(app);
     
         /**
          * test 1: frontendF1 has the requirement "host" that is provieded by the instance nodeN3 whent
@@ -207,7 +164,7 @@ public class Main {
 
             app.fault("frontendF1", faultsList.get(0).getReq());
 
-            printActiveNodes(app); 
+            PrintingUtilities.printActiveNodes(app); 
         }
 
         /**
@@ -271,26 +228,13 @@ public class Main {
             app.opEnd("frontendF1", "config"); 
             
             //now frontendF1 is in the "configured" state 
-            printActiveNodes(app);
-            printRuntimeBindings(app);
+            PrintingUtilities.printActiveNodes(app);
+            PrintingUtilities.printRuntimeBindings(app);
             
             //waring silence
             app.scaleIn("backendB1");
         }
     }
 
-    public static void printActiveNodes(Application app){
-
-        System.out.println("ALL ACTIVE INSTANCES (G SET)");
-
-        Collection<NodeInstance> activeInstancesCollection =  app.getGlobalState().getActiveNodeInstances().values();
-        ArrayList<NodeInstance> activeInstances = new ArrayList<>(activeInstancesCollection);
     
-        for (NodeInstance instance : activeInstances)
-            System.out.printf("\t" + "%-15s" + "%-15s" + "%-15s" + "\n", instance.getNodeType().getName(), instance.getID(), instance.getCurrentState());
-        
-
-        System.out.println("\n");
-
-    }
 }

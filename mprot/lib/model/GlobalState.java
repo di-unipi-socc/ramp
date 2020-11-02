@@ -16,7 +16,7 @@ public class GlobalState {
     // active node instances: <instance unique id, NodeInstance>
     Map<String, NodeInstance> activeNodeInstances;
 
-    // <node instance "n" id -> list of runtime binding <req r of n, server instance of r>
+    // <node instance "n" id -> list of runtime binding <req r of n, server instance id of r>
     Map<String, List<RuntimeBinding>> runtimeBindings;
 
     /**
@@ -28,7 +28,7 @@ public class GlobalState {
             throw new NullPointerException("app null");
 
         this.app = app;
-
+    
         this.activeNodeInstances = new HashMap<>();
         this.runtimeBindings = new HashMap<>();
     }
@@ -573,4 +573,29 @@ public class GlobalState {
             throw new InstanceUnknownException("instanceID not matched with an instance");
 
     }
+
+    @Override
+    /**
+     */
+    public boolean equals(Object f){
+        GlobalState toCheck = (GlobalState) f;
+        boolean ret = true;
+
+        if(this.activeNodeInstances.equals(toCheck.getActiveNodeInstances()) == false)
+            ret = false;
+        
+        if(this.runtimeBindings.equals(toCheck.runtimeBindings) == false)
+            ret = false;
+
+        return ret;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 17;
+        result = 31 * result + this.activeNodeInstances.hashCode();
+        result = 31 * result + this.runtimeBindings.hashCode();
+        return result;
+    }
+
 }

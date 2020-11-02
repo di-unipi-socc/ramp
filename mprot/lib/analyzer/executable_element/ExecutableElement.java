@@ -10,6 +10,8 @@ public abstract class ExecutableElement {
 
     public abstract boolean wellFormattedSequenceElement();
 
+    public abstract void setRule();
+
     @Override
     /**
      */
