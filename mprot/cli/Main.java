@@ -1,31 +1,22 @@
 package mprot.cli;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
 import mprot.lib.analyzer.Analyzer;
-import mprot.lib.analyzer.Constraint;
-import mprot.lib.analyzer.Plan;
 import mprot.lib.analyzer.execptions.IllegalSequenceElementException;
 import mprot.lib.model.Application;
-import mprot.lib.model.ManagementProtocol;
-import mprot.lib.model.Node;
-import mprot.lib.model.PiVersion;
-import mprot.lib.model.exceptions.InstanceUnknownException;
-import mprot.lib.test.utilities.PrintingUtilities;
-import mprot.lib.test.utilities.ThesisAppFactory;
-
-import mprot.lib.analyzer.executable_element.*;
+import mprot.lib.model.exceptions.*;
 
 public class Main {
-    public static void main(String[] args)
-            throws IOException, NullPointerException, IllegalSequenceElementException, InstanceUnknownException {
-
+    public static void main(String[] args) throws IOException, NullPointerException, IllegalSequenceElementException,
+        InstanceUnknownException, 
+        IllegalArgumentException,
+        FailedOperationException, 
+        RuleNotApplicableException,
+        OperationNotAvailableException, 
+        AlreadyUsedIDException 
+    {
 
         Scanner keyboard = new Scanner(System.in);
 
@@ -35,7 +26,6 @@ public class Main {
         String gsFilePath = null;
         String planFilePath;
 
-        //System.out.println("type \"exit\" at any prompt to quit");
 
         System.out.print("insert the path of the application specific: ");
         appSpecFilePath = keyboard.nextLine();
@@ -77,7 +67,7 @@ public class Main {
             }
         }
 
-        Plan plan = null;
+        PlanWrapper plan = null;
         try {
             plan = Parser.parsePlan(planFilePath);
         } catch (IOException e) {
@@ -204,4 +194,5 @@ public class Main {
         return;
 
     }
+
 }

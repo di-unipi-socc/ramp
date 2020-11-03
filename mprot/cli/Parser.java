@@ -13,7 +13,6 @@ import com.google.gson.GsonBuilder;
 
 import mprot.lib.model.*;
 import mprot.lib.analyzer.Constraint;
-import mprot.lib.analyzer.Plan;
 import mprot.lib.analyzer.executable_element.*;
 
 
@@ -39,6 +38,22 @@ public class Parser {
             instance.setNodeType(app.getNodes().get(instance.getNodeTypeName()));
 
         app.setGlobalState(globalState);
+
+        for(Node n : app.getNodes().values()){
+            ManagementProtocol mp = n.getManagementProtocol();
+            for(String state : n.getStates()){
+
+                if(mp.getGamma().get(state) == null)
+                    mp.addGammaEntry(state, new ArrayList<>());
+                
+                if(mp.getRho().get(state) == null)
+                    mp.addGammaEntry(state, new ArrayList<>());
+
+                if(mp.getPhi().get(state) == null)
+                    mp.addGammaEntry(state, new ArrayList<>());
+
+            }
+        }
 
         return app;
     }
@@ -87,7 +102,7 @@ public class Parser {
         return gson.fromJson(appReader, GlobalState.class);
     }
 
-    public static Plan parsePlan(String planFilePath) 
+    public static PlanWrapper parsePlan(String planFilePath) 
         throws 
             IOException 
     {
@@ -102,7 +117,7 @@ public class Parser {
         Gson gson = new GsonBuilder().registerTypeAdapterFactory(runtimeTAFactory).create();
 
         Reader planReader = Files.newBufferedReader(Paths.get(planFilePath));
-        Plan plan = gson.fromJson(planReader, Plan.class);
+        PlanWrapper plan = gson.fromJson(planReader, PlanWrapper.class);
 
         for(ExecutableElement element : plan.getPlanExecutableElements())
             element.setRule();

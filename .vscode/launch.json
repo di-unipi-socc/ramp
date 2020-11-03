@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "CodeLens (Launch) - CLI",
+            "request": "launch",
+            "mainClass": "mprot.cli.CLI",
+            "projectName": "thesis_c2f25fc"
+        },
+        {
+            "type": "java",
             "name": "CodeLens (Launch) - Main",
             "request": "launch",
             "mainClass": "mprot.cli.Main",

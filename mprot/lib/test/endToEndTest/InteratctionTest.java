@@ -20,7 +20,7 @@ public class InteratctionTest {
     { 
         System.out.println("before start, no active nodes \n");
 
-        PrintingUtilities.printActiveNodes(app);
+        PrintingUtilities.printActiveNodes(app.getGlobalState());
 
         app.scaleOut1("mongo", "mongoM1");
         app.scaleOut1("node", "nodeN1");
@@ -32,8 +32,8 @@ public class InteratctionTest {
 
         System.out.println("scaled out all nodes, 3 of them have a containment requirement \n");
 
-        PrintingUtilities.printActiveNodes(app);
-        PrintingUtilities.printRuntimeBindings(app);
+        PrintingUtilities.printActiveNodes(app.getGlobalState());
+        PrintingUtilities.printRuntimeBindings(app.getGlobalState());
 
         System.out.println("all instances going in working states");
 
@@ -73,14 +73,14 @@ public class InteratctionTest {
         app.opStart("frontendF1", "start");
         app.opEnd("frontendF1", "start");
 
-        PrintingUtilities.printActiveNodes(app);
-        PrintingUtilities.printRuntimeBindings(app);
+        PrintingUtilities.printActiveNodes(app.getGlobalState());
+        PrintingUtilities.printRuntimeBindings(app.getGlobalState());
 
         System.out.println("scale in nodeN1, that destroy nodeN1 and frontendF1");
         app.scaleIn("nodeN1");
 
-        PrintingUtilities.printActiveNodes(app);
-        PrintingUtilities.printRuntimeBindings(app);
+        PrintingUtilities.printActiveNodes(app.getGlobalState());
+        PrintingUtilities.printRuntimeBindings(app.getGlobalState());
 
         System.out.println("scale in everything, no active instances");
 
@@ -89,8 +89,8 @@ public class InteratctionTest {
         app.scaleIn("frontendF1");
         app.scaleIn("nodeN3");
 
-        PrintingUtilities.printActiveNodes(app);
-        PrintingUtilities.printRuntimeBindings(app);
+        PrintingUtilities.printActiveNodes(app.getGlobalState());
+        PrintingUtilities.printRuntimeBindings(app.getGlobalState());
     }
 
     public static void errorsTest(Application app)
@@ -105,8 +105,8 @@ public class InteratctionTest {
     
         System.out.println("before start, no active nodes");
 
-        PrintingUtilities.printActiveNodes(app);
-        PrintingUtilities.printRuntimeBindings(app);
+        PrintingUtilities.printActiveNodes(app.getGlobalState());
+        PrintingUtilities.printRuntimeBindings(app.getGlobalState());
         
         app.scaleOut1("mongo", "mongoM1");
         app.scaleOut1("node", "nodeN1");
@@ -118,8 +118,8 @@ public class InteratctionTest {
 
         System.out.println("scaled out all nodes");
 
-        PrintingUtilities.printActiveNodes(app);
-        PrintingUtilities.printRuntimeBindings(app);
+        PrintingUtilities.printActiveNodes(app.getGlobalState());
+        PrintingUtilities.printRuntimeBindings(app.getGlobalState());
     
         /**
          * test 1: frontendF1 has the requirement "host" that is provieded by the instance nodeN3 whent
@@ -164,7 +164,7 @@ public class InteratctionTest {
 
             app.fault("frontendF1", faultsList.get(0).getReq());
 
-            PrintingUtilities.printActiveNodes(app); 
+            PrintingUtilities.printActiveNodes(app.getGlobalState()); 
         }
 
         /**
@@ -228,8 +228,8 @@ public class InteratctionTest {
             app.opEnd("frontendF1", "config"); 
             
             //now frontendF1 is in the "configured" state 
-            PrintingUtilities.printActiveNodes(app);
-            PrintingUtilities.printRuntimeBindings(app);
+            PrintingUtilities.printActiveNodes(app.getGlobalState());
+            PrintingUtilities.printRuntimeBindings(app.getGlobalState());
             
             //waring silence
             app.scaleIn("backendB1");

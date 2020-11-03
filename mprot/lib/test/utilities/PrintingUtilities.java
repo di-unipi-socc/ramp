@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import mprot.lib.analyzer.Constraint;
-import mprot.lib.analyzer.Plan;
+import mprot.cli.PlanWrapper;
 import mprot.lib.analyzer.executable_element.ExecutableElement;
 import mprot.lib.analyzer.executable_element.OpEnd;
 import mprot.lib.analyzer.executable_element.OpStart;
@@ -12,6 +12,7 @@ import mprot.lib.analyzer.executable_element.ScaleIn;
 import mprot.lib.analyzer.executable_element.ScaleOut1;
 import mprot.lib.analyzer.executable_element.ScaleOut2;
 import mprot.lib.model.Application;
+import mprot.lib.model.GlobalState;
 import mprot.lib.model.ManagementProtocol;
 import mprot.lib.model.NodeInstance;
 import mprot.lib.model.Requirement;
@@ -20,28 +21,33 @@ import mprot.lib.model.StaticBinding;
 
 public class PrintingUtilities {
 
-    public static void printActiveNodes(Application app){
+    public static void printGlobalState(GlobalState gs){
+        PrintingUtilities.printActiveNodes(gs);
+        PrintingUtilities.printRuntimeBindings(gs);
+    }
+
+
+    public static void printActiveNodes(GlobalState gs){
         System.out.println("ALL ACTIVE INSTANCES (G SET)");
 
-        Collection<NodeInstance> activeInstancesCollection =  app.getGlobalState().getActiveNodeInstances().values();
+        Collection<NodeInstance> activeInstancesCollection =  gs.getActiveNodeInstances().values();
         ArrayList<NodeInstance> activeInstances = new ArrayList<>(activeInstancesCollection);
     
         for (NodeInstance instance : activeInstances)
             System.out.printf("\t" + "%-15s" + "%-15s" + "%-15s" + "\n", instance.getNodeType().getName(), instance.getID(), instance.getCurrentState());
         
-
         System.out.println("\n");
     }
 
-    public static void printRuntimeBindings(Application app) {
+    public static void printRuntimeBindings(GlobalState gs) {
 
         System.out.println("ALL RUNTIME BINDINGS");
 
-        Collection<NodeInstance> activeInstancesCollection = app.getGlobalState().getActiveNodeInstances().values();
+        Collection<NodeInstance> activeInstancesCollection = gs.getActiveNodeInstances().values();
         ArrayList<NodeInstance> activeInstances = new ArrayList<>(activeInstancesCollection);
 
         for (NodeInstance instance : activeInstances) {
-            ArrayList<RuntimeBinding> runtimeBindings = (ArrayList<RuntimeBinding>) app.getGlobalState().getRuntimeBindings().get(instance.getID());
+            ArrayList<RuntimeBinding> runtimeBindings = (ArrayList<RuntimeBinding>) gs.getRuntimeBindings().get(instance.getID());
 
             System.out.println(instance.getID());
             if (runtimeBindings.size() == 0)
@@ -54,7 +60,7 @@ public class PrintingUtilities {
         System.out.println("\n");
     }
 
-    public static void printApp(Application app) {
+    public static void printStaticApp(Application app) {
 
         System.out.println("STATIC BINDINGS: ");
         for(StaticBinding key : app.getBindingFunction().keySet())
@@ -153,8 +159,7 @@ public class PrintingUtilities {
         }
     }
 
-    public static void printExecutablePlan(Plan plan){
-
+    public static void printExecutablePlan(PlanWrapper plan){
         for(ExecutableElement element : plan.getPlanExecutableElements()){
             if(element instanceof ScaleOut1){
                 ScaleOut1 op = (ScaleOut1) element;

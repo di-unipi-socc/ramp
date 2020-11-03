@@ -46,7 +46,7 @@
     },
     "runtimeBindings" : {
         "frontendF1" : [
-            {"instanceID": "nodeN1", "req": {"name" : "host", "reqSort" : "CONTAINMENT"}}
+            {"instanceID": "nodeN3", "req": {"name" : "host", "reqSort" : "CONTAINMENT"}}
         ],
         "backendB1" : [
             {"instanceID": "nodeN1", "req": {"name" : "host", "reqSort" : "CONTAINMENT"}}
