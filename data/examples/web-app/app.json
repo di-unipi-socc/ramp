@@ -1,0 +1,312 @@
+{
+    "name" : "testApp",
+    "piVersion" : "GREEDYPI",
+    "nodes" : [
+        {
+            "name" : "frontend",
+            "requirements" : {
+                "host" : {"name" : "host", "reqSort" : "CONTAINMENT"}, 
+                "conn" : {"name" : "conn", "reqSort" : "REPLICA_UNAWARE"}
+            },
+            "capabilities" : [],
+            "operations" : [
+                "install", 
+                "config", 
+                "start", 
+                "uninstall", 
+                "stop"
+            ],
+            "managementProtocol" : {
+                "initialState" : "not-installed",
+                "states" : [
+                    {
+                        "name" : "not-installed",
+                        "requires" : [],
+                        "offers" : [],
+                        "faultHandlers" : []
+                    },
+                    {
+                        "name" : "installed",
+                        "requires" : [],
+                        "offers" : [],
+                        "faultHandlers" : []
+                    },
+                    {
+                        "name" : "configured",
+                        "requires" : [],
+                        "offers" : [],
+                        "faultHandlers" : []
+                    },
+                    {
+                        "name" : "working",
+                        "requires" : ["host", "conn"],
+                        "offers" : [],
+                        "faultHandlers" : ["configured"]
+                    },
+                    {
+                        "name" : "damaged",
+                        "requires" : [], 
+                        "offers": [],
+                        "faultHandlers" : []
+                    }
+
+                ],
+                "transitions" : [
+                    {
+                        "startingState" : "not-installed",
+                        "operation" : "install",
+                        "targetState" : "installed",
+                        "requires" : ["host"],
+                        "offers" : [],
+                        "faultHandlers" : ["damaged"]
+                    },
+                    {
+                        "startingState" : "installed",
+                        "operation" : "config",
+                        "targetState" : "configured",
+                        "requires" : ["host", "conn"],
+                        "offers" : [],
+                        "faultHandlers" : ["installed"]
+                    },
+                    {
+                        "startingState" : "configured",
+                        "operation" : "config",
+                        "targetState" : "configured",
+                        "requires" : ["host", "conn"],
+                        "offers" : [],
+                        "faultHandlers" : ["installed"]
+                    }, 
+                    {
+                        "startingState" : "configured", 
+                        "operation" : "start", 
+                        "targetState" : "working",
+                        "requires" : ["host", "conn"],
+                        "offers" : [],
+                        "faultHandlers" : ["configured"]
+                    },
+                    {
+                        "startingState" : "working", 
+                        "operation" : "stop", 
+                        "targetState" : "configured", 
+                        "requires" : ["host"], 
+                        "offers" : [],
+                        "faultHandlers" : ["configured"]
+                    },
+                    {
+                        "startingState" : "installed",
+                        "operation" : "uninstall",
+                        "targetState" : "not-installed",
+                        "requires" : ["host"],
+                        "offers" : [],
+                        "faultHandlers" : ["damaged"]
+                    }, 
+                    {
+                        "startingState" : "configured", 
+                        "operation" : "uninstall", 
+                        "targetState" : "not-installed", 
+                        "requires" : ["host"],
+                        "offers" : [],
+                        "faultHandlers" : ["damaged"]
+                    }
+                
+
+                ]
+            }
+        }, 
+        {
+            "name" : "backend", 
+            "requirements" : {
+                "host" : {"name" : "host", "reqSort" : "CONTAINMENT"},
+                "db" : {"name" : "db", "reqSort" : "REPLICA_AWARE"}
+            },
+            "capabilities" : ["conn"],
+            "operations" : [
+                "install", 
+                "uninstall",
+                "start",
+                "stop",
+                "config"
+            ],
+            "managementProtocol" : {
+                "initialState" : "unavailable", 
+                "states" : [
+                    {
+                        "name" : "unavailable", 
+                        "requires" : [], 
+                        "offers" : [],
+                        "faultHandlers" : []
+                    },
+                    {
+                        "name" : "available",
+                        "requires" : [],
+                        "offers" : [], 
+                        "faultHandlers" : []
+                    },
+                    {
+                        "name" : "running",
+                        "requires" : ["host", "db"],
+                        "offers" : ["conn"],
+                        "faultHandlers" : ["available"]
+                    },
+                    {
+                        "name" : "damaged", 
+                        "requires" : [], 
+                        "offers" : [], 
+                        "faultHandlers" : []
+                    }
+
+                ], 
+                "transitions" : [
+                    {
+                        "startingState" : "unavailable", 
+                        "operation" : "install", 
+                        "targetState" : "available", 
+                        "requires" : ["host"],
+                        "offers" : [],
+                        "faultHandlers" : ["damaged"]
+                    },
+                    {
+                        "startingState" : "available", 
+                        "operation" : "uninstall", 
+                        "targetState" : "unavailable",
+                        "requires" : ["host"], 
+                        "offers" : [],
+                        "faultHandlers" : ["damaged"]
+                    },
+                    {
+                        "startingState" : "available", 
+                        "operation" : "start", 
+                        "targetState" : "running", 
+                        "requires" : ["host", "db"],
+                        "offers" : [],
+                        "faultHandlers" : ["available"]
+                    }, 
+                    {
+                        "startingState" : "running", 
+                        "operation" : "config",
+                        "targetState" : "running", 
+                        "requires" : ["host", "db"],
+                        "faultHandlers" : ["damaged"]
+                    },
+                    {
+                        "startingState" : "running", 
+                        "operation" : "stop", 
+                        "targetState" : "available", 
+                        "requires" : ["host"], 
+                        "faultHandlers" : ["available"]
+                    }
+
+
+                ]
+            }
+        }, 
+        {
+            "name" : "node", 
+            "requirements" : {}, 
+            "capabilities" : ["host"], 
+            "operations" : ["start", "stop"], 
+            "managementProtocol" : {
+                "initialState" : "stopped", 
+                "states" : [
+                    {
+                        "name" : "stopped", 
+                        "requires" : [],
+                        "offers" : [],
+                        "faultHandlers" : []
+                    },
+                    {
+                        "name" : "running",
+                        "requires" : [],
+                        "offers" : ["host"],
+                        "faultHandlers" : []
+                    }
+                ],
+                "transitions" : [
+                    {
+                        "startingState" : "stopped", 
+                        "operation" : "start", 
+                        "targetState" : "running", 
+                        "requires" : [],
+                        "offers" : [], 
+                        "faultHandlers" : []
+                    },
+                    {
+                        "startingState" : "running", 
+                        "operation" : "stop", 
+                        "targetState" : "stopped", 
+                        "requires" : [], 
+                        "offers" : [], 
+                        "faultHandlers" : []
+                    }
+                ]
+            }
+        },
+        {
+            "name" : "mongo", 
+            "requirements" : {}, 
+            "capabilities" : ["db"], 
+            "operations" : ["start", "stop"], 
+            "managementProtocol" : {
+                "initialState" : "stopped", 
+                "states" : [
+                    {
+                        "name" : "stopped", 
+                        "requires" : [],
+                        "offers" : [],
+                        "faultHandlers" : []
+                    },
+                    {
+                        "name" : "running",
+                        "requires" : [],
+                        "offers" : ["db"],
+                        "faultHandlers" : []
+                    }
+                ],
+                "transitions" : [
+                    {
+                        "startingState" : "stopped", 
+                        "operation" : "start", 
+                        "targetState" : "running", 
+                        "requires" : [],
+                        "offers" : [], 
+                        "faultHandlers" : []
+                    },
+                    {
+                        "startingState" : "running", 
+                        "operation" : "stop", 
+                        "targetState" : "stopped", 
+                        "requires" : [], 
+                        "offers" : [], 
+                        "faultHandlers" : []
+                    }
+                ]
+            }
+        }
+    ],
+    "bindings" : [
+        {
+            "sourceNode" : "frontend", 
+            "sourceRequirement" : "host",
+            "targetNode" : "node", 
+            "targetCapability" : "host"
+        },
+        {
+            "sourceNode" : "frontend", 
+            "sourceRequirement" : "conn",
+            "targetNode" : "backend", 
+            "targetCapability" : "conn"
+        },
+        {
+            "sourceNode" : "backend", 
+            "sourceRequirement" : "host", 
+            "targetNode" : "node", 
+            "targetCapability" : "host"
+        },
+        {
+            "sourceNode" : "backend",
+            "sourceRequirement" : "db",
+            "targetNode" : "mongo",
+            "targetCapability" : "db"
+        }
+    ]
+}
