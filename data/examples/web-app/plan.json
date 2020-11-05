@@ -1,19 +1,102 @@
 {
-    "planExecutableElements" : [
-        {"rule" : "scaleOut1", "nodeName" : "node", "idToAssign" : "n1"},
-        {"rule" : "scaleOut1", "nodeName" : "mongo", "idToAssign" : "m1"},
-        {"rule" : "scaleOut2", "nodeName" : "backend", "idToAssign" : "b1", "containerID" : "n1"},
-        {"rule" : "scaleOut2", "nodeName" : "frontend", "idToAssign" : "f1", "containerID" : "n1"}
-    ], 
-    "constraints" : [
+    "planExecutableElements" : {
+        "scaleN1" : {"rule" : "scaleOut1", "nodeName" : "node", "idToAssign" : "n1"},
+        "scaleN2" : {"rule" : "scaleOut1", "nodeName" : "node", "idToAssign" : "n2"},
+        "scaleM1" : {"rule" : "scaleOut1", "nodeName" : "mongo", "idToAssign" : "m1"},
+        "scaleB1" : {"rule" : "scaleOut2", "nodeName" : "backend", "idToAssign" : "b1", "containerID" : "n2"},
+        "scaleF1" : {"rule" : "scaleOut2", "nodeName" : "frontend", "idToAssign" : "f1", "containerID" : "n1"},
+        "startN1_a" : {"rule" : "opStart", "instanceID" : "n1", "op" : "start"},
+        "startN1_b" : {"rule" : "opEnd", "instanceID" : "n1", "op" : "start"},
+        "startN2_a" : {"rule" : "opStart", "instanceID" : "n2", "op" : "start"},
+        "startN2_b" : {"rule" : "opEnd", "instanceID" : "n2", "op" : "start"},
+        "startM1_a" : {"rule" : "opStart", "instanceID" : "m1", "op" : "start"},
+        "startM1_b" : {"rule" : "opEnd", "instanceID" : "m1", "op" : "start"},
+        "installF1_a" : {"rule" : "opStart", "instanceID" : "f1", "op" : "install"},
+        "installF1_b" : {"rule" : "opEnd", "instanceID" : "f1", "op" : "install"},
+        "installB1_a" : {"rule" : "opStart", "instanceID" : "b1", "op" : "install"},
+        "installB1_b" : {"rule" : "opEnd", "instanceID" : "b1", "op" : "install"},
+        "startB1_a" : {"rule" : "opStart", "instanceID" : "b1", "op" : "start"},
+        "startB1_b" : {"rule" : "opEnd", "instanceID" : "b1", "op" : "start"},
+        "configF1_a" : {"rule" : "opStart", "instanceID" : "f1", "op" : "config"},
+        "configF1_b" : {"rule" : "opEnd", "instanceID" : "f1", "op" : "config"},
+        "startF1_a" : {"rule" : "opStart", "instanceID" : "f1", "op" : "start"},
+        "startF1_b" : {"rule" : "opEnd", "instanceID" : "f1", "op" : "start"}
+    },
+    "constraintsLables" : [
         {
-            "before" : {"rule" : "scaleOut1", "nodeName" : "node", "idToAssign" : "n1"},
-            "after" : {"rule" : "scaleOut2", "nodeName" : "backend", "idToAssign" : "b1", "containerID" : "n1"}
+            "before" : "scaleN1",
+            "after" : "startN1_a"
         },
         {
-            "before" : {"rule" : "scaleOut1", "nodeName" : "node", "idToAssign" : "n1"},
-            "after" : {"rule" : "scaleOut2", "nodeName" : "frontend", "idToAssign" : "f1", "containerID" : "n1"}
+            "before" : "scaleN2",
+            "after" : "startN2_a"
+        },
+        {
+            "before" : "scaleM1",
+            "after" : "startM1_a"
+        },
+        {
+            "before" : "scaleF1",
+            "after" : "installF1_a"
+        },
+        {
+            "before" : "scaleB1",
+            "after" : "installB1_a"
+        },
+        {
+            "before" : "installB1_b",
+            "after" : "startB1_a"
+        },
+        {
+            "before" : "configF1_b",
+            "after" : "startF1_a"
+        },
+        {
+            "before" : "startN1_a",
+            "after" : "startN1_b"
+        },
+        {
+            "before" : "startN2_a",
+            "after" : "startN2_b"
+        },
+        {
+            "before" : "startM1_a",
+            "after" : "startM1_b"
+        },
+        {
+            "before" : "installF1_a",
+            "after" : "installF1_b"
+        },
+        {
+            "before" : "installB1_a",
+            "after" : "installB1_b"
+        },
+        {
+            "before" : "startB1_a",
+            "after" : "startB1_b"
+        },
+        {
+            "before" : "configF1_a",
+            "after" : "configF1_b"
+        },
+        {
+            "before" : "startF1_a",
+            "after" : "startF1_b"
+        },
+        {
+            "before" : "scaleN2",
+            "after" : "scaleB1"
+        },
+        {
+            "before" : "startN1_b", 
+            "after" : "scaleF1"
+        },
+        {
+            "before" : "startN2_b",
+            "after" : "scaleB1"
         }
+        
     ], 
+    "contranints" : [],
     "isSequence" : "false"
 }

@@ -1,16 +1,40 @@
 package mprot.cli;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import mprot.core.analyzer.AnalysisFailReport;
 import mprot.core.analyzer.Analyzer;
+import mprot.core.analyzer.execptions.IllegalSequenceElementException;
+import mprot.core.analyzer.executable_element.ExecutableElement;
 import mprot.core.model.Application;
-
+import mprot.core.model.exceptions.InstanceUnknownException;
 import mprot.cli.parsing.Parser;
 import mprot.cli.parsing.wrappers.PlanWrapper;
 
 public class Main {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args)
+        throws IOException, NullPointerException, IllegalSequenceElementException, InstanceUnknownException {
+        
+        Application app = Parser.parseApplication("C:\\Users\\Giulio\\UniPi\\Tesi_Triennale\\thesis\\data\\examples\\web-app\\app.json");
+        PlanWrapper plan = Parser.parsePlan("C:\\Users\\Giulio\\UniPi\\Tesi_Triennale\\thesis\\data\\examples\\web-app\\plan.json");
+
+        //PrintingUtilities.printExecutablePlan(plan);
+
+        Collection<ExecutableElement> planEECollection = plan.getPlanExecutableElements().values();
+        List<ExecutableElement> planEElist = new ArrayList<>(planEECollection);
+
+        AnalysisFailReport fail;
+
+        Analyzer analyzer = new Analyzer();
+        if(analyzer.isWeaklyValidPlan(app, planEElist, plan.getConstraints()) == true)
+            System.out.println("PIZZAAAAAAAAAAAAAA");
+        else{
+            fail = analyzer.getFailReports().get(app.getName());
+            System.out.println(fail.getFailException().getMessage());
+        }
 
         return;
 
@@ -94,18 +118,21 @@ public class Main {
     public static boolean performAnalysis(Application app, PlanWrapper plan, String propertyToCheck) {
         Analyzer analyzer = new Analyzer();
 
+        Collection<ExecutableElement> parsedPlanCollection =  plan.getPlanExecutableElements().values();
+        List<ExecutableElement> parsedPlanElements = new ArrayList<>(parsedPlanCollection);
+
         switch (propertyToCheck) {
             case "--valid":
                 if (plan.getIsSequence() == true) {
                     try {
-                        return analyzer.isValidSequence(app, plan.getPlanExecutableElements());
+                        return analyzer.isValidSequence(app, parsedPlanElements);
                     } catch (Exception e) {
                         errorHandling(analyzer.getFailReports().get(app.getName()));
                         System.exit(0);
                     }
                 } else {
                     try {
-                        return analyzer.isValidPlan(app, plan.getPlanExecutableElements(), plan.getConstraints());
+                        return analyzer.isValidPlan(app, parsedPlanElements, plan.getConstraints());
                     } catch (Exception e) {
                         errorHandling(analyzer.getFailReports().get(app.getName()));
                         System.exit(0);
@@ -115,14 +142,14 @@ public class Main {
             case "--weaklyvalid":
             if (plan.getIsSequence() == true) {
                 try {
-                    return analyzer.isWeaklyValidSequence(app, plan.getPlanExecutableElements());
+                    return analyzer.isWeaklyValidSequence(app, parsedPlanElements);
                 } catch (Exception e) {
                     errorHandling(analyzer.getFailReports().get(app.getName()));
                     System.exit(0);
                 }
             } else {
                 try {
-                    return analyzer.isWeaklyValidPlan(app, plan.getPlanExecutableElements(), plan.getConstraints());
+                    return analyzer.isWeaklyValidPlan(app, parsedPlanElements, plan.getConstraints());
                 } catch (Exception e) {
                     errorHandling(analyzer.getFailReports().get(app.getName()));
                     System.exit(0);
@@ -132,14 +159,14 @@ public class Main {
             case "--notvalid":
             if (plan.getIsSequence() == true) {
                 try {
-                    return analyzer.isNotValidSequence(app, plan.getPlanExecutableElements());
+                    return analyzer.isNotValidSequence(app, parsedPlanElements);
                 } catch (Exception e) {
                     errorHandling(analyzer.getFailReports().get(app.getName()));
                     System.exit(0);
                 }
             } else {
                 try {
-                    return analyzer.isNotValidPlan(app, plan.getPlanExecutableElements(), plan.getConstraints());
+                    return analyzer.isNotValidPlan(app, parsedPlanElements, plan.getConstraints());
                 } catch (Exception e) {
                     errorHandling(analyzer.getFailReports().get(app.getName()));
                     System.exit(0);

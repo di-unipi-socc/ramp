@@ -191,14 +191,20 @@ public class Parser {
         PlanWrapper plan = gson.fromJson(planReader, PlanWrapper.class);
         //since rule is specified in ExecutableElement the parser do not read it,
         //so we call the abstract method setRule that fix that
-        for(ExecutableElement element : plan.getPlanExecutableElements())
+        for(ExecutableElement element : plan.getPlanExecutableElements().values())
             element.setRule();
 
-        for(Constraint c : plan.getConstraints()){
-            c.getBefore().setRule();
-            c.getAfter().setRule();
-        }
-    
+
+        Map<String, ExecutableElement> planElementsMap = plan.getPlanExecutableElements();
+        List<Constraint> constraints = new ArrayList<>();
+        for(ConstraintLabel label : plan.getConstraintsLables())
+            constraints.add(
+                new Constraint(
+                    planElementsMap.get(label.getBefore()),  
+                    planElementsMap.get(label.getAfter()))
+            );
+        plan.setConstraints(constraints);
+
         return plan;
     }
     

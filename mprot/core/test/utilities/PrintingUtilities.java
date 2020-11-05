@@ -3,6 +3,7 @@ package mprot.core.test.utilities;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import mprot.cli.parsing.ConstraintLabel;
 import mprot.cli.parsing.wrappers.*;
 
 import mprot.core.analyzer.Constraint;
@@ -161,7 +162,7 @@ public class PrintingUtilities {
     }
 
     public static void printExecutablePlan(PlanWrapper plan){
-        for(ExecutableElement element : plan.getPlanExecutableElements()){
+        for(ExecutableElement element : plan.getPlanExecutableElements().values()){
             if(element instanceof ScaleOut1){
                 ScaleOut1 op = (ScaleOut1) element;
                 System.out.println(op.getRule() + ": " +op.getNodeName() + " " + op.getIDToAssign());
@@ -186,6 +187,9 @@ public class PrintingUtilities {
 
         if(plan.getIsSequence() == false){
             //printing the constraints
+            for(ConstraintLabel label : plan.getConstraintsLables())
+                System.out.println(label.getBefore() + " must be executed before " + label.getAfter());
+
             for(Constraint c : plan.getConstraints())
                 System.out.println(c.getBefore() + " must be executed before " + c.getAfter());
         }

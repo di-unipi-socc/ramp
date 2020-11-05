@@ -1,7 +1,9 @@
 package mprot.cli.parsing.wrappers;
 
 import java.util.List;
+import java.util.Map;
 
+import mprot.cli.parsing.ConstraintLabel;
 import mprot.core.analyzer.Constraint;
 import mprot.core.analyzer.executable_element.ExecutableElement;
 
@@ -11,15 +13,26 @@ import mprot.core.analyzer.executable_element.ExecutableElement;
 
 public class PlanWrapper {
 
-    private final List<ExecutableElement> planExecutableElements;
-    private final List<Constraint> constraints;
+    private final Map<String, ExecutableElement> planExecutableElements;
+    private List<Constraint> constraints;
+    private final List<ConstraintLabel> constraintsLables;
 
-    private final boolean isSequence; //true if we want to analyze a sequence and not a plan
+    private final boolean isSequence; // true if we want to analyze a sequence and not a plan
 
-    public PlanWrapper(List<ExecutableElement> planExecutableElements, List<Constraint> constraints, boolean isSequence) {
+    public PlanWrapper(
+            Map<String, ExecutableElement> planExecutableElements, 
+            List<Constraint> constraints,
+            List<ConstraintLabel> constraintsLables,
+            boolean isSequence) {
+
         this.planExecutableElements = planExecutableElements;
         this.constraints = constraints;
+        this.constraintsLables = constraintsLables;
         this.isSequence = isSequence;
+    }
+
+    public List<ConstraintLabel> getConstraintsLables() {
+        return constraintsLables;
     }
 
     public boolean getIsSequence() {
@@ -30,8 +43,13 @@ public class PlanWrapper {
         return constraints;
     }
 
-    public List<ExecutableElement> getPlanExecutableElements() {
+    public Map<String, ExecutableElement> getPlanExecutableElements() {
         return planExecutableElements;
     }
+
+    public void setConstraints(List<Constraint> constraints){
+        this.constraints = constraints;
+    }
+
 
 }
