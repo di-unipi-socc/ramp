@@ -54,7 +54,6 @@ public class AnalyzerTest {
         analyzer.isValidSequence(nonDetTestApp, this.createWeaklyValidSequence());
         
         assertNotNull(analyzer.getFailReports().get(nonDetTestApp.getName()));
-        assertTrue(analyzer.getFailReports().get(nonDetTestApp.getName()).getFailType() == FailType.OPERATION);
 
         Application nonDetTestApp1 = ThesisAppFactory.createApplication(PiVersion.RANDOMPI);
         nonDetTestApp1.setName("nuovaAPP");

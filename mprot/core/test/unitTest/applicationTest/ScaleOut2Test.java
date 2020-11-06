@@ -10,7 +10,7 @@ import mprot.core.model.*;
 import mprot.core.model.exceptions.*;
 import mprot.core.test.utilities.ThesisAppFactory;
 
-//TODO mancando dei casi di test (generazione eccezioni)
+//TODO: might missing some test (exception generation (expected...))
 
 public class ScaleOut2Test {
 

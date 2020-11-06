@@ -14,9 +14,9 @@ import mprot.core.model.exceptions.*;
 public class Analyzer {
 
     //app's name -> fail report
-    private Map<String, AnalysisFailReport> fails;
+    private Map<String, AnalysisReport> fails;
 
-    public Map<String, AnalysisFailReport> getFailReports() {
+    public Map<String, AnalysisReport> getFailReports() {
         return this.fails;
     }
 
@@ -55,6 +55,12 @@ public class Analyzer {
     }
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ANALYZER UTILITIES ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    private void setFailReport(Application app, ExecutableElement element){
+        AnalysisReport fail = this.fails.get(app.getName());
+        if(fail.getFailedElement() == null)
+            fail.setFailedElement(element);
+    }
 
     /**
      * @param app
@@ -281,7 +287,7 @@ public class Analyzer {
 
         if (app.isPiDeterministic() == true){
             if(this.deterministicIsValidSequence(app, this.cloneList(sequence)) == false){
-                AnalysisFailReport fail = fails.get(app.getName());
+                AnalysisReport fail = fails.get(app.getName());
                 fail.setSequence(backupSequence);
                 return false;
             }
@@ -289,7 +295,7 @@ public class Analyzer {
         }
         else{
             if(this.nonDeterministicIsValidSequence(app, this.cloneList(sequence)) == false){
-                AnalysisFailReport fail = fails.get(app.getName());
+                AnalysisReport fail = fails.get(app.getName());
                 fail.setSequence(backupSequence);
                 return false;
             }
@@ -331,7 +337,7 @@ public class Analyzer {
         } catch(FailedOperationException e){
             // keep going, this will be handled by the fault handler or leaved as it is
         } catch (Exception e) {
-            fails.put(app.getName(), new AnalysisFailReport(seqElement, e));
+            fails.put(app.getName(), new AnalysisReport(seqElement, e));
             return false;
         }
 
@@ -343,8 +349,10 @@ public class Analyzer {
 
         //mind that checkFaultsValid and checkFaultsWeaklyValid differs only for the method call they 
         //perform based of the analysis of the validity or the weakly validity
-        if(this.checkFaultsValid(app, sequence, true) == false)
+        if(this.checkFaultsValid(app, sequence, true) == false){
+            this.setFailReport(app, seqElement);
             return false;
+        }
           
         return true;
     }
@@ -379,28 +387,39 @@ public class Analyzer {
         //that pi can provide and check for each one of them
 
         if (op instanceof OpStart) {
-            if(this.nonDetOpStartOpEnd(app, op, false, sequence) == false)
+            if(this.nonDetOpStartOpEnd(app, op, false, sequence) == false){
+                this.setFailReport(app, op);
                 return false;
+            }
+
         }
 
         if (op instanceof OpEnd) {
-            if(this.nonDetOpStartOpEnd(app, op, false, sequence) == false)
+            if(this.nonDetOpStartOpEnd(app, op, false, sequence) == false){
+                this.setFailReport(app, op);
                 return false;
+            }
             
         }
         if (op instanceof ScaleIn){
-            if(this.nonDetScaleIn(app, op, false, sequence) == false)
+            if(this.nonDetScaleIn(app, op, false, sequence) == false){
+                this.setFailReport(app, op);
                 return false;
+            }
         
         }
         if (op instanceof ScaleOut1) {
-            if(this.nonDetScaleOut1(app, op, false, sequence) == false)
+            if(this.nonDetScaleOut1(app, op, false, sequence) == false){
+                this.setFailReport(app, op);
                 return false;
+            }
             
         }
         if (op instanceof ScaleOut2){
-            if(this.nonDetScaleOut2(app, op, false, sequence) == false)
+            if(this.nonDetScaleOut2(app, op, false, sequence) == false){
+                this.setFailReport(app, op);
                 return false;
+            }
             
         }
 
@@ -433,16 +452,14 @@ public class Analyzer {
             //application of the rule no-broken-instances: in the application will never be instances whose container 
             //was destroyed (scaleIn a container cause the scaleIn of the contained)
             if (brokenInstances.isEmpty() == false) {
-                String toKillID = brokenInstances.get(0).getID();
                 try {
-                    cloneApp.scaleIn(toKillID);
+                    cloneApp.scaleIn(brokenInstances.get(0).getID());
                     //explore the path where the scaleIn was performed
                     if (this.nonDeterministicIsValidSequence(cloneApp, sequence) == false)
                         return false;
     
                 } catch (RuleNotApplicableException | InstanceUnknownException e) {
                     //the scaleIn failed, store the reason and return false
-                    this.fails.put(app.getName(), new AnalysisFailReport(toKillID, e));
                     return false;
                 }
                 cloneApp = app.clone(); // clone this to reset the clone
@@ -468,7 +485,6 @@ public class Analyzer {
                                 return false;
 
                         } catch (RuleNotApplicableException | InstanceUnknownException e) {
-                            fails.put(app.getName(), new AnalysisFailReport(e, f));
                             return false;
                         }
                     } else {
@@ -480,7 +496,6 @@ public class Analyzer {
                                 return false;
     
                         } catch (FailedFaultHandlingExecption | RuleNotApplicableException | InstanceUnknownException e) {
-                            fails.put(app.getName(), new AnalysisFailReport(e, f));
                             return false;
                         } 
                     }
@@ -497,14 +512,12 @@ public class Analyzer {
 
             if (brokenInstances.isEmpty() == false) {
                 cloneApp = app.clone();
-                String toKillID = brokenInstances.get(0).getID();
                 try {
-                    cloneApp.scaleIn(toKillID);
+                    cloneApp.scaleIn(brokenInstances.get(0).getID());
                     if (this.deterministicIsValidSequence(cloneApp, sequence) == false)
                         return false;
 
                 } catch (RuleNotApplicableException | InstanceUnknownException e) {
-                    this.fails.put(app.getName(), new AnalysisFailReport(toKillID, e));
                     return false;
                 }
                 cloneApp = app.clone(); // clone this to reset the clone well
@@ -525,7 +538,6 @@ public class Analyzer {
                             if (this.deterministicIsValidSequence(cloneApp, sequence) == false)
                                 return false;
                         } catch (RuleNotApplicableException | InstanceUnknownException e) {
-                            fails.put(app.getName(), new AnalysisFailReport(e, f));
                             return false;
                         }
                     } else {
@@ -536,7 +548,6 @@ public class Analyzer {
                                 return false;
 
                         } catch (FailedFaultHandlingExecption | RuleNotApplicableException | InstanceUnknownException e) {
-                            fails.put(app.getName(), new AnalysisFailReport(e, f));
                             return false;
                         } 
                     }
@@ -573,7 +584,7 @@ public class Analyzer {
                 return true;
         }
 
-        AnalysisFailReport fail = fails.get(app.getName());
+        AnalysisReport fail = fails.get(app.getName());
         fail.setSequence(backupSequence);
         return false;
     }
@@ -581,7 +592,7 @@ public class Analyzer {
     private boolean deterministicIsWeaklyValidSequence(Application app, List<ExecutableElement> sequence)
         throws 
             IllegalSequenceElementException, 
-            NullPointerException,  
+            NullPointerException, 
             InstanceUnknownException 
     {
 
@@ -600,13 +611,14 @@ public class Analyzer {
         } catch (FailedOperationException e) {
             // keep going, this will be handled by the fault handler or leaved as it is
         } catch (Exception e) {
-            fails.put(app.getName(), new AnalysisFailReport(seqElement, e));
+            fails.put(app.getName(), new AnalysisReport(seqElement, e));
             return false;
         }
 
         if(this.checkFaultsWeaklyValid(app, sequence, true) == true)
             return true;
         
+        this.setFailReport(app, seqElement);
         return false;
     }
 
@@ -656,7 +668,7 @@ public class Analyzer {
             if(this.nonDetScaleOut2(app, op, true, sequence) == true)
                 return true;
         }
-
+        this.setFailReport(app, op);
         return false;
     }
 
@@ -685,15 +697,12 @@ public class Analyzer {
     
             if (brokenInstances.isEmpty() == false) {
                 cloneApp = app.clone();
-
-                String toKillID = brokenInstances.get(0).getID();
                 try {
                     cloneApp.scaleIn(brokenInstances.get(0).getID());
                     if (this.nonDeterministicIsWeaklyValidSeq(cloneApp, sequence) == true)
                         return true;
     
                 } catch (RuleNotApplicableException | InstanceUnknownException e) {
-                    this.fails.put(app.getName(), new AnalysisFailReport(toKillID, e));
                     return false;
                 }
                 cloneApp = app.clone(); 
@@ -712,7 +721,6 @@ public class Analyzer {
                             if (this.nonDeterministicIsWeaklyValidSeq(cloneApp, sequence) == true)
                                 return true;
                         } catch (RuleNotApplicableException | InstanceUnknownException e) {
-                            fails.put(app.getName(), new AnalysisFailReport(e, f));
                             return false;
                         }
                     } else {
@@ -722,7 +730,6 @@ public class Analyzer {
                                 return true;
     
                         } catch (FailedFaultHandlingExecption | RuleNotApplicableException | InstanceUnknownException e) {
-                            fails.put(app.getName(), new AnalysisFailReport(e, f));
                             return false;
                         } 
                     }
@@ -737,15 +744,12 @@ public class Analyzer {
 
             if (brokenInstances.isEmpty() == false) {
                 cloneApp = app.clone();
-
-                String toKillID = brokenInstances.get(0).getID();
                 try {
                     cloneApp.scaleIn(brokenInstances.get(0).getID());
                     if (this.deterministicIsWeaklyValidSequence(cloneApp, sequence) == true)
                         return true;
 
                 } catch (RuleNotApplicableException | InstanceUnknownException e) {
-                    this.fails.put(app.getName(), new AnalysisFailReport(toKillID, e));
                     return false;
                 }
                 cloneApp = app.clone(); // clone this to reset the clone well
@@ -766,7 +770,6 @@ public class Analyzer {
                             if (this.deterministicIsWeaklyValidSequence(cloneApp, sequence) == true)
                                 return true;
                         } catch (RuleNotApplicableException | InstanceUnknownException e) {
-                            fails.put(app.getName(), new AnalysisFailReport(e, f));
                             return false;
                         }
                     } else {
@@ -779,7 +782,6 @@ public class Analyzer {
                                 return true;
 
                         } catch (FailedFaultHandlingExecption | RuleNotApplicableException | InstanceUnknownException e) {
-                            fails.put(app.getName(), new AnalysisFailReport(e, f));
                             return false;
                         } 
                     }
@@ -978,7 +980,7 @@ public class Analyzer {
             } catch (FailedOperationException e) {
                 // keep going, this will be handled by the fault handler or leaved as it is
             } catch (Exception e) {
-                fails.put(app.getName(), new AnalysisFailReport(todo, e));
+                fails.put(app.getName(), new AnalysisReport(todo, e));
                 return false;
             }
             
@@ -1063,7 +1065,7 @@ public class Analyzer {
             } catch (FailedOperationException e) {
                 // keep going, this will be handled by the fault handler or leaved as it is
             } catch (Exception e) {
-                fails.put(app.getName(), new AnalysisFailReport(todo, e));
+                fails.put(app.getName(), new AnalysisReport(todo, e));
                 return false;
             }
 
@@ -1139,7 +1141,7 @@ public class Analyzer {
         } catch (FailedOperationException e) {
             // keep going, this will be handled by the fault handler or leaved as it is
         } catch (Exception e) {
-            fails.put(app.getName(), new AnalysisFailReport(todo, e));
+            fails.put(app.getName(), new AnalysisReport(todo, e));
             return false;
         }
 
@@ -1175,7 +1177,7 @@ public class Analyzer {
         } catch (FailedOperationException e) {
             // keep going, this will be handled by the fault handler or leaved as it is
         } catch (Exception e) {
-            fails.put(app.getName(), new AnalysisFailReport(todo, e));
+            fails.put(app.getName(), new AnalysisReport(todo, e));
             return false;
         }
 
@@ -1233,7 +1235,7 @@ public class Analyzer {
         } catch (FailedOperationException e) {
             // keep going, this will be handled by the fault handler or leaved as it is
         } catch (Exception e) {
-            fails.put(app.getName(), new AnalysisFailReport(todo, e));
+            fails.put(app.getName(), new AnalysisReport(todo, e));
             return false;
         }
         

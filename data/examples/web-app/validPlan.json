@@ -1,7 +1,7 @@
 {
     "planExecutableElements" : {
-        "scaleN1" : {"rule" : "scaleOut1", "nodeName" : "node", "idToAssign" : "n1"},
         "scaleN2" : {"rule" : "scaleOut1", "nodeName" : "node", "idToAssign" : "n2"},
+        "scaleN1" : {"rule" : "scaleOut1", "nodeName" : "node", "idToAssign" : "n1"},
         "scaleM1" : {"rule" : "scaleOut1", "nodeName" : "mongo", "idToAssign" : "m1"},
         "scaleB1" : {"rule" : "scaleOut2", "nodeName" : "backend", "idToAssign" : "b1", "containerID" : "n2"},
         "scaleF1" : {"rule" : "scaleOut2", "nodeName" : "frontend", "idToAssign" : "f1", "containerID" : "n1"},

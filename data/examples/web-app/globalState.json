@@ -46,13 +46,13 @@
     },
     "runtimeBindings" : {
         "frontendF1" : [
-            {"instanceID": "nodeN3", "req": {"name" : "host", "reqSort" : "CONTAINMENT"}}
+            {"requirement": {"name" : "host", "sort" : "CONTAINMENT"}, "targetInstanceID": "nodeN3"}
         ],
         "backendB1" : [
-            {"instanceID": "nodeN1", "req": {"name" : "host", "reqSort" : "CONTAINMENT"}}
+            {"requirement": {"name" : "host", "sort" : "CONTAINMENT"}, "targetInstanceID": "nodeN1"}
         ],
         "backendB2" : [
-            {"instanceID": "nodeN2", "req": {"name" : "host", "reqSort" : "CONTAINMENT"}}
+            {"requirement": {"name" : "host", "sort" : "CONTAINMENT"}, "targetInstanceID": "nodeN2"}
         ],
         "nodeN1" : [],
         "nodeN2" : [],

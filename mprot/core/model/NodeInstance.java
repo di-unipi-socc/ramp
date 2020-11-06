@@ -45,8 +45,8 @@ public class NodeInstance {
         if(id.isEmpty() == true)
             throw new IllegalArgumentException("id empty");
 
+        //TODO: future improvment: currentState != initialState and the core take the instance there
         this.currentState = currentState;
-        //TODO: come arrivo in questo stato? Ci saranno un set di op da fare (chain di transizioni ottimistiche)
         this.id = id;
         this.nodeType = node;
         this.nodeTypeName = this.nodeType.getName();

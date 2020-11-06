@@ -5,8 +5,8 @@
         {
             "name" : "frontend",
             "requirements" : {
-                "host" : {"name" : "host", "reqSort" : "CONTAINMENT"}, 
-                "conn" : {"name" : "conn", "reqSort" : "REPLICA_UNAWARE"}
+                "host" : {"name" : "host", "sort" : "CONTAINMENT"}, 
+                "conn" : {"name" : "conn", "sort" : "REPLICA_UNAWARE"}
             },
             "capabilities" : [],
             "operations" : [
@@ -116,8 +116,8 @@
         {
             "name" : "backend", 
             "requirements" : {
-                "host" : {"name" : "host", "reqSort" : "CONTAINMENT"},
-                "db" : {"name" : "db", "reqSort" : "REPLICA_AWARE"}
+                "host" : {"name" : "host", "sort" : "CONTAINMENT"},
+                "db" : {"name" : "db", "sort" : "REPLICA_AWARE"}
             },
             "capabilities" : ["conn"],
             "operations" : [

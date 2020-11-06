@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import mprot.core.analyzer.AnalysisFailReport;
+import mprot.core.analyzer.AnalysisReport;
 import mprot.core.analyzer.Analyzer;
 import mprot.core.analyzer.execptions.IllegalSequenceElementException;
 import mprot.core.analyzer.executable_element.ExecutableElement;
@@ -18,24 +18,7 @@ public class Main {
     public static void main(String[] args)
         throws IOException, NullPointerException, IllegalSequenceElementException, InstanceUnknownException {
         
-        Application app = Parser.parseApplication("C:\\Users\\Giulio\\UniPi\\Tesi_Triennale\\thesis\\data\\examples\\web-app\\app.json");
-        PlanWrapper plan = Parser.parsePlan("C:\\Users\\Giulio\\UniPi\\Tesi_Triennale\\thesis\\data\\examples\\web-app\\plan.json");
-
-        //PrintingUtilities.printExecutablePlan(plan);
-
-        Collection<ExecutableElement> planEECollection = plan.getPlanExecutableElements().values();
-        List<ExecutableElement> planEElist = new ArrayList<>(planEECollection);
-
-        AnalysisFailReport fail;
-
-        Analyzer analyzer = new Analyzer();
-        if(analyzer.isWeaklyValidPlan(app, planEElist, plan.getConstraints()) == true)
-            System.out.println("PIZZAAAAAAAAAAAAAA");
-        else{
-            fail = analyzer.getFailReports().get(app.getName());
-            System.out.println(fail.getFailException().getMessage());
-        }
-
+           
         return;
 
     }
@@ -182,7 +165,7 @@ public class Main {
 
     }
 
-    public  static void errorHandling(AnalysisFailReport failRep){
+    public  static void errorHandling(AnalysisReport failRep){
 
     }
 

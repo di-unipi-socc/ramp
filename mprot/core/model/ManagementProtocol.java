@@ -133,7 +133,7 @@ public class ManagementProtocol {
     }
 
 
-    //TODO se questa aggiungesse anche lo stato transizionale sarebbe comodo quando crei i nodi (vedere thesis factory)
+    //TODO would be nice if this somehow add the transitional state to the states of the node
     public void addTransition(String source, String op, String target){
         if(source == null)
             throw new NullPointerException("source null");

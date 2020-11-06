@@ -7,39 +7,39 @@ package mprot.core.model;
  * such as <r, unique id of n> in the global state (binding)
  */
 public class RuntimeBinding {
-    private final String instanceID;
-    private final Requirement req;
+    private final Requirement requirement;
+    private final String targetInstanceID;
 
     /**
-     * @param req requirement needed by some node instanceIDance 
-     * @param instanceID node instance that take care of req
+     * @param requirement requirement needed by some node instanceIDance 
+     * @param targetInstanceID node instance that take care of requirement
      * @throws NullPointerException
      */
-    public RuntimeBinding(Requirement req, String instanceID) {
+    public RuntimeBinding(Requirement requirement, String targetInstanceID) {
         
-        if(instanceID == null)
-            throw new NullPointerException("instanceID null");
-        if(instanceID.isEmpty() == true)
-            throw new IllegalArgumentException("instanceID empty");
-        if(req == null)
-            throw new NullPointerException("req null");
+        if(targetInstanceID == null)
+            throw new NullPointerException("targetInstanceID null");
+        if(targetInstanceID.isEmpty() == true)
+            throw new IllegalArgumentException("targetInstanceID empty");
+        if(requirement == null)
+            throw new NullPointerException("requirement null");
         
-        this.instanceID = instanceID;
-        this.req = req;
+        this.targetInstanceID = targetInstanceID;
+        this.requirement = requirement;
     }
 
     /**
      * @return node instanceIDance that take care of the requirement
      */
     public String getNodeInstanceID() {
-        return instanceID;
+        return targetInstanceID;
     }
 
     /**
      * @return requirement needed by some node instanceIDance
      */
     public Requirement getReq() {
-        return req;
+        return requirement;
     }
 
     @Override
@@ -49,7 +49,7 @@ public class RuntimeBinding {
         RuntimeBinding toCheck = (RuntimeBinding) f;
         boolean ret = false;
 
-        if(toCheck.getNodeInstanceID().equals(this.instanceID) && toCheck.getReq().equals(this.req))
+        if(toCheck.getNodeInstanceID().equals(this.targetInstanceID) && toCheck.getReq().equals(this.requirement))
             ret = true;
         
         return ret;
@@ -58,8 +58,8 @@ public class RuntimeBinding {
     @Override
     public int hashCode() {
         int result = 17;
-        result = 31 * result + this.instanceID.hashCode();
-        result = 31 * result + this.req.hashCode();
+        result = 31 * result + this.targetInstanceID.hashCode();
+        result = 31 * result + this.requirement.hashCode();
         return result;
     }
 }

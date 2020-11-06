@@ -1,17 +1,23 @@
 package mprot.core.test.unitTest.parsingTest;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import org.junit.Test;
-
+import mprot.core.analyzer.Analyzer;
 import mprot.core.analyzer.execptions.IllegalSequenceElementException;
+import mprot.core.analyzer.executable_element.ExecutableElement;
 import mprot.core.model.*;
 import mprot.core.model.exceptions.*;
 import mprot.core.test.utilities.ThesisAppFactory;
 
 import mprot.cli.parsing.*;
+import mprot.cli.parsing.wrappers.PlanWrapper;
 
 public class ParserTest {
 
@@ -43,6 +49,29 @@ public class ParserTest {
         assertTrue(parsedAppWithGS.equals(factoryApp));
     }
 
-    //TODO: test del plan parsing
+    @Test
+    public void planParsingTest()
+            throws NullPointerException, IllegalSequenceElementException, InstanceUnknownException, IOException {
+        Application app = Parser.parseApplication("C:\\Users\\Giulio\\UniPi\\Tesi_Triennale\\thesis\\data\\examples\\web-app\\app.json");
+        PlanWrapper validPlan = Parser.parsePlan("C:\\Users\\Giulio\\UniPi\\Tesi_Triennale\\thesis\\data\\examples\\web-app\\validPlan.json");
 
+        PlanWrapper weaklyValidPlan = Parser.parsePlan("C:\\Users\\Giulio\\UniPi\\Tesi_Triennale\\thesis\\data\\examples\\web-app\\weaklyValidPlan.json");
+
+        //PrintingUtilities.printExecutablePlan(plan);
+
+        Collection<ExecutableElement> planEECollection = validPlan.getPlanExecutableElements().values();
+        List<ExecutableElement> planEElist = new ArrayList<>(planEECollection);
+
+
+        Collection<ExecutableElement> weaklyValidPlanEECollection = weaklyValidPlan.getPlanExecutableElements().values();
+        List<ExecutableElement> weaklyValidPlanEElist = new ArrayList<>(weaklyValidPlanEECollection);
+
+        Analyzer analyzer = new Analyzer();
+        //a valid plan is always immediatly weakly valid
+        assertTrue(analyzer.isWeaklyValidPlan(app, planEElist, validPlan.getConstraints()));
+
+        //a weakly valid plan is always (usally pretty fast) a not totally valid plan
+        assertFalse(analyzer.isValidPlan(app, weaklyValidPlanEElist, weaklyValidPlan.getConstraints()));
+
+    }
 }
