@@ -964,7 +964,6 @@ public class Analyzer {
             IllegalSequenceElementException 
     {
         if(op instanceof OpStart){
-
             OpStart todo = (OpStart) op;
             NodeInstance instance = app.getGlobalState().getNodeInstanceByID(todo.getInstanceID());
     
@@ -997,7 +996,6 @@ public class Analyzer {
                 if (neededReqsAfterOp.contains(req))
                     neededReqsBeforeAndAfter.add(req);
             }
-    
             //we analyze the possible combination of the new runtime bindings (the runtime binding that was already on)
             //before the operation are not altered
 

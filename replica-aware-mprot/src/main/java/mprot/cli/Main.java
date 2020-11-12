@@ -9,7 +9,6 @@ import mprot.core.analyzer.AnalysisReport;
 import mprot.core.analyzer.Analyzer;
 import mprot.core.analyzer.execptions.IllegalSequenceElementException;
 import mprot.core.analyzer.executable_element.ExecutableElement;
-
 import mprot.core.model.Application;
 import mprot.core.model.exceptions.AlreadyUsedIDException;
 import mprot.core.model.exceptions.FailedOperationException;
@@ -20,15 +19,18 @@ import mprot.cli.parsing.Parser;
 import mprot.cli.parsing.wrappers.PlanWrapper;
 
 public class Main {
-    public static void main(String[] args) throws IOException, NullPointerException, IllegalSequenceElementException,
-            IllegalArgumentException, FailedOperationException, RuleNotApplicableException, InstanceUnknownException,
-            OperationNotAvailableException, AlreadyUsedIDException {
-
-        if (args.length < 3 || args.length > 5) {
-            // System.out.println(args.length + "");
-            help();
-            return;
-        }
+    public static void main(String[] args) 
+        throws 
+            IOException, 
+            NullPointerException, 
+            IllegalSequenceElementException,
+            IllegalArgumentException, 
+            FailedOperationException, 
+            RuleNotApplicableException, 
+            InstanceUnknownException,
+            OperationNotAvailableException,
+            AlreadyUsedIDException 
+    {
 
         Application app = null;
         PlanWrapper plan = null;
@@ -247,8 +249,4 @@ public class Main {
         System.out.print("\n");
         System.out.println("message error: " + failRep.getFailException().getMessage());
     }
-
-
-    
-
 }
