@@ -4,9 +4,15 @@ public class ScaleIn extends ExecutableElement {
     
     private final String instanceID;
 
-    public ScaleIn(String id){
+    public ScaleIn(String instanceID){
+
+        if(instanceID == null)
+            throw new NullPointerException("instanceID null");
+        if(instanceID.isEmpty() == true)
+            throw new IllegalArgumentException("instanceID empty");
+
         this.rule = "scaleIn";
-        this.instanceID = id;
+        this.instanceID = instanceID;
     }   
 
     public String getInstanceID(){

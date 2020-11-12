@@ -1,6 +1,6 @@
 {
     "name" : "testApp",
-    "piVersion" : "GREEDYPI",
+    "piVersion" : "RANDOMPI",
     "nodes" : [
         {
             "name" : "frontend",

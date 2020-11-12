@@ -16,7 +16,7 @@ public class Analyzer {
     //app's name -> fail report
     private Map<String, AnalysisReport> fails;
 
-    public Map<String, AnalysisReport> getFailReports() {
+    public Map<String, AnalysisReport> getAnalysisReport() {
         return this.fails;
     }
 
@@ -286,15 +286,14 @@ public class Analyzer {
         List<ExecutableElement> backupSequence = this.cloneList(sequence);
 
         if (app.isPiDeterministic() == true){
-            if(this.deterministicIsValidSequence(app, this.cloneList(sequence)) == false){
+            if(this.deterministicIsValidSequence(app.clone(), this.cloneList(sequence)) == false){
                 AnalysisReport fail = fails.get(app.getName());
                 fail.setSequence(backupSequence);
                 return false;
             }
-
         }
         else{
-            if(this.nonDeterministicIsValidSequence(app, this.cloneList(sequence)) == false){
+            if(this.nonDeterministicIsValidSequence(app.clone(), this.cloneList(sequence)) == false){
                 AnalysisReport fail = fails.get(app.getName());
                 fail.setSequence(backupSequence);
                 return false;
@@ -458,7 +457,7 @@ public class Analyzer {
                     if (this.nonDeterministicIsValidSequence(cloneApp, sequence) == false)
                         return false;
     
-                } catch (RuleNotApplicableException | InstanceUnknownException e) {
+                } catch (Exception e) {
                     //the scaleIn failed, store the reason and return false
                     return false;
                 }
@@ -484,7 +483,7 @@ public class Analyzer {
                             if (this.nonDeterministicIsValidSequence(cloneApp, sequence) == false)
                                 return false;
 
-                        } catch (RuleNotApplicableException | InstanceUnknownException e) {
+                        } catch (Exception e) {
                             return false;
                         }
                     } else {
@@ -495,7 +494,7 @@ public class Analyzer {
                             if (this.nonDeterministicIsValidSequence(cloneApp, sequence) == false)
                                 return false;
     
-                        } catch (FailedFaultHandlingExecption | RuleNotApplicableException | InstanceUnknownException e) {
+                        } catch (Exception e) {
                             return false;
                         } 
                     }
@@ -511,7 +510,6 @@ public class Analyzer {
             Application cloneApp = app.clone();;
 
             if (brokenInstances.isEmpty() == false) {
-                cloneApp = app.clone();
                 try {
                     cloneApp.scaleIn(brokenInstances.get(0).getID());
                     if (this.deterministicIsValidSequence(cloneApp, sequence) == false)
@@ -527,6 +525,7 @@ public class Analyzer {
                 return false;
 
             if (pendingFaults.isEmpty() == false) {
+
                 // for each fault check if it is pending or resolvable
                 for (Fault f : pendingFaults) {
                     cloneApp = app.clone();
@@ -537,7 +536,7 @@ public class Analyzer {
                             // if the fault is resolved keep exploring the branch
                             if (this.deterministicIsValidSequence(cloneApp, sequence) == false)
                                 return false;
-                        } catch (RuleNotApplicableException | InstanceUnknownException e) {
+                        } catch (Exception e) {
                             return false;
                         }
                     } else {
@@ -547,7 +546,7 @@ public class Analyzer {
                             if (this.deterministicIsValidSequence(cloneApp, sequence) == false)
                                 return false;
 
-                        } catch (FailedFaultHandlingExecption | RuleNotApplicableException | InstanceUnknownException e) {
+                        } catch (Exception e) {
                             return false;
                         } 
                     }
@@ -576,11 +575,11 @@ public class Analyzer {
         List<ExecutableElement> backupSequence = this.cloneList(sequence);
 
         if (app.isPiDeterministic() == true){
-            if(this.deterministicIsWeaklyValidSequence(app, this.cloneList(sequence)) == true)
+            if(this.deterministicIsWeaklyValidSequence(app.clone(), this.cloneList(sequence)) == true)
                 return true;
 
         } else{
-            if(this.nonDeterministicIsWeaklyValidSeq(app, this.cloneList(sequence)) == true)
+            if(this.nonDeterministicIsWeaklyValidSeq(app.clone(), this.cloneList(sequence)) == true)
                 return true;
         }
 
@@ -702,7 +701,7 @@ public class Analyzer {
                     if (this.nonDeterministicIsWeaklyValidSeq(cloneApp, sequence) == true)
                         return true;
     
-                } catch (RuleNotApplicableException | InstanceUnknownException e) {
+                } catch (Exception e) {
                     return false;
                 }
                 cloneApp = app.clone(); 
@@ -720,7 +719,7 @@ public class Analyzer {
                             cloneApp.autoreconnect(f.getInstanceID(), f.getReq());
                             if (this.nonDeterministicIsWeaklyValidSeq(cloneApp, sequence) == true)
                                 return true;
-                        } catch (RuleNotApplicableException | InstanceUnknownException e) {
+                        } catch (Exception e) {
                             return false;
                         }
                     } else {
@@ -729,13 +728,12 @@ public class Analyzer {
                             if (this.nonDeterministicIsWeaklyValidSeq(cloneApp, sequence) == true)
                                 return true;
     
-                        } catch (FailedFaultHandlingExecption | RuleNotApplicableException | InstanceUnknownException e) {
+                        } catch (Exception e) {
                             return false;
                         } 
                     }
                 }
             }
-            return false;
         }else{
             ArrayList<Fault> pendingFaults = (ArrayList<Fault>) app.getGlobalState().getPendingFaults();
             ArrayList<NodeInstance> brokenInstances = (ArrayList<NodeInstance>) app.getGlobalState().getBrokeninstances();
@@ -743,7 +741,6 @@ public class Analyzer {
             Application cloneApp = app.clone();;
 
             if (brokenInstances.isEmpty() == false) {
-                cloneApp = app.clone();
                 try {
                     cloneApp.scaleIn(brokenInstances.get(0).getID());
                     if (this.deterministicIsWeaklyValidSequence(cloneApp, sequence) == true)
@@ -776,7 +773,6 @@ public class Analyzer {
 
                         try {
                             cloneApp.fault(f.getInstanceID(), f.getReq());
-
                             // if the fault is resolved keep exploring the branch
                             if (this.deterministicIsWeaklyValidSequence(cloneApp, sequence) == true)
                                 return true;
@@ -787,8 +783,8 @@ public class Analyzer {
                     }
                 }
             }
-            return false;
         }
+        return false;
     }
 
     /**
@@ -833,7 +829,6 @@ public class Analyzer {
         
         //e1 -> [e2, e3, ...]: match e1 with the executable elements that must be executed after e1
         Map<ExecutableElement, List<ExecutableElement>> constraintsMap = this.buildConstraintMap(planExecutableElements, constraints);
-        
         return this.planValidity(app, false, this.cloneList(planExecutableElements), constraintsMap);
     }
 
@@ -971,7 +966,7 @@ public class Analyzer {
         if(op instanceof OpStart){
 
             OpStart todo = (OpStart) op;
-            NodeInstance instance = app.getGlobalState().getNodeInstanceByID(todo.getInstnaceID());
+            NodeInstance instance = app.getGlobalState().getNodeInstanceByID(todo.getInstanceID());
     
             //requirements needed by instance before doing the op
             List<Requirement> neededReqsBeforeOp = instance.getNeededReqs();
@@ -1003,7 +998,6 @@ public class Analyzer {
                     neededReqsBeforeAndAfter.add(req);
             }
     
-
             //we analyze the possible combination of the new runtime bindings (the runtime binding that was already on)
             //before the operation are not altered
 
@@ -1021,7 +1015,7 @@ public class Analyzer {
                 }
             }
             
-            List<List<RuntimeBinding>> combinations = this.createRunBindingCombs(app, todo.getInstnaceID());
+            List<List<RuntimeBinding>> combinations = this.createRunBindingCombs(app, todo.getInstanceID());
 
             if(combinations.isEmpty() == true){
                 if(weaklyValid == true)

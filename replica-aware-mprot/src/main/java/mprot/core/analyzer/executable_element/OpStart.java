@@ -38,7 +38,7 @@ public class OpStart extends ExecutableElement{
         return ret;
     }
 
-    public String getInstnaceID() {
+    public String getInstanceID() {
         return this.instanceID;
     }
 

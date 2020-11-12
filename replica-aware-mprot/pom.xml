@@ -30,6 +30,15 @@
       <artifactId>gson</artifactId>
       <version>2.8.5</version>
     </dependency>
+
+    <!-- for the subtype parsing -->
+    <!-- https://mvnrepository.com/artifact/org.danilopianini/gson-extras -->
+    <dependency>
+      <groupId>org.danilopianini</groupId>
+      <artifactId>gson-extras</artifactId>
+      <version>0.2.2</version>
+    </dependency>
+
   </dependencies>
 
   <build>
@@ -46,16 +55,21 @@
           <version>3.0.2</version>
         </plugin>
         <plugin>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.8.0</version>
-        </plugin>
-        <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>2.22.1</version>
         </plugin>
         <plugin>
           <artifactId>maven-jar-plugin</artifactId>
           <version>3.0.2</version>
+          <configuration>
+            <archive>
+              <manifest>
+                <addClasspath>true</addClasspath>
+                <mainClass>mprot.cli.Main</mainClass>
+              </manifest>
+            </archive>
+          </configuration>
+
         </plugin>
         <plugin>
           <artifactId>maven-install-plugin</artifactId>

@@ -71,8 +71,8 @@ public class GlobalState {
 
         for (RuntimeBinding runBinding : instanceRunBindings) {
 
-            StaticBinding reqStaticBinding = new StaticBinding(instanceType.getName(), runBinding.getReq().getName());
-            StaticBinding capStaticBinding = this.app.getBindingFunction().get(reqStaticBinding);
+            BindingPair reqStaticBinding = new BindingPair(instanceType.getName(), runBinding.getReq().getName());
+            BindingPair capStaticBinding = this.app.getBindingFunction().get(reqStaticBinding);
 
             if (capStaticBinding != null) {
                 // the serving instance that is currently helding the runtime binding with instance
@@ -132,8 +132,8 @@ public class GlobalState {
 
         List<NodeInstance> capableInstances = new ArrayList<>();
 
-        StaticBinding reqStaticBinding = new StaticBinding(askingInstance.getNodeType().getName(), req.getName());
-        StaticBinding capStaticBinding = this.app.getBindingFunction().get(reqStaticBinding);
+        BindingPair reqStaticBinding = new BindingPair(askingInstance.getNodeType().getName(), req.getName());
+        BindingPair capStaticBinding = this.app.getBindingFunction().get(reqStaticBinding);
 
         if (capStaticBinding != null) {
             Collection<NodeInstance> activeInstancesCollection = this.activeNodeInstances.values();
@@ -170,7 +170,11 @@ public class GlobalState {
         for (Requirement neededReq : instance.getNeededReqs()) {
 
             if (neededReq.isContainment() == false && this.getSatisfiedReqs(instanceID).contains(neededReq) == false) {
-                NodeInstance capableInstance = this.app.greedyPI(instanceID, neededReq);
+                NodeInstance capableInstance = null; 
+                if(this.app.isPiDeterministic() == true)
+                    capableInstance = this.app.greedyPI(instanceID, neededReq);
+                else
+                    capableInstance = this.app.randomPI(instanceID, neededReq);
                 if(capableInstance != null)
                     this.addBinding(instanceID, neededReq, capableInstance.getID());  
             }          
@@ -364,12 +368,12 @@ public class GlobalState {
          *  - if there are no binding we have a broken instance
          */
 
-        ArrayList<RuntimeBinding> instanceRuntimeBindings = (ArrayList<RuntimeBinding>) this.runtimeBindings.get(instanceID);
+        List<RuntimeBinding> instanceRuntimeBindings = this.runtimeBindings.get(instanceID);
         int check = 0;
         
-        ArrayList<Requirement> instanceReqs = (ArrayList<Requirement>) instance.getNeededReqs();
+        List<Requirement> neededReqs = instance.getNeededReqs();
 
-        for (Requirement req : instanceReqs) {
+        for (Requirement req : neededReqs) {
             if(req.isContainment() == true){
                 
                 //there is no binding, hence there is not a containment binding, hence broken instance
@@ -456,8 +460,8 @@ public class GlobalState {
         Node faultedNodeInstanceType = faultedInstance.getNodeType();
         Requirement faultedReq = fault.getReq();
 
-        StaticBinding reqStaticBinding = new StaticBinding(faultedNodeInstanceType.getName(), faultedReq.getName());
-        StaticBinding capStaticBinding =  this.app.getBindingFunction().get(reqStaticBinding);
+        BindingPair reqStaticBinding = new BindingPair(faultedNodeInstanceType.getName(), faultedReq.getName());
+        BindingPair capStaticBinding =  this.app.getBindingFunction().get(reqStaticBinding);
 
         //a fault can be resolvable only if it is replica unware
         if(faultedReq.isReplicaUnaware() == true){

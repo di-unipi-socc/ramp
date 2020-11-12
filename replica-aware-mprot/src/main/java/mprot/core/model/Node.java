@@ -6,7 +6,7 @@ import java.util.ArrayList;
 public class Node {
 
     private final String name;
-    private final ManagementProtocol mp;
+    private final ManagementProtocol manProtocol;
 
     private final String initialState;
     // all the requirements asked by the node, no matter in what state it is
@@ -61,14 +61,14 @@ public class Node {
 
         this.name = name;
         this.caps = caps;
-        this.mp = manProtocol;
+        this.manProtocol = manProtocol;
         this.ops = ops;
         this.reqs = reqs;
         this.states = states;
         this.initialState = initialState;
     }
 
-    public Node(String name, String initialState, ManagementProtocol mp)
+    public Node(String name, String initialState, ManagementProtocol manProtocol)
         throws 
             NullPointerException, 
             IllegalArgumentException
@@ -85,7 +85,7 @@ public class Node {
         
         this.name = name;
         this.initialState = initialState;
-        this.mp = mp;
+        this.manProtocol = manProtocol;
         this.caps = new ArrayList<>();
         this.reqs = new ArrayList<>();
         this.ops = new ArrayList<>();
@@ -131,7 +131,7 @@ public class Node {
      * @return management protocol of Node
      */
     public ManagementProtocol getManagementProtocol() {
-        return mp;
+        return manProtocol;
     }
 
     /**
@@ -205,7 +205,7 @@ public class Node {
         if(this.reqs.equals(toCheck.getReqs()) == false)
             ret = false;
 
-        if(this.mp.equals(toCheck.getManagementProtocol()) == false)
+        if(this.manProtocol.equals(toCheck.getManagementProtocol()) == false)
             ret = false;
         
         return ret;
@@ -219,7 +219,7 @@ public class Node {
         result = 31 * result + this.ops.hashCode();
         result = 31 * result + this.caps.hashCode();
         result = 31 * result + this.reqs.hashCode();
-        result = 31 * result + this.mp.hashCode();
+        result = 31 * result + this.manProtocol.hashCode();
 
         return result;
     }

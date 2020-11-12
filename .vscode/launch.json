@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "CodeLens (Launch) - Main",
+            "request": "launch",
+            "mainClass": "mprot.cli.Main",
+            "projectName": "replica-aware-mprot"
+        },
+        {
+            "type": "java",
             "name": "CodeLens (Launch) - CLI",
             "request": "launch",
             "mainClass": "mprot.cli.CLI",

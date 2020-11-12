@@ -12,6 +12,7 @@ import java.util.Map;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.typeadapters.RuntimeTypeAdapterFactory;
 
 import mprot.core.analyzer.Constraint;
 import mprot.core.analyzer.executable_element.*;
@@ -151,10 +152,10 @@ public class Parser {
             parsedApplication.addNode(parsedNode);
         }
 
-        Map<StaticBinding, StaticBinding> bindingFunction = new HashMap<>();
+        Map<BindingPair, BindingPair> bindingFunction = new HashMap<>();
         for(StaticBindingWrapper wrappedBinding : wrappedApp.getBindings()){
-            StaticBinding key = new StaticBinding(wrappedBinding.getSourceNode(), wrappedBinding.getSourceRequirement());
-            StaticBinding value = new StaticBinding(wrappedBinding.getTargetNode(), wrappedBinding.getTargetCapability());
+            BindingPair key = new BindingPair(wrappedBinding.getSourceNode(), wrappedBinding.getSourceRequirement());
+            BindingPair value = new BindingPair(wrappedBinding.getTargetNode(), wrappedBinding.getTargetCapability());
             bindingFunction.put(key, value);
         }
         parsedApplication.setBindingFunction(bindingFunction);
@@ -181,9 +182,10 @@ public class Parser {
             RuntimeTypeAdapterFactory.of(ExecutableElement.class, "rule")
                 .registerSubtype(ScaleOut1.class, "scaleOut1")
                 .registerSubtype(ScaleOut2.class, "scaleOut2")
-                .registerSubtype(ScaleIn.class, "scaleIn")
                 .registerSubtype(OpStart.class, "opStart")
-                .registerSubtype(OpEnd.class, "opEnd");
+                .registerSubtype(OpEnd.class, "opEnd")
+                .registerSubtype(ScaleIn.class, "scaleIn");
+
 
         Gson gson = new GsonBuilder().registerTypeAdapterFactory(runtimeTAFactory).create();
         Reader planReader = Files.newBufferedReader(Paths.get(planFilePath));
@@ -193,7 +195,6 @@ public class Parser {
         //so we call the abstract method setRule that fix that
         for(ExecutableElement element : plan.getPlanExecutableElements().values())
             element.setRule();
-
 
         Map<String, ExecutableElement> planElementsMap = plan.getPlanExecutableElements();
         List<Constraint> constraints = new ArrayList<>();

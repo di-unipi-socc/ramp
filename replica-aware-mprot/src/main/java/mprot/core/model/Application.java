@@ -12,12 +12,6 @@ import mprot.core.model.exceptions.*;
 //represents the whole application
 public class Application {
 
-    //allStaticBindings is just for parsing purposes (see parser)
-    private List<StaticBinding> allStaticBindins;
-    public List<StaticBinding> getAllStaticBindings(){
-        return this.allStaticBindins;
-    }
-
     // name of the application
     private String name;
     // set T: all the application's component: node's name -> node
@@ -29,7 +23,7 @@ public class Application {
     // b in the cameriero's thesis. this represent a static binding such as
     // <name of static node n, name of the requirement r of n> -> <name of static
     // node n1 that satify r, capability that satisfy r>
-    private Map<StaticBinding, StaticBinding> bindingFunction;
+    private Map<BindingPair, BindingPair> bindingFunction;
 
     /**
      * @param name application's name
@@ -52,7 +46,6 @@ public class Application {
         this.globalState = new GlobalState(this);
         this.bindingFunction = new HashMap<>();
         this.piVersion = piVersion;
-        this.allStaticBindins = null;
         this.piControlSwitch();
     }
 
@@ -64,11 +57,11 @@ public class Application {
         return deterministicPi;
     }
 
-    public Map<StaticBinding, StaticBinding> getBindingFunction() {
+    public Map<BindingPair, BindingPair> getBindingFunction() {
         return this.bindingFunction;
     }
 
-    public void setBindingFunction(Map<StaticBinding, StaticBinding> bf) 
+    public void setBindingFunction(Map<BindingPair, BindingPair> bf) 
         throws 
             NullPointerException
     {
@@ -83,7 +76,7 @@ public class Application {
      * @throws NullPointerException
      * @throws IllegalArgumentException
      */
-    public Application(String name, PiVersion piVersion, Map<String, Node> nodes, Map<StaticBinding, StaticBinding> bf)
+    public Application(String name, PiVersion piVersion, Map<String, Node> nodes, Map<BindingPair, BindingPair> bf)
         throws 
             NullPointerException, 
             IllegalArgumentException
@@ -173,15 +166,13 @@ public class Application {
         if(req == null)
             throw new NullPointerException("req null");
         
-        try {
-            this.globalState.checkNodeInstanceExistance(instanceID);
-        } catch (IllegalArgumentException | NullPointerException | InstanceUnknownException e) {
-            throw e; 
-        }
-        
-        ArrayList<NodeInstance> capableInstances = (ArrayList<NodeInstance>) this.globalState.getCapableInstances(instanceID, req);
-        NodeInstance servingInstance = capableInstances.get(this.randomIndex(0, capableInstances.size() - 1));
-        
+        this.globalState.checkNodeInstanceExistance(instanceID);
+        NodeInstance servingInstance = null;
+        List<NodeInstance> capableInstances = this.globalState.getCapableInstances(instanceID, req);
+
+        if(capableInstances.isEmpty() == false)
+            servingInstance = capableInstances.get(this.randomIndex(0, capableInstances.size() - 1));
+
         return servingInstance;
     }
 
@@ -200,24 +191,24 @@ public class Application {
             throw new NullPointerException("req null");
         
         NodeInstance instance = this.globalState.getNodeInstanceByID(instanceID);
-        NodeInstance servingInstance = null;
+        NodeInstance servingInstance = null;    
 
         Collection<NodeInstance> activeInstancesCollection =  this.globalState.activeNodeInstances.values();
         ArrayList<NodeInstance> activeInstances = new ArrayList<>(activeInstancesCollection);
         
         //<nodeAsking, req> -> <nodeServing, cap> at a static level, between nodes
-        StaticBinding reqStaticBinding = new StaticBinding(instance.getNodeType().getName(), req.getName());
-        StaticBinding capStaticBinding = this.bindingFunction.get(reqStaticBinding); 
+        BindingPair reqBindingPair = new BindingPair(instance.getNodeType().getName(), req.getName());
+        BindingPair capBindingPair = this.bindingFunction.get(reqBindingPair); 
 
         //if capStaticBinding is null means that nodeAsking's req can't be handled by any node
-        if(capStaticBinding != null){
+        if(capBindingPair != null){
             for(NodeInstance activeIns : activeInstances){
 
                 //instance is the right type of Node?
-                boolean instanceRightType = activeIns.getNodeType().getName().equals(capStaticBinding.getNodeName());
+                boolean instanceRightType = activeIns.getNodeType().getName().equals(capBindingPair.getNodeName());
                 
                 //instance is currently offering the right cap of instance?
-                boolean instanceOfferingRightCap = activeIns.getOfferedCaps().contains(capStaticBinding.getCapOrReq());
+                boolean instanceOfferingRightCap = activeIns.getOfferedCaps().contains(capBindingPair.getCapOrReq());
 
                 if(instanceRightType == true && instanceOfferingRightCap == true){
                     servingInstance = activeIns;
@@ -287,7 +278,7 @@ public class Application {
 
         NodeInstance instance = this.globalState.getNodeInstanceByID(instanceID);
 
-        ArrayList<Fault> pendingFaults = (ArrayList<Fault>) this.globalState.getPendingFaults(instanceID);
+        List<Fault> pendingFaults = this.globalState.getPendingFaults(instanceID);
 
         if(pendingFaults.isEmpty() == false)
             throw new FailedOperationException("pending faults to be handled");
@@ -343,8 +334,7 @@ public class Application {
             throw new RuleNotApplicableException("the fault is resolvable");
     
         //phi: failed state -> states to go
-        ArrayList<String> phiStates = 
-            (ArrayList<String>) instance.getNodeType().getManagementProtocol().getPhi().get(instance.getCurrentState());
+        List<String> phiStates = instance.getNodeType().getManagementProtocol().getPhi().get(instance.getCurrentState());
 
         //for each state in phiStates check if req is needed in that state
         for(String state : phiStates){
@@ -440,12 +430,12 @@ public class Application {
         if(node == null)
             throw new RuleNotApplicableException("node unknown");
         
-        ArrayList<Requirement> nodeRequirements = (ArrayList<Requirement>) node.getReqs();
+        List<Requirement> nodeRequirements = node.getReqs();
 
         //scaleOut1 not handle the containement requirements 
         for(Requirement req : nodeRequirements){
             if(req.isContainment() == true)
-                throw new RuleNotApplicableException();
+                throw new RuleNotApplicableException("containment requirment on a scaleOut1");
         }
 
         NodeInstance newNodeInstance = this.createNewNodeInstance(node, instanceID);
@@ -490,9 +480,7 @@ public class Application {
         if(node == null)
             throw new RuleNotApplicableException("node unknown");
 
-        NodeInstance container = this.globalState.getNodeInstanceByID(containerID);
-        
-        ArrayList<Requirement> nodeRequirements = (ArrayList<Requirement>) node.getReqs();
+        List<Requirement> nodeRequirements = node.getReqs();
 
         Requirement containmentRequirement = null;
         for(Requirement req : nodeRequirements){
@@ -500,12 +488,14 @@ public class Application {
                 containmentRequirement = req;
         }
 
+        NodeInstance container = this.globalState.getNodeInstanceByID(containerID);
+
         if(containmentRequirement == null)
             throw new RuleNotApplicableException("no containement requirement");
 
         //<nodeAsking, req> -> <nodeServing, cap> at a static level, between nodes
-        StaticBinding reqStaticBinding = new StaticBinding(node.getName(), containmentRequirement.getName());
-        StaticBinding capStaticBinding = this.bindingFunction.get(reqStaticBinding);
+        BindingPair reqStaticBinding = new BindingPair(node.getName(), containmentRequirement.getName());
+        BindingPair capStaticBinding = this.bindingFunction.get(reqStaticBinding);
         
         NodeInstance newNodeInstance = null;
 
@@ -565,7 +555,7 @@ public class Application {
             NullPointerException, 
             InstanceUnknownException 
     {
-        ArrayList<NodeInstance> brokenInstances = (ArrayList<NodeInstance>) this.globalState.getBrokeninstances();
+        List<NodeInstance> brokenInstances = this.globalState.getBrokeninstances();
         
         if(brokenInstances.isEmpty() == false)
             this.scaleIn(brokenInstances.get(0).getID());     
@@ -600,7 +590,7 @@ public class Application {
         this.nodes.put(node.getName(), node);
     }
 
-    public void addStaticBinding(StaticBinding source, StaticBinding target){
+    public void addStaticBinding(BindingPair source, BindingPair target){
         if(source == null)
             throw new NullPointerException("source null");
 
@@ -617,7 +607,7 @@ public class Application {
         Application clone = new Application(this.name, this.piVersion);
 
         Collection<Node> appNodesCollection =  this.nodes.values();
-        ArrayList<Node> appNodes = new ArrayList<>(appNodesCollection);
+        List<Node> appNodes = new ArrayList<>(appNodesCollection);
 
         //cloning all nodes
         for (Node n : appNodes) {
@@ -688,8 +678,8 @@ public class Application {
         }
 
         //cloning activeInstancses
-        HashMap<String, NodeInstance> appActiveInstances = (HashMap<String, NodeInstance>) this.globalState.getActiveNodeInstances();
-        HashMap<String, NodeInstance> cloneActiveInstances = (HashMap<String, NodeInstance>) clone.getGlobalState().getActiveNodeInstances();
+        Map<String, NodeInstance> appActiveInstances = this.globalState.getActiveNodeInstances();
+        Map<String, NodeInstance> cloneActiveInstances = clone.getGlobalState().getActiveNodeInstances();
         for(NodeInstance instance : appActiveInstances.values()){
             cloneActiveInstances.put(
                 new String(instance.getID()), 
@@ -698,11 +688,11 @@ public class Application {
         }
 
         //cloning runtime bindings
-        HashMap<String, List<RuntimeBinding>> appRuntimeBindings = (HashMap<String, List<RuntimeBinding>>) this.globalState.getRuntimeBindings();
-        HashMap<String, List<RuntimeBinding>> cloneRuntimeBindings = (HashMap<String, List<RuntimeBinding>>) clone.getGlobalState().getRuntimeBindings();
+        Map<String, List<RuntimeBinding>> appRuntimeBindings = this.globalState.getRuntimeBindings();
+        Map<String, List<RuntimeBinding>> cloneRuntimeBindings = clone.getGlobalState().getRuntimeBindings();
 
         for(String key : appRuntimeBindings.keySet()){
-            ArrayList<RuntimeBinding> appBindings = (ArrayList<RuntimeBinding>) appRuntimeBindings.get(key);
+            List<RuntimeBinding> appBindings = appRuntimeBindings.get(key);
             
             List<RuntimeBinding> clonedBindings = new ArrayList<>();
 
@@ -713,14 +703,14 @@ public class Application {
         }
 
         //cloning static binding
-        HashMap<StaticBinding, StaticBinding> appBindingFunction = (HashMap<StaticBinding, StaticBinding>) this.bindingFunction;
-        HashMap<StaticBinding, StaticBinding> cloneBindingFunction = (HashMap<StaticBinding, StaticBinding>) clone.getBindingFunction();
+        Map<BindingPair, BindingPair> appBindingFunction = this.bindingFunction;
+        Map<BindingPair, BindingPair> cloneBindingFunction = clone.getBindingFunction();
 
-        for(StaticBinding firstHalf : appBindingFunction.keySet()){
-            StaticBinding secondHalf = appBindingFunction.get(firstHalf);
+        for(BindingPair firstHalf : appBindingFunction.keySet()){
+            BindingPair secondHalf = appBindingFunction.get(firstHalf);
 
-            StaticBinding firstHalfCopy = new StaticBinding(new String(firstHalf.getNodeName()), new String(firstHalf.getCapOrReq()));
-            StaticBinding secondHalfCopy = new StaticBinding(new String(secondHalf.getNodeName()), new String(secondHalf.getCapOrReq()));
+            BindingPair firstHalfCopy = new BindingPair(new String(firstHalf.getNodeName()), new String(firstHalf.getCapOrReq()));
+            BindingPair secondHalfCopy = new BindingPair(new String(secondHalf.getNodeName()), new String(secondHalf.getCapOrReq()));
             
             cloneBindingFunction.put(firstHalfCopy, secondHalfCopy);
         }
@@ -741,7 +731,7 @@ public class Application {
         switch (element.getRule()) {
             case "opStart":
                 OpStart el = (OpStart) element;
-                this.opStart(el.getInstnaceID(), el.getOp());
+                this.opStart(el.getInstanceID(), el.getOp());
                 break;
             case "opEnd":
                 OpEnd el1 = (OpEnd) element;
