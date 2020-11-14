@@ -244,7 +244,7 @@ public class Application {
 
         //if op it's not bound to any transition it means that op is not available
         if(transitionToHappen == null)
-            throw new OperationNotAvailableException();
+            throw new OperationNotAvailableException("operation not available");
         
         //instance goes in a new transient state
         instance.setCurrentState(transitionToHappen.getName());
@@ -277,7 +277,6 @@ public class Application {
             throw new IllegalArgumentException("op empty");
 
         NodeInstance instance = this.globalState.getNodeInstanceByID(instanceID);
-
         List<Fault> pendingFaults = this.globalState.getPendingFaults(instanceID);
 
         if(pendingFaults.isEmpty() == false)

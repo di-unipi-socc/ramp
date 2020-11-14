@@ -1,5 +1,6 @@
 package mprot.unitTest.applicationTest;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ public class GreedyPITest {
     public Node nodeB;
     public NodeInstance instanceOfA;
     public NodeInstance instanceOfB;
+    private NodeInstance instanceOfB1;
     public Requirement testReq;
 
     /**
@@ -57,6 +59,7 @@ public class GreedyPITest {
 
         this.instanceOfA = this.testApp.scaleOut1("nodeA", "instanceOfA");
         this.instanceOfB = this.testApp.scaleOut1("nodeB", "instanceOfB");
+        this.instanceOfB1 = this.testApp.scaleOut1("nodeB", "instanceOfB1");
     }
 
 
@@ -152,6 +155,8 @@ public class GreedyPITest {
     {
         NodeInstance returned = this.testApp.greedyPI("instanceOfA", this.testReq);
         assertTrue("wrong instance", returned.getID().equals(this.instanceOfB.getID()));
+        assertFalse(returned.getID().equals(this.instanceOfB1.getID()));
+
     }
 
 }

@@ -232,5 +232,6 @@ public class Main {
 
         System.out.print("\n");
         System.out.println("message error: " + failRep.getFailException().getMessage());
+        System.out.println(failRep.getFailException().getClass());
     }
 }

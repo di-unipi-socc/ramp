@@ -40,6 +40,11 @@ public class GlobalState {
         return this.activeNodeInstances;
     }
 
+    //necessary for parsing reasons
+    public void setApplication(Application app){
+        this.app = app;
+    }
+
     /**
      * @return map of the runtime bindings between node instances
      */
@@ -67,7 +72,7 @@ public class GlobalState {
         List<Requirement> satisfiedReqs = new ArrayList<>();
 
         // runtime bindings of instance
-        ArrayList<RuntimeBinding> instanceRunBindings = (ArrayList<RuntimeBinding>) this.runtimeBindings.get(instanceID);
+        List<RuntimeBinding> instanceRunBindings = this.runtimeBindings.get(instanceID);
 
         for (RuntimeBinding runBinding : instanceRunBindings) {
 
@@ -568,7 +573,6 @@ public class GlobalState {
             throw new IllegalArgumentException("instanceID empty");
         if(this.activeNodeInstances.get(instanceID) == null)
             throw new InstanceUnknownException("instanceID not matched with an instance");
-
     }
 
     @Override

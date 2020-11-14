@@ -3,7 +3,6 @@ package mprot.cli;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import mprot.cli.parsing.ConstraintLabel;
 import mprot.cli.parsing.wrappers.*;
 
 import mprot.core.analyzer.Constraint;
@@ -166,7 +165,7 @@ public class PrintingUtilities {
         
         if(plan.getIsSequence() == false){
             //printing the constraints
-            for(ConstraintLabel label : plan.getConstraintsLables())
+            for(ConstraintStringWrapper label : plan.getConstraintsLables())
                 System.out.println(label.getBefore() + " must be executed before " + label.getAfter());
 
             for(Constraint c : plan.getConstraints())

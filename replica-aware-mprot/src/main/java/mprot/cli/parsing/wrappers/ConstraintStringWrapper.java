@@ -1,10 +1,10 @@
-package mprot.cli.parsing;
+package mprot.cli.parsing.wrappers;
 
-public class ConstraintLabel {
+public class ConstraintStringWrapper {
     private final String before;
     private final String after;
 
-    public ConstraintLabel(String before, String after) {
+    public ConstraintStringWrapper(String before, String after) {
         this.before = before;
         this.after = after;
     }

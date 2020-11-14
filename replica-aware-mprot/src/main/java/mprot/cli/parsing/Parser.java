@@ -43,9 +43,12 @@ public class Parser {
         //the global state is passed but each instance has the ref to the parent node
         //to avoid the revriting in json of the nodes we added a specific field nodeTypeName 
         GlobalState globalState = parseGlobalState(gsFilePath);
+
         for(NodeInstance instance : globalState.getActiveNodeInstances().values())
             instance.setNodeType(app.getNodes().get(instance.getNodeTypeName()));
+
         app.setGlobalState(globalState);
+        globalState.setApplication(app);
 
         return app;
     }
@@ -198,7 +201,7 @@ public class Parser {
 
         Map<String, ExecutableElement> planElementsMap = plan.getPlanExecutableElements();
         List<Constraint> constraints = new ArrayList<>();
-        for(ConstraintLabel label : plan.getConstraintsLables())
+        for(ConstraintStringWrapper label : plan.getConstraintsLables())
             constraints.add(
                 new Constraint(
                     planElementsMap.get(label.getBefore()),  

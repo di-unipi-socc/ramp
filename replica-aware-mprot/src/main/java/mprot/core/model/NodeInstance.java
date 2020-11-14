@@ -97,7 +97,7 @@ public class NodeInstance {
 
         //list of all the transitions of the this node instance
         Collection<Transition> transitionsCollection = this.getNodeType().getManagementProtocol().getTransition().values();
-        ArrayList<Transition> transitions = new ArrayList<Transition>(transitionsCollection);
+        List<Transition> transitions = new ArrayList<Transition>(transitionsCollection);
 
         //for each transition we check if it starts in the current state, if so it is a (theorically) possible transition
         for(Transition t : transitions){
@@ -116,13 +116,15 @@ public class NodeInstance {
             throw new IllegalArgumentException("op empty");
     
         Transition ret = null;
-        ArrayList<Transition> possibleTransitions = (ArrayList<Transition>) this.getPossibleTransitions();
+        List<Transition> possibleTransitions = this.getPossibleTransitions();
 
         for (Transition transition : possibleTransitions){
-            if(transition.getOp().equals(op) == true)
-                ret = transition;   
+            if(transition.getOp().equals(op) == true){
+                ret = transition;  
+                break; 
+            }
         }
-        
+
         return ret;
     }
 
