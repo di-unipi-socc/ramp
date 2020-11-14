@@ -35,18 +35,23 @@ public class Main {
         Application app = null;
         PlanWrapper plan = null;
 
-        String appPath = args[0];
+        String appPath = null; 
         String planPath = null;
         String gsPath = null;
         String propertyToCheck = null;
 
         if (args.length == 3) {
+            appPath = args[0];
             planPath = args[1];
             propertyToCheck = args[2];
-        } else {
+        } else if(args.length == 4) {
+            appPath = args[0];
             gsPath = args[1];
             planPath = args[2];
             propertyToCheck = args[3];
+        } else{
+            help();
+            return;
         }
 
         if (gsPath == null) {
@@ -54,28 +59,28 @@ public class Main {
                 app = Parser.parseApplication(appPath);
             } catch (IOException e) {
                 System.err.println("application: file not found");
+                return;
             }
             try {
                 plan = Parser.parsePlan(planPath);
             } catch (IOException e) {
                 System.err.println("plan: file not found");
+                return;
             }
         } else {
             try {
                 app = Parser.parseApplication(appPath, gsPath);
             } catch (IOException e) {
                 System.err.println("application: file not found");
+                return;
             }
             try {
                 plan = Parser.parsePlan(planPath);
             } catch (IOException e) {
                 System.err.println("plan: file not found");
+                return;
             }
         }
-
-        // print application
-        // PrintingUtilities.printAppStructure(app);
-        // PrintingUtilities.printGlobalState(app.getGlobalState());
 
         // check if the plan respect the validity asked
         boolean result;
@@ -104,7 +109,8 @@ public class Main {
                     System.out.println("submitted plan not valid: " + result);
                 break;
             default:
-                break;
+                help("wrong <validity>");
+                return;
         }
 
         // webAppDeploymentUseCase();
@@ -154,9 +160,9 @@ public class Main {
     }
 
     public static void help() {
-        System.out.println("java -jar analyzer.jar <application path> <plan path> <validity>");
-        System.out.println("java -jar analyzer.jar <application path> <global state path> <plan path> <validity>");
-        System.out.println("<validity> : valid, weaklyvalid, notvalid");
+        System.out.println("\t java -jar analyzer.jar <application path> <plan path> <validity>");
+        System.out.println("\t java -jar analyzer.jar <application path> <global state path> <plan path> <validity>");
+        System.out.println("\t <validity> : valid, weaklyvalid, notvalid");
     }
 
     public static void help(String error) {
@@ -165,7 +171,11 @@ public class Main {
     }
 
     public static boolean performAnalysis(Application app, PlanWrapper plan, String propertyToCheck)
-            throws NullPointerException, IllegalSequenceElementException, InstanceUnknownException {
+        throws 
+            NullPointerException, 
+            IllegalSequenceElementException, 
+            InstanceUnknownException 
+    {
         Analyzer analyzer = new Analyzer();
 
         Collection<ExecutableElement> parsedPlanCollection = plan.getPlanExecutableElements().values();
@@ -174,70 +184,44 @@ public class Main {
         switch (propertyToCheck) {
             case "valid":
                 if (plan.getIsSequence() == true) {
-                    try {
-                        if(analyzer.isValidSequence(app, parsedPlanElements) == true)
-                            return true;
-                    } catch (Exception e) {
+                    if(analyzer.isValidSequence(app, parsedPlanElements) == false){
                         errorHandling(analyzer.getAnalysisReport().get(app.getName()));
                         return false;
                     }
-                    
                 } else {
                     if(analyzer.isValidPlan(app, parsedPlanElements, plan.getConstraints()) == false){
-                        AnalysisReport fail = analyzer.getAnalysisReport().get(app.getName());
-                        errorHandling(fail);
+                        errorHandling(analyzer.getAnalysisReport().get(app.getName()));
                         return false;
                     }  
-                }        
-            
+                }
+                return true;      
             case "weaklyvalid":
-            if (plan.getIsSequence() == true) {
-                try {
+                if (plan.getIsSequence() == true) {
                     if(analyzer.isWeaklyValidSequence(app, parsedPlanElements) == true)
                         return true;
-                } catch (Exception e) {
-                    errorHandling(analyzer.getAnalysisReport().get(app.getName()));
-                    return false;
-                }
-            } else {
-                try {
+                } else {
                     if(analyzer.isWeaklyValidPlan(app, parsedPlanElements, plan.getConstraints()) == true)
                         return true;
-                } catch (Exception e) {
-                    errorHandling(analyzer.getAnalysisReport().get(app.getName()));
-                    return false;
                 }
-            }    
-                
+                errorHandling(analyzer.getAnalysisReport().get(app.getName()));
+                return false;    
             case "notvalid":
-            if (plan.getIsSequence() == true) {
-                try {
+                if (plan.getIsSequence() == true) {
                     if(analyzer.isNotValidSequence(app, parsedPlanElements) == false)
                         return false;
-                } catch (Exception e) {
-                    errorHandling(analyzer.getAnalysisReport().get(app.getName()));
-                    return true;
-                }
-            } else {
-                try {
+                   
+                } else {
                     if(analyzer.isNotValidPlan(app, parsedPlanElements, plan.getConstraints()) == false)
                         return false;
-                } catch (Exception e) {
-                    errorHandling(analyzer.getAnalysisReport().get(app.getName()));
-                    return true;
                 }
-            }    
-            default: {
-                help("wrong <validity>");
-                System.exit(0);
-            }
+                errorHandling(analyzer.getAnalysisReport().get(app.getName()));
+                return true;                
         }
 
-        return false; //shuts the ide warning
-
+        return false; //just shuts the ide
     }
 
-    public  static void errorHandling(AnalysisReport failRep){
+    public static void errorHandling(AnalysisReport failRep){
         System.out.println("failed sequence: ");
         for(ExecutableElement e : failRep.getSequence())
             PrintingUtilities.printExecableElement(e);

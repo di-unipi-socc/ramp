@@ -801,13 +801,24 @@ public class Analyzer {
             IllegalSequenceElementException, 
             InstanceUnknownException 
     {
+
+        List<ExecutableElement> backupSequence = this.cloneList(sequence);
+
         if (app.isPiDeterministic() == true)
-            return !this.deterministicIsWeaklyValidSequence(app, sequence);
-        else
-            return !this.nonDeterministicIsWeaklyValidSeq(app, sequence);
+            if(this.deterministicIsWeaklyValidSequence(app, sequence) == false){
+                AnalysisReport fail = fails.get(app.getName());
+                fail.setSequence(backupSequence);
+                return true;
+            }
+        else{
+            if(this.nonDeterministicIsWeaklyValidSeq(app, sequence) == false){
+                AnalysisReport fail = fails.get(app.getName());
+                fail.setSequence(backupSequence);
+                return true;
+            }
+        }
+        return false;  
     }
-
-
 
     /**
      * @param app application on which the analysis will be executed
@@ -1140,15 +1151,10 @@ public class Analyzer {
         if(weaklyValid == true){
             if(this.checkFaultsWeaklyValid(app, sequence, false) == true)
                 return true;
-            
-            if(this.nonDeterministicIsWeaklyValidSeq(app.clone(), sequence) == true)
-                return true;    
-
+            else
+                return false;
         }else{
             if(this.checkFaultsValid(app, sequence, false) == false)
-                return false;
-
-            if(this.nonDeterministicIsValidSequence(app.clone(), sequence) == false)
                 return false;
         }
 
@@ -1161,9 +1167,7 @@ public class Analyzer {
             IllegalSequenceElementException, 
             InstanceUnknownException 
     {
-
         ScaleOut1 todo = (ScaleOut1) op;
-
         try {
             app.execute(todo);
         } catch (FailedOperationException e) {
