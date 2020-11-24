@@ -5,5 +5,6 @@
         "external_import/junit-4.13.jar",
         "external_import/gson-2.8.5.jar"
     ],
-    "java.configuration.updateBuildConfiguration": "interactive"
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "java.dependency.packagePresentation": "flat"
 }

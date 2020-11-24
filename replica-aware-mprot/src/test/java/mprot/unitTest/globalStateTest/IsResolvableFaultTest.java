@@ -148,7 +148,7 @@ public class IsResolvableFaultTest {
         assertTrue(this.testApp.getGlobalState().isResolvableFault(f));
 
         //this now ricreate the binding of AreqB with secondInstanceOfB
-        this.testApp.autoreconnect(f.getInstanceID(), f.getReq());
+        this.testApp.autoreconnect(f);
 
         //now there is no fault (once again, as before)
         assertTrue(this.testApp.getGlobalState().getPendingFaults().isEmpty());

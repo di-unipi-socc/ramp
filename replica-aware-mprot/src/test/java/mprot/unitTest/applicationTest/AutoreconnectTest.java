@@ -106,7 +106,8 @@ public class AutoreconnectTest {
             RuleNotApplicableException,
             InstanceUnknownException 
     {
-        this.testApp.autoreconnect(null, this.reqUnaware);
+        Fault f = new Fault(null, this.reqUnaware);
+        this.testApp.autoreconnect(f);
     }
 
     //auotreconnect throws a IllegalArgumentException if the passed instanceID is empty
@@ -117,7 +118,8 @@ public class AutoreconnectTest {
             RuleNotApplicableException,
             InstanceUnknownException 
     {
-        this.testApp.autoreconnect("", this.reqUnaware);
+        Fault f = new Fault("", this.reqUnaware);
+        this.testApp.autoreconnect(f);
     }
 
     //autoreconnect throws a InstanceUnknownException if the passed instanceID have not an instance associated
@@ -128,20 +130,10 @@ public class AutoreconnectTest {
             RuleNotApplicableException,
             InstanceUnknownException 
     {
-        this.testApp.autoreconnect("notExistingNodeInstance", this.reqUnaware);
+        Fault f = new Fault("notExistingNodeInstance", this.reqUnaware);
+        this.testApp.autoreconnect(f);
     }
         
-    //autoreconnect throws a NullPointerException if the passed requirement is null
-    @Test(expected = NullPointerException.class)
-    public void autoreconnectReqNullTest() 
-        throws 
-            NullPointerException, 
-            RuleNotApplicableException,
-            InstanceUnknownException 
-    {
-        this.testApp.autoreconnect("instanceOfA", null);
-    }
-
     //there are two pending fault, one of them is resolvable. autoreconnect fix the resolvable fault
     //creating the necessary runtime binding between the asking instance and the instance that provides the cap
     @Test
@@ -157,7 +149,7 @@ public class AutoreconnectTest {
         assertTrue(this.testApp.getGlobalState().getResolvableFaults("instanceOfA").size() == 1);
 
         //we fix the resolvable fault
-        this.testApp.autoreconnect("instanceOfA", this.reqUnaware);
+        this.testApp.autoreconnect(this.testApp.getGlobalState().getResolvableFaults("instanceOfA").get(0));
 
         //now instanceOfA has only one fault and a not resolvable fault (faultyReq)
         assertTrue(this.testApp.getGlobalState().getPendingFaults("instanceOfA").size() == 1);

@@ -2,11 +2,11 @@ package mprot.core.analyzer;
 
 import java.util.List;
 
-import mprot.core.analyzer.executable_element.*;
+import mprot.core.analyzer.executableElement.*;
 
 public class AnalysisReport {
 
-    private  List<ExecutableElement> sequence;
+    private List<ExecutableElement> sequence;
     private final Exception failException;
     private ExecutableElement failedElement;
 

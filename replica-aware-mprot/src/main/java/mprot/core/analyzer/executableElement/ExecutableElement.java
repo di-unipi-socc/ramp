@@ -1,4 +1,4 @@
-package mprot.core.analyzer.executable_element;
+package mprot.core.analyzer.executableElement;
 
 public abstract class ExecutableElement {
 
@@ -8,7 +8,7 @@ public abstract class ExecutableElement {
         return this.rule;
     }
 
-    public abstract boolean wellFormattedSequenceElement();
+    public abstract boolean wellFormedExecutableElement();
 
     public abstract void setRule();
 

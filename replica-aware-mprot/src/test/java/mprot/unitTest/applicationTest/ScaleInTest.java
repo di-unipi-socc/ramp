@@ -194,8 +194,8 @@ public class ScaleInTest {
         this.testApp.scaleIn(this.unknownInstance.getID());
     }
 
-    //test that if we scaleIn a container instance (instanceOfC) is destroyed the container and the contained
-    //instance, and all the runtime bindings of both instances are deleted
+    //test that if a container instance (instanceOfC) is destroyed both the container and the contained
+    //instances, and all the runtime bindings of both instances are deleted
     @Test
     public void scaleInOnContainerTest() 
         throws 
@@ -208,7 +208,7 @@ public class ScaleInTest {
         assertTrue(this.testApp.getGlobalState().getSatisfiedReqs("instanceOfA").size() == 1);
 
         Fault f = this.testApp.getGlobalState().getResolvableFaults("instanceOfA").get(0);
-        this.testApp.autoreconnect(f.getInstanceID(), f.getReq());
+        this.testApp.autoreconnect(f);
 
         //now A has the 2 binding: 1 with C for the containment and 1 with B for the other requirement
         assertTrue(this.testApp.getGlobalState().getSatisfiedReqs("instanceOfA").size() == 2);
@@ -220,7 +220,7 @@ public class ScaleInTest {
         //the scaleIn destroy instanceOfC so it is destroyed even instanceOfA that's contained in instanceOfC
         this.testApp.scaleIn("instanceOfC");
 
-        //the destroyed instances is remove from the set of active instances
+        //the destroyed instances are removed from the set of active instances
         assertNull(this.testApp.getGlobalState().getActiveNodeInstances().get("instanceOfC"));
         assertNull(this.testApp.getGlobalState().getActiveNodeInstances().get("instanceOfA"));
         
@@ -243,7 +243,7 @@ public class ScaleInTest {
         assertTrue(this.testApp.getGlobalState().getSatisfiedReqs("instanceOfA").size() == 1);
 
         Fault f = this.testApp.getGlobalState().getResolvableFaults("instanceOfA").get(0);
-        this.testApp.autoreconnect(this.instanceOfA.getID(), f.getReq());
+        this.testApp.autoreconnect(f);
 
         //now A has the 2 binding: 1 with C for the containment and 1 with B for the other requirement
         assertTrue(this.testApp.getGlobalState().getSatisfiedReqs("instanceOfA").size() == 2);

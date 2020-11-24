@@ -15,7 +15,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.typeadapters.RuntimeTypeAdapterFactory;
 
 import mprot.core.analyzer.Constraint;
-import mprot.core.analyzer.executable_element.*;
+import mprot.core.analyzer.executableElement.*;
 import mprot.core.model.*;
 
 import mprot.cli.parsing.wrappers.*;
@@ -60,7 +60,6 @@ public class Parser {
         AppWrapper wrappedApp = gson.fromJson(reader, AppWrapper.class);
 
         Application parsedApplication = new Application(wrappedApp.getName(), wrappedApp.getPiVersion());
-        parsedApplication.piControlSwitch();
 
         for(NodeWrapper wrappedNode : wrappedApp.getNodes()){
             

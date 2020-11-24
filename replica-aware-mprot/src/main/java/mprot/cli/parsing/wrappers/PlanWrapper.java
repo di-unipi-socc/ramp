@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import mprot.core.analyzer.Constraint;
-import mprot.core.analyzer.executable_element.ExecutableElement;
+import mprot.core.analyzer.executableElement.ExecutableElement;
 
 /**
  * this is a wrapper class just for parsing
@@ -15,7 +15,6 @@ public class PlanWrapper {
     private final Map<String, ExecutableElement> planExecutableElements;
     private List<Constraint> constraints;
     private final List<ConstraintStringWrapper> constraintsLables;
-
     private final boolean isSequence; // true if we want to analyze a sequence and not a plan
 
     public PlanWrapper(

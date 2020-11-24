@@ -162,7 +162,7 @@ public class InteratctionTest {
             if(app.getGlobalState().getResolvableFaults("frontendF1").size() != 0)
                 System.out.println("error");
 
-            app.fault("frontendF1", faultsList.get(0).getReq());
+            app.fault(faultsList.get(0));
 
             PrintingUtilities.printActiveNodes(app.getGlobalState()); 
         }
@@ -222,7 +222,7 @@ public class InteratctionTest {
 
             //now we fix the error
             Fault f = app.getGlobalState().getResolvableFaults("frontendF1").get(0);
-            app.autoreconnect("frontendF1", f.getReq());
+            app.autoreconnect(f);
 
             //and complete the op
             app.opEnd("frontendF1", "config"); 

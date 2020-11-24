@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import mprot.core.analyzer.executable_element.*;
+import mprot.core.analyzer.executableElement.*;
 import mprot.core.model.exceptions.*;
 
 //represents the whole application
@@ -194,20 +194,20 @@ public class Application {
         NodeInstance servingInstance = null;    
 
         Collection<NodeInstance> activeInstancesCollection =  this.globalState.activeNodeInstances.values();
-        ArrayList<NodeInstance> activeInstances = new ArrayList<>(activeInstancesCollection);
+        List<NodeInstance> activeInstances = new ArrayList<>(activeInstancesCollection);
         
         //<nodeAsking, req> -> <nodeServing, cap> at a static level, between nodes
         BindingPair reqBindingPair = new BindingPair(instance.getNodeType().getName(), req.getName());
         BindingPair capBindingPair = this.bindingFunction.get(reqBindingPair); 
 
-        //if capStaticBinding is null means that nodeAsking's req can't be handled by any node
+        //if capBindingPair is null means that nodeAsking's req can't be handled by any node
         if(capBindingPair != null){
             for(NodeInstance activeIns : activeInstances){
 
-                //instance is the right type of Node?
+                //activeIns is the right type of Node?
                 boolean instanceRightType = activeIns.getNodeType().getName().equals(capBindingPair.getNodeName());
                 
-                //instance is currently offering the right cap of instance?
+                //activeIns is currently offering the right cap of instance?
                 boolean instanceOfferingRightCap = activeIns.getOfferedCaps().contains(capBindingPair.getCapOrReq());
 
                 if(instanceRightType == true && instanceOfferingRightCap == true){
@@ -303,28 +303,20 @@ public class Application {
 
     /**
      * 
-     * @param instanceID the id of the instance that has a fault
-     * @param req the faulted requirement
+     * @param fault the fault to handle
      * @throws FailedFaultHandlingExecption
      * @throws RuleNotAplicableException
      */
-    public void fault(String instanceID, Requirement req) 
+    public void fault(Fault fault) 
         throws  
             FailedFaultHandlingExecption, 
             NullPointerException, 
             RuleNotApplicableException, 
             InstanceUnknownException
     {
-        if(req == null)
-            throw new NullPointerException("req null");
+        NodeInstance instance = this.globalState.getNodeInstanceByID(fault.getInstanceID());
+        ArrayList<String> usableFaultHandlingStates = new ArrayList<>();
 
-        NodeInstance instance = this.globalState.getNodeInstanceByID(instanceID);
-
-        Fault fault = new Fault(instance.getID(), req);
-
-        ArrayList<String> faultHandlinGlobalStates = new ArrayList<>();
-
-        //check if the pair <instance, req> does raise a fault
         if(this.globalState.getPendingFaults().contains(fault) == false)
             throw new RuleNotApplicableException("not a pending fault");
         
@@ -338,15 +330,15 @@ public class Application {
         //for each state in phiStates check if req is needed in that state
         for(String state : phiStates){
             //rho: state s -> list of requirement needed in s
-            if(instance.getNodeType().getManagementProtocol().getRho().get(state).contains(req) == false)
+            if(instance.getNodeType().getManagementProtocol().getRho().get(state).contains(fault.getReq()) == false)
                 //req it's not required when instance is in state, hence it is usable for fault handlig
-                faultHandlinGlobalStates.add(state);
+                usableFaultHandlingStates.add(state);
         }
 
         //go to the fault handling state that have the most reqs needed (to mantein the deterministic of mp)
         String rightState = null;
         int max = -1;
-        for(String s : faultHandlinGlobalStates){
+        for(String s : usableFaultHandlingStates){
             int tmp = instance.getNodeType().getManagementProtocol().getRho().get(s).size();
             if(tmp > max){
                 max = tmp;
@@ -360,47 +352,39 @@ public class Application {
         //we apply the rule
         instance.setCurrentState(rightState);
 
-        //fail(instance.getPossibleTransitions().size() + "");
-
-        this.globalState.removeOldBindings(instanceID);
-        this.globalState.addNewBindings(instanceID);
+        this.globalState.removeOldBindings(fault.getInstanceID());
+        this.globalState.addNewBindings(fault.getInstanceID());
     }
 
     /**
-     * @param instanceID id of the instance that have a fault to be resolved
-     * @param req the (resolvable) faulted requirement
+     * @param fault the fault that have to be resolved
      * @throws RuleNotApplicableException
      * @throws NullPointerException
      * @throws InstanceUnknownException
      */
-    public void autoreconnect(String instanceID, Requirement req)
+    public void autoreconnect(Fault fault)
         throws 
             RuleNotApplicableException, 
             NullPointerException, 
             InstanceUnknownException
     {
-        if(req == null)
-            throw new NullPointerException("req null");
-
-        this.globalState.checkNodeInstanceExistance(instanceID);
-
-        Fault fault = new Fault(instanceID, req);
+        this.globalState.checkNodeInstanceExistance(fault.getInstanceID());
 
         if(this.globalState.isResolvableFault(fault) == false)
             throw new RuleNotApplicableException("not a resolvable fault");
         
         //delete the old binding (that has failed)
-        this.globalState.removeRuntimeBinding(instanceID, req);
+        this.globalState.removeRuntimeBinding(fault.getInstanceID(), fault.getReq());
 
         //find a new capable instance that can take care of req
         NodeInstance servingInstance = null;
         if(this.piVersion == PiVersion.GREEDYPI)
-            servingInstance = this.greedyPI(instanceID, req);
+            servingInstance = this.greedyPI(fault.getInstanceID(), fault.getReq());
         if(this.piVersion == PiVersion.RANDOMPI)
-            servingInstance = this.randomPI(instanceID, req);
+            servingInstance = this.randomPI(fault.getInstanceID(), fault.getReq());
 
         //servingInstance cant be null, otherwise req wouldn't be resolvable
-        this.globalState.addBinding(instanceID, req, servingInstance.getID());
+        this.globalState.addBinding(fault.getInstanceID(), fault.getReq(), servingInstance.getID());
     }
 
     /**

@@ -6,12 +6,12 @@ import java.util.Collection;
 import mprot.cli.parsing.wrappers.*;
 
 import mprot.core.analyzer.Constraint;
-import mprot.core.analyzer.executable_element.ExecutableElement;
-import mprot.core.analyzer.executable_element.OpEnd;
-import mprot.core.analyzer.executable_element.OpStart;
-import mprot.core.analyzer.executable_element.ScaleIn;
-import mprot.core.analyzer.executable_element.ScaleOut1;
-import mprot.core.analyzer.executable_element.ScaleOut2;
+import mprot.core.analyzer.executableElement.ExecutableElement;
+import mprot.core.analyzer.executableElement.OpEnd;
+import mprot.core.analyzer.executableElement.OpStart;
+import mprot.core.analyzer.executableElement.ScaleIn;
+import mprot.core.analyzer.executableElement.ScaleOut1;
+import mprot.core.analyzer.executableElement.ScaleOut2;
 import mprot.core.model.Application;
 import mprot.core.model.GlobalState;
 import mprot.core.model.ManagementProtocol;

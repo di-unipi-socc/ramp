@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import mprot.core.analyzer.execptions.*;
-import mprot.core.analyzer.executable_element.*;
+import mprot.core.analyzer.executableElement.*;
 import mprot.core.model.*;
 import mprot.core.model.exceptions.*;
 
@@ -47,7 +47,7 @@ public class Analyzer {
         boolean res = true;
         
         for (ExecutableElement element : sequence) { 
-            if (element.wellFormattedSequenceElement() == false)
+            if (element.wellFormedExecutableElement() == false)
                 res = false;
         }
 
@@ -147,7 +147,7 @@ public class Analyzer {
          */
 
         Requirement req = neededReqs.get(reqsStart);
-        ArrayList<NodeInstance> capableInstance = (ArrayList<NodeInstance>) reqToCapableInstance.get(req);
+        List<NodeInstance> capableInstance = reqToCapableInstance.get(req);
 
         List<RuntimeBinding> combination = null;
 
@@ -286,14 +286,14 @@ public class Analyzer {
         List<ExecutableElement> backupSequence = this.cloneList(sequence);
 
         if (app.isPiDeterministic() == true){
-            if(this.deterministicIsValidSequence(app.clone(), this.cloneList(sequence)) == false){
+            if(this.deterministicIsValidSequence(app, sequence) == false){
                 AnalysisReport fail = fails.get(app.getName());
                 fail.setSequence(backupSequence);
                 return false;
             }
         }
         else{
-            if(this.nonDeterministicIsValidSequence(app.clone(), this.cloneList(sequence)) == false){
+            if(this.nonDeterministicIsValidSequence(app, sequence) == false){
                 AnalysisReport fail = fails.get(app.getName());
                 fail.setSequence(backupSequence);
                 return false;
@@ -348,7 +348,7 @@ public class Analyzer {
 
         //mind that checkFaultsValid and checkFaultsWeaklyValid differs only for the method call they 
         //perform based of the analysis of the validity or the weakly validity
-        if(this.checkFaultsValid(app, sequence, true) == false){
+        if(this.checkFaultsValid(app, sequence) == false){
             this.setFailReport(app, seqElement);
             return false;
         }
@@ -434,14 +434,14 @@ public class Analyzer {
      * @throws IllegalSequenceElementException
      * @throws InstanceUnknownException
      */
-    private boolean checkFaultsValid(Application app, List<ExecutableElement> sequence, boolean isDeterministic)
+    private boolean checkFaultsValid(Application app, List<ExecutableElement> sequence)
         throws 
             NullPointerException, 
             IllegalSequenceElementException, 
             InstanceUnknownException 
     {
 
-        if(isDeterministic == false){
+        if(app.isPiDeterministic() == false){
 
             ArrayList<Fault> pendingFaults = (ArrayList<Fault>) app.getGlobalState().getPendingFaults();
             ArrayList<NodeInstance> brokenInstances = (ArrayList<NodeInstance>) app.getGlobalState().getBrokeninstances();
@@ -478,7 +478,7 @@ public class Analyzer {
     
                     if (app.getGlobalState().isResolvableFault(f) == true) {
                         try {
-                            cloneApp.autoreconnect(f.getInstanceID(), f.getReq());
+                            cloneApp.autoreconnect(f);
                             // if the fault is resolved keep exploring the branch
                             if (this.nonDeterministicIsValidSequence(cloneApp, sequence) == false)
                                 return false;
@@ -488,7 +488,7 @@ public class Analyzer {
                         }
                     } else {
                         try {
-                            cloneApp.fault(f.getInstanceID(), f.getReq());
+                            cloneApp.fault(f);
                             // if the fault is resolved keep exploring the branch
 
                             if (this.nonDeterministicIsValidSequence(cloneApp, sequence) == false)
@@ -507,7 +507,7 @@ public class Analyzer {
             ArrayList<Fault> pendingFaults = (ArrayList<Fault>) app.getGlobalState().getPendingFaults();
             ArrayList<NodeInstance> brokenInstances = (ArrayList<NodeInstance>) app.getGlobalState().getBrokeninstances();
 
-            Application cloneApp = app.clone();;
+            Application cloneApp = app.clone();
 
             if (brokenInstances.isEmpty() == false) {
                 try {
@@ -521,6 +521,8 @@ public class Analyzer {
                 cloneApp = app.clone(); // clone this to reset the clone well
             }
 
+            //TODO: future optimization: if some broken instance was present this might
+            //be avoided?
             if (this.deterministicIsValidSequence(cloneApp, sequence) == false)
                 return false;
 
@@ -532,7 +534,7 @@ public class Analyzer {
 
                     if (app.getGlobalState().isResolvableFault(f) == true) {
                         try {
-                            cloneApp.autoreconnect(f.getInstanceID(), f.getReq());
+                            cloneApp.autoreconnect(f);
                             // if the fault is resolved keep exploring the branch
                             if (this.deterministicIsValidSequence(cloneApp, sequence) == false)
                                 return false;
@@ -541,7 +543,7 @@ public class Analyzer {
                         }
                     } else {
                         try {
-                            cloneApp.fault(f.getInstanceID(), f.getReq());
+                            cloneApp.fault(f);
                             // if the fault is resolved keep exploring the branch
                             if (this.deterministicIsValidSequence(cloneApp, sequence) == false)
                                 return false;
@@ -575,11 +577,11 @@ public class Analyzer {
         List<ExecutableElement> backupSequence = this.cloneList(sequence);
 
         if (app.isPiDeterministic() == true){
-            if(this.deterministicIsWeaklyValidSequence(app.clone(), this.cloneList(sequence)) == true)
+            if(this.deterministicIsWeaklyValidSequence(app, sequence) == true)
                 return true;
 
         } else{
-            if(this.nonDeterministicIsWeaklyValidSeq(app.clone(), this.cloneList(sequence)) == true)
+            if(this.nonDeterministicIsWeaklyValidSeq(app, sequence) == true)
                 return true;
         }
 
@@ -614,7 +616,7 @@ public class Analyzer {
             return false;
         }
 
-        if(this.checkFaultsWeaklyValid(app, sequence, true) == true)
+        if(this.checkFaultsWeaklyValid(app, sequence) == true)
             return true;
         
         this.setFailReport(app, seqElement);
@@ -681,14 +683,14 @@ public class Analyzer {
      * @throws IllegalArgumentException
      * @throws InstanceUnknownException
      */
-    private boolean checkFaultsWeaklyValid(Application app, List<ExecutableElement> sequence, boolean isDeterministic)
+    private boolean checkFaultsWeaklyValid(Application app, List<ExecutableElement> sequence)
         throws 
             NullPointerException, 
             IllegalSequenceElementException, 
             IllegalArgumentException, 
             InstanceUnknownException 
     {
-        if(isDeterministic == false){
+        if(app.isPiDeterministic() == false){
             ArrayList<Fault> pendingFaults = (ArrayList<Fault>) app.getGlobalState().getPendingFaults();
             ArrayList<NodeInstance> brokenInstances = (ArrayList<NodeInstance>) app.getGlobalState().getBrokeninstances();
     
@@ -716,7 +718,7 @@ public class Analyzer {
     
                     if (app.getGlobalState().isResolvableFault(f) == true) {
                         try {
-                            cloneApp.autoreconnect(f.getInstanceID(), f.getReq());
+                            cloneApp.autoreconnect(f);
                             if (this.nonDeterministicIsWeaklyValidSeq(cloneApp, sequence) == true)
                                 return true;
                         } catch (Exception e) {
@@ -724,7 +726,7 @@ public class Analyzer {
                         }
                     } else {
                         try {
-                            cloneApp.fault(f.getInstanceID(), f.getReq());
+                            cloneApp.fault(f);
                             if (this.nonDeterministicIsWeaklyValidSeq(cloneApp, sequence) == true)
                                 return true;
     
@@ -762,7 +764,7 @@ public class Analyzer {
 
                     if (app.getGlobalState().isResolvableFault(f) == true) {
                         try {
-                            cloneApp.autoreconnect(f.getInstanceID(), f.getReq());
+                            cloneApp.autoreconnect(f);
                             // if the fault is resolved keep exploring the branch
                             if (this.deterministicIsWeaklyValidSequence(cloneApp, sequence) == true)
                                 return true;
@@ -772,7 +774,7 @@ public class Analyzer {
                     } else {
 
                         try {
-                            cloneApp.fault(f.getInstanceID(), f.getReq());
+                            cloneApp.fault(f);
                             // if the fault is resolved keep exploring the branch
                             if (this.deterministicIsWeaklyValidSequence(cloneApp, sequence) == true)
                                 return true;
@@ -840,7 +842,7 @@ public class Analyzer {
         
         //e1 -> [e2, e3, ...]: match e1 with the executable elements that must be executed after e1
         Map<ExecutableElement, List<ExecutableElement>> constraintsMap = this.buildConstraintMap(planExecutableElements, constraints);
-        return this.planValidity(app, false, this.cloneList(planExecutableElements), constraintsMap);
+        return this.planValidity(app, false, planExecutableElements, constraintsMap);
     }
 
     /**
@@ -864,7 +866,7 @@ public class Analyzer {
         //e1 -> [e2, e3, ...]: match e1 with the executable elements that must be executed after e1
         Map<ExecutableElement, List<ExecutableElement>> constraintsMap = this.buildConstraintMap(planExecutableElements, constraints);
         
-        return this.planValidity(app, true, this.cloneList(planExecutableElements), constraintsMap);
+        return this.planValidity(app, true, planExecutableElements, constraintsMap);
     }
 
     /**
@@ -991,10 +993,10 @@ public class Analyzer {
             
             //check the fault branches
             if(weaklyValid == true){
-                if(this.checkFaultsWeaklyValid(app, sequence, false) == true)
+                if(this.checkFaultsWeaklyValid(app, sequence) == true)
                     return true;
             }else{
-                if(this.checkFaultsValid(app, sequence, false) == false)
+                if(this.checkFaultsValid(app, sequence) == false)
                     return false;
             }
 
@@ -1074,10 +1076,10 @@ public class Analyzer {
 
             //check the fault branches
             if(weaklyValid == true){
-                if(this.checkFaultsWeaklyValid(app, sequence, false) == true)
+                if(this.checkFaultsWeaklyValid(app, sequence) == true)
                     return true;
             }else{
-                if(this.checkFaultsValid(app, sequence, false) == false)
+                if(this.checkFaultsValid(app, sequence) == false)
                     return false;
             }
 
@@ -1149,12 +1151,12 @@ public class Analyzer {
         }
 
         if(weaklyValid == true){
-            if(this.checkFaultsWeaklyValid(app, sequence, false) == true)
+            if(this.checkFaultsWeaklyValid(app, sequence) == true)
                 return true;
             else
                 return false;
         }else{
-            if(this.checkFaultsValid(app, sequence, false) == false)
+            if(this.checkFaultsValid(app, sequence) == false)
                 return false;
         }
 
@@ -1177,11 +1179,12 @@ public class Analyzer {
             return false;
         }
 
+        //TODO: future improvments: is this necessary? How a scaleOut generate faults?
         if(weaklyValid == true){
-            if(this.checkFaultsWeaklyValid(app, sequence, false) == true)
+            if(this.checkFaultsWeaklyValid(app, sequence) == true)
                 return true;
         }else{
-            if(this.checkFaultsValid(app, sequence, false) == false)
+            if(this.checkFaultsValid(app, sequence) == false)
                 return false;
         }
         
@@ -1236,10 +1239,10 @@ public class Analyzer {
         }
         
         if(weaklyValid == true){
-            if(this.checkFaultsWeaklyValid(app, sequence, false) == true)
+            if(this.checkFaultsWeaklyValid(app, sequence) == true)
                 return true;
         }else{
-            if(this.checkFaultsValid(app, sequence, false) == false)
+            if(this.checkFaultsValid(app, sequence) == false)
                 return false;
         }
         

@@ -1,6 +1,6 @@
 package mprot.core.analyzer;
 
-import mprot.core.analyzer.executable_element.*;
+import mprot.core.analyzer.executableElement.*;
 public class Constraint {
 
     private final ExecutableElement before;

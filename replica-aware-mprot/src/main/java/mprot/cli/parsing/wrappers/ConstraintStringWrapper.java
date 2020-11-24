@@ -16,6 +16,4 @@ public class ConstraintStringWrapper {
     public String getAfter() {
         return after;
     }
-
-    
 }

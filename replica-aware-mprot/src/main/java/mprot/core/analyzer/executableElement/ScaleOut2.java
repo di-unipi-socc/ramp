@@ -1,4 +1,4 @@
-package mprot.core.analyzer.executable_element;
+package mprot.core.analyzer.executableElement;
 
 public class ScaleOut2 extends ExecutableElement {
     
@@ -25,7 +25,7 @@ public class ScaleOut2 extends ExecutableElement {
         return this.containerID;
     }
 
-    public boolean wellFormattedSequenceElement(){
+    public boolean wellFormedExecutableElement(){
         boolean ret = true;
 
         if(this.nodeName == null || this.nodeName.isEmpty() == true)

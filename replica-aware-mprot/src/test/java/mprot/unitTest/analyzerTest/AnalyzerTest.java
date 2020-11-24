@@ -16,7 +16,7 @@ import org.junit.Test;
 
 import mprot.core.analyzer.*;
 import mprot.core.analyzer.execptions.IllegalSequenceElementException;
-import mprot.core.analyzer.executable_element.*;
+import mprot.core.analyzer.executableElement.*;
 import mprot.core.model.*;
 import mprot.core.model.exceptions.*;
 

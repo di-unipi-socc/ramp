@@ -1,4 +1,4 @@
-package mprot.core.analyzer.executable_element;
+package mprot.core.analyzer.executableElement;
 
 public class ScaleIn extends ExecutableElement {
     
@@ -19,7 +19,7 @@ public class ScaleIn extends ExecutableElement {
         return this.instanceID;
     }
     
-    public boolean wellFormattedSequenceElement(){
+    public boolean wellFormedExecutableElement(){
         boolean ret = true;
 
         if(this.instanceID == null || this.instanceID.isEmpty() == true)

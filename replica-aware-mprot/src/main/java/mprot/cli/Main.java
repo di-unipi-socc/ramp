@@ -8,7 +8,7 @@ import java.util.List;
 import mprot.core.analyzer.AnalysisReport;
 import mprot.core.analyzer.Analyzer;
 import mprot.core.analyzer.execptions.IllegalSequenceElementException;
-import mprot.core.analyzer.executable_element.ExecutableElement;
+import mprot.core.analyzer.executableElement.ExecutableElement;
 import mprot.core.model.Application;
 import mprot.core.model.exceptions.AlreadyUsedIDException;
 import mprot.core.model.exceptions.FailedOperationException;
@@ -117,9 +117,18 @@ public class Main {
 
     }
 
-    public static void webAppDeploymentUseCase() throws IOException, IllegalArgumentException, NullPointerException,
-            FailedOperationException, RuleNotApplicableException, InstanceUnknownException,
-            OperationNotAvailableException, AlreadyUsedIDException, IllegalSequenceElementException {
+    public static void webAppDeploymentUseCase() 
+        throws 
+            IOException, 
+            IllegalArgumentException, 
+            NullPointerException,
+            FailedOperationException, 
+            RuleNotApplicableException, 
+            InstanceUnknownException,
+            OperationNotAvailableException, 
+            AlreadyUsedIDException, 
+            IllegalSequenceElementException 
+    {
         String appPath = System.getProperty("user.dir")
                 .concat("\\replica-aware-mprot\\data\\examples\\web-app\\app.json");
         String deploymentValidPlanPath = System.getProperty("user.dir")

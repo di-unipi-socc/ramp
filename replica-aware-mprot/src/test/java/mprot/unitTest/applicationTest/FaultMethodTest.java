@@ -132,43 +132,6 @@ public class FaultMethodTest {
         return ret;
     }
 
-    //fault throws a NullPointerException when the passed instanceID is null
-    @Test(expected = NullPointerException.class)
-    public void faultMethodNullInstanceIDTest()
-        throws 
-            NullPointerException, 
-            FailedFaultHandlingExecption, 
-            RuleNotApplicableException, 
-            InstanceUnknownException 
-    {
-        this.testApp.fault(null, this.testReq);
-    }
-
-    //fault throws an IllegalArgumentException when the passed instanceID is empty
-    @Test(expected = IllegalArgumentException.class)
-    public void faultMethodEmptyInstanceIDTest()
-        throws 
-            NullPointerException, 
-            FailedFaultHandlingExecption, 
-            RuleNotApplicableException, 
-            InstanceUnknownException 
-    {
-        this.testApp.fault("", this.testReq);
-    }
-
-
-    //fault throws a NullPointerException when the passed req is null
-    @Test(expected = NullPointerException.class)
-    public void faultMethodNullReqTest()
-        throws 
-            NullPointerException, 
-            FailedFaultHandlingExecption, 
-            RuleNotApplicableException, 
-            InstanceUnknownException 
-    {
-        this.testApp.fault("instanceOfA", null);
-    }
-
     //fault throws a RuleNotAplicableException when the passed <instance, req> creates no fault
     @Test (expected = RuleNotApplicableException.class)
     public void faultMethodNotFaultedInstanceTest()
@@ -178,7 +141,8 @@ public class FaultMethodTest {
         RuleNotApplicableException, 
         InstanceUnknownException 
     {
-        this.testApp.fault("instanceOfB", this.testReq);
+        Fault f = new Fault("instanceOfB", this.testReq);
+        this.testApp.fault(f);
     }
 
     //fault throws a InstanceUnknownException when the passed instanceID is not assciated with an instance
@@ -190,7 +154,8 @@ public class FaultMethodTest {
         RuleNotApplicableException, 
         InstanceUnknownException 
     {
-        this.testApp.fault("unkownInstanceID", this.testReq);
+        Fault f = new Fault("unkownInstanceID", this.testReq);
+        this.testApp.fault(f);
     }
 
 
@@ -203,7 +168,8 @@ public class FaultMethodTest {
             RuleNotApplicableException, 
             InstanceUnknownException 
     {
-        this.testApp.fault("instanceOfC", this.testReq);
+        Fault f = new Fault("instanceOfC", this.testReq);
+        this.testApp.fault(f);
     }
 
     @Test
@@ -214,7 +180,8 @@ public class FaultMethodTest {
             RuleNotApplicableException, 
             InstanceUnknownException 
     {
-        this.testApp.fault("instanceOfA", this.testReq);
+        Fault f = new Fault("instanceOfA", this.testReq);
+        this.testApp.fault(f);
         assertTrue(this.instanceOfA.getCurrentState().equals("faultHandlingState"));
     }
        

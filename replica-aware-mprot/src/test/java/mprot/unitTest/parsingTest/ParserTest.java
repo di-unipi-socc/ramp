@@ -11,7 +11,7 @@ import java.util.List;
 import org.junit.Test;
 import mprot.core.analyzer.Analyzer;
 import mprot.core.analyzer.execptions.IllegalSequenceElementException;
-import mprot.core.analyzer.executable_element.ExecutableElement;
+import mprot.core.analyzer.executableElement.ExecutableElement;
 import mprot.core.model.*;
 import mprot.core.model.exceptions.*;
 import mprot.utilities.WebAppFactory;

@@ -25,6 +25,10 @@
     "constraintsLables" : [
         {
             "before" : "scaleN1",
+            "after" : "scaleF1"
+        },
+        {
+            "before" : "scaleN1",
             "after" : "startN1_a"
         },
         {

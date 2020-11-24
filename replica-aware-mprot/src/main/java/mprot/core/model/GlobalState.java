@@ -76,18 +76,18 @@ public class GlobalState {
 
         for (RuntimeBinding runBinding : instanceRunBindings) {
 
-            BindingPair reqStaticBinding = new BindingPair(instanceType.getName(), runBinding.getReq().getName());
-            BindingPair capStaticBinding = this.app.getBindingFunction().get(reqStaticBinding);
+            BindingPair reqBindingPair = new BindingPair(instanceType.getName(), runBinding.getReq().getName());
+            BindingPair capBindingPair = this.app.getBindingFunction().get(reqBindingPair);
 
-            if (capStaticBinding != null) {
+            if (capBindingPair != null) {
                 // the serving instance that is currently helding the runtime binding with instance
                 NodeInstance servingInstance = this.activeNodeInstances.get(runBinding.getNodeInstanceID());
 
                 // the serving instance is the right kind of Node?
-                boolean servingInsRightNodeType = servingInstance.getNodeType().getName().equals(capStaticBinding.getNodeName());
+                boolean servingInsRightNodeType = servingInstance.getNodeType().getName().equals(capBindingPair.getNodeName());
 
                 // the serving instance is currently offering the right cap of instance?
-                boolean servingInsOfferingRightCap = servingInstance.getOfferedCaps().contains(capStaticBinding.getCapOrReq());
+                boolean servingInsOfferingRightCap = servingInstance.getOfferedCaps().contains(capBindingPair.getCapOrReq());
 
                 if (servingInsOfferingRightCap == true && servingInsRightNodeType == true)
                     // the requirement is trurly satisfied
@@ -120,7 +120,7 @@ public class GlobalState {
     }
 
     /**
-     * @param askingInstanceID node instance id of which we want all the instance that can satisfy req
+     * @param instanceID node instance id of which we want all the instance that can satisfy req
      * @param req requirement of which we want the capable instance
      * @return list of all instances that can take care of <askingInstance, req>
      * @throws NullPointerException
@@ -133,25 +133,25 @@ public class GlobalState {
             IllegalArgumentException,
             InstanceUnknownException 
     {
-        NodeInstance askingInstance = this.getNodeInstanceByID(instanceID);
+        NodeInstance instance = this.getNodeInstanceByID(instanceID);
 
         List<NodeInstance> capableInstances = new ArrayList<>();
 
-        BindingPair reqStaticBinding = new BindingPair(askingInstance.getNodeType().getName(), req.getName());
-        BindingPair capStaticBinding = this.app.getBindingFunction().get(reqStaticBinding);
+        BindingPair reqBindingPair = new BindingPair(instance.getNodeType().getName(), req.getName());
+        BindingPair capBindingPair = this.app.getBindingFunction().get(reqBindingPair);
 
-        if (capStaticBinding != null) {
+        if (capBindingPair != null) {
             Collection<NodeInstance> activeInstancesCollection = this.activeNodeInstances.values();
-            ArrayList<NodeInstance> activeInstances = new ArrayList<>(activeInstancesCollection);
+            List<NodeInstance> activeInstances = new ArrayList<>(activeInstancesCollection);
 
             // for each instance check if it is the right kind of node and if it currently
-            // offering the right capability for <askingInstance, req>
-            for (NodeInstance instance : activeInstances) {
-                boolean instanceRightType = instance.getNodeType().getName().equals(capStaticBinding.getNodeName());
-                boolean instanceOfferingRightCap = instance.getOfferedCaps().contains(capStaticBinding.getCapOrReq());
+            // offering the right capability for <instance, req>
+            for (NodeInstance activeInstance : activeInstances) {
+                boolean instanceRightType = activeInstance.getNodeType().getName().equals(capBindingPair.getNodeName());
+                boolean instanceOfferingRightCap = activeInstance.getOfferedCaps().contains(capBindingPair.getCapOrReq());
 
                 if (instanceRightType == true && instanceOfferingRightCap == true)
-                    capableInstances.add(instance);
+                    capableInstances.add(activeInstance);
             }
         }
         return capableInstances;
@@ -188,21 +188,23 @@ public class GlobalState {
 
     /**
      * add a runtime binding such as <askingInstance, req, servingInstance>
-     * @param askingInstanceID node instance (id) asking for the requirement req
+     * @param askingID node instance (id) asking for the requirement req
      * @param req requirement that is being asked by askingInstance
-     * @param servingInstance node istance (id) that satisfy req with the correct capability
+     * @param servingID node istance (id) that satisfy req with the correct capability
      * @throws NullPointerException
+     * @throws IllegalArgumentException
+     * @throws InstanceUnknownException
      */
-    public void addBinding(String askingInstanceID, Requirement req, String servingInstanceID) 
+    public void addBinding(String askingID, Requirement req, String servingID) 
         throws 
             NullPointerException,
             IllegalArgumentException,
             InstanceUnknownException
     {
-        NodeInstance askingInstance = this.getNodeInstanceByID(askingInstanceID);
-        NodeInstance servingInstance = this.getNodeInstanceByID(servingInstanceID);
+        this.checkNodeInstanceExistance(askingID);
+        this.checkNodeInstanceExistance(servingID);
 
-        this.runtimeBindings.get(askingInstance.getID()).add(new RuntimeBinding(req, servingInstance.getID()));
+        this.runtimeBindings.get(askingID).add(new RuntimeBinding(req, servingID));
     }
 
     /**
@@ -226,12 +228,14 @@ public class GlobalState {
 
         RuntimeBinding badBinding = null;
 
-        ArrayList<RuntimeBinding> instanceRunBindings = (ArrayList<RuntimeBinding>) this.runtimeBindings.get(instanceID);
+        List<RuntimeBinding> instanceRunBindings = this.runtimeBindings.get(instanceID);
         
         for (RuntimeBinding runBinding : instanceRunBindings) {
-            if(runBinding.getReq().equals(req) == true)
+            if(runBinding.getReq().equals(req) == true){
                 //we have <instance, req, *> so we remove it
                 badBinding = runBinding;
+                break;
+            }
         }
 
         if(badBinding != null)
@@ -241,8 +245,15 @@ public class GlobalState {
     /**
      * remove all runtime bindings of instance
      * @param instanceID
+     * @throws InstanceUnknownException
+     * @throws NullPointerException
      */
-    public void removeAllRunBindings(String instanceID){
+    public void removeAllRunBindings(String instanceID) 
+        throws 
+            NullPointerException, 
+            InstanceUnknownException 
+    {
+        this.checkNodeInstanceExistance(instanceID);
         this.runtimeBindings.replace(instanceID, new ArrayList<>());
     }
 
@@ -253,37 +264,36 @@ public class GlobalState {
      * @throws IllegalArgumentException
      * @throws NullPoninterException
      */
-    public void removeAllRunBindingsBothWays(String targetInstanceID)
+    public void removeAllRunBindingsBothWays(String instanceID)
         throws 
             NullPointerException, 
-            IllegalArgumentException
+            IllegalArgumentException, 
+            InstanceUnknownException
     {
 
-        if(targetInstanceID == null)
-            throw new NullPointerException("targetInstanceID null");
-        if(targetInstanceID.isEmpty() == true)
-            throw new IllegalArgumentException("targetInstanceID empty");
+        //we cant use checkNodeInstanceExistance (see why in scaleIn)
+        if(instanceID == null)
+            throw new NullPointerException("instanceID null");
+        if(instanceID.isEmpty() == true)
+            throw new IllegalArgumentException("instanceID empty");
 
-        //direct way: targetInstance -> list of runtime bindings with other instances
-        if(this.activeNodeInstances.containsKey(targetInstanceID) == false)
-            //targetInstance was destroyed with a scaleIn
-            this.runtimeBindings.remove(targetInstanceID);
-        else
-            //for some reason all bindings of targetInstance must be eliminated  
-            this.removeAllRunBindings(targetInstanceID);
+        //direct way: instanceID -> list of runtime bindings with other instances
+        if(this.activeNodeInstances.containsKey(instanceID) == false)
+            this.runtimeBindings.remove(instanceID);
         
-        //other way; delete those runtime bindings that have targetInstance as the server of a requirement
-        ArrayList<RuntimeBinding> otherWayBadBindings = new ArrayList<>();
+        //other way; delete those runtime bindings that
+        //have instanceID as the server of a requirement
+        List<RuntimeBinding> otherWayBadBindings = new ArrayList<>();
 
         Collection<NodeInstance> activeInstancesCollection =  this.activeNodeInstances.values();
-        ArrayList<NodeInstance> activeInstances = new ArrayList<>(activeInstancesCollection);
+        List<NodeInstance> activeInstances = new ArrayList<>(activeInstancesCollection);
 
         //for each active instance check if among its bindings the target instance is the server 
         for (NodeInstance activeInstance : activeInstances) {
-            ArrayList<RuntimeBinding> activeInstanceRunBindings = (ArrayList<RuntimeBinding>) this.runtimeBindings.get(activeInstance.getID());
+            List<RuntimeBinding> activeInstanceRunBindings = this.runtimeBindings.get(activeInstance.getID());
             
             for(RuntimeBinding runBinding : activeInstanceRunBindings){ 
-                if(runBinding.getNodeInstanceID().equals(targetInstanceID))
+                if(runBinding.getNodeInstanceID().equals(instanceID))
                     otherWayBadBindings.add(runBinding);   
             }
             
@@ -359,10 +369,8 @@ public class GlobalState {
             NullPointerException, 
             IllegalArgumentException, 
             InstanceUnknownException 
-    {
-        
+    {        
         NodeInstance instance = this.getNodeInstanceByID(instanceID);
-        boolean res = false;
         
         /**
          * we check if instance has a containment requirement. 
@@ -389,16 +397,11 @@ public class GlobalState {
                     if(binding.getReq().equals(req)){
                         //this is the binding to check
                         check ++;
-                        NodeInstance container = null;
                         try {
-                            container = this.getNodeInstanceByID(binding.getNodeInstanceID());
+                            this.checkNodeInstanceExistance(binding.getNodeInstanceID());
                         } catch (InstanceUnknownException e) {
-                            container = null;
-                        }
-
-                        //container is null, broken instance
-                        if(container == null)
                             return true;
+                        }
                     } 
                 }
 
@@ -406,10 +409,10 @@ public class GlobalState {
                 if(check == 0)
                     return true;
 
-                break;
+                break; //one instance can have only one containment requirement
             }
         }
-        return res;
+        return false;
     }
 
     /**
@@ -458,36 +461,32 @@ public class GlobalState {
 
         //all active node instances
         Collection<NodeInstance> activeInstancesCollection =  this.activeNodeInstances.values();
-        ArrayList<NodeInstance> activeInstances = new ArrayList<>(activeInstancesCollection);
+        List<NodeInstance> activeInstances = new ArrayList<>(activeInstancesCollection);
         
         //data extracted from fault
         NodeInstance faultedInstance = this.getNodeInstanceByID(fault.getInstanceID());
         Node faultedNodeInstanceType = faultedInstance.getNodeType();
         Requirement faultedReq = fault.getReq();
 
-        BindingPair reqStaticBinding = new BindingPair(faultedNodeInstanceType.getName(), faultedReq.getName());
-        BindingPair capStaticBinding =  this.app.getBindingFunction().get(reqStaticBinding);
+        BindingPair reqBindingPair = new BindingPair(faultedNodeInstanceType.getName(), faultedReq.getName());
+        BindingPair capBindingPair =  this.app.getBindingFunction().get(reqBindingPair);
 
-        //a fault can be resolvable only if it is replica unware
-        if(faultedReq.isReplicaUnaware() == true){
-
-            //for each active instance check if it offer the right capability to resolve the fault
-            for(NodeInstance instance : activeInstances){
-
-                //a static binding might not be defined
-                if(capStaticBinding != null){
+        if(capBindingPair != null){
+            //a fault can be resolvable only if it is replica unware
+            if(faultedReq.isReplicaUnaware() == true){
+                for(NodeInstance instance : activeInstances){
                     //instance is the right kind of Node?
-                    boolean instanceRightType = instance.getNodeType().getName().equals(capStaticBinding.getNodeName());
+                    boolean instanceRightType = instance.getNodeType().getName().equals(capBindingPair.getNodeName());
                     //instance is currently offering the right cap of instance?
-                    boolean instanceOfferingRightCap = instance.getOfferedCaps().contains(capStaticBinding.getCapOrReq()); 
+                    boolean instanceOfferingRightCap = instance.getOfferedCaps().contains(capBindingPair.getCapOrReq()); 
 
                     if(instanceOfferingRightCap == true && instanceRightType == true){
                         res = true;
                         break;
-                    }
+                    }   
                 }
-            }
-        }   
+            }   
+        }
         return res;
     }
 

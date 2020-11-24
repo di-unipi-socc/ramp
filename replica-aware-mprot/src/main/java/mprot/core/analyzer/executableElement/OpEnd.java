@@ -1,57 +1,44 @@
-package mprot.core.analyzer.executable_element;
+package mprot.core.analyzer.executableElement;
 
-public class OpStart extends ExecutableElement{
-    
+public class OpEnd extends ExecutableElement {
     private final String instanceID;
     private final String op;
 
-    public OpStart(String instanceID, String op){
-
-        if(instanceID == null)
-            throw new NullPointerException("instanceID null");
-        if(instanceID.isEmpty() == true)
-            throw new IllegalArgumentException("instanceID empty");
-        if(op == null)
-            throw new NullPointerException("op null");
-        if(op.isEmpty() == true)
-            throw new IllegalArgumentException("op empty");
-
-
-        this.rule = "opStart";
-        this.instanceID = instanceID;
+    public OpEnd(String id, String op){
+        this.rule = "opEnd";
+        this.instanceID = id;
         this.op = op;
+    }
+
+    public String getInstanceID(){
+        return this.instanceID;
     }
 
     public String getOp(){
         return this.op;
     }
 
-    public boolean wellFormattedSequenceElement(){
+    public boolean wellFormedExecutableElement(){
         boolean ret = true;
 
         if(this.instanceID == null || this.instanceID.isEmpty() == true)
             ret = false;
-            
+        
         if(this.op == null || this.op.isEmpty() == true)
             ret = false;
 
         return ret;
     }
 
-    public String getInstanceID() {
-        return this.instanceID;
-    }
-
-
     @Override
     /**
      */
     public boolean equals(Object f){
 
-        if(f instanceof OpStart == false)
+        if(f instanceof OpEnd == false)
             return false;
 
-        OpStart toCheck = (OpStart) f;
+        OpEnd toCheck = (OpEnd) f;
         boolean ret = false;
 
         if(toCheck.instanceID.equals(this.instanceID) && toCheck.getOp().equals(this.op) && toCheck.getRule().equals(this.rule))
@@ -72,7 +59,6 @@ public class OpStart extends ExecutableElement{
 
     @Override
     public void setRule() {
-        this.rule = "opStart";
+        this.rule = "opEnd";
     }
-
 }
