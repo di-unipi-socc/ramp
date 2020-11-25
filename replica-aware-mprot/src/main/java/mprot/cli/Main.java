@@ -224,7 +224,7 @@ public class Main {
                         return false;
                 }
                 errorHandling(analyzer.getAnalysisReport().get(app.getName()));
-                return true;                
+                return true;                 
         }
 
         return false; //just shuts the ide
@@ -241,6 +241,5 @@ public class Main {
 
         System.out.print("\n");
         System.out.println("message error: " + failRep.getFailException().getMessage());
-        System.out.println(failRep.getFailException().getClass());
     }
 }
