@@ -1,0 +1,51 @@
+{
+    "app" : {},
+    "activeNodeInstances" : {
+        "f1" : {
+            "currentState" : "working",
+            "id" : "f1", 
+            "node" : {},
+            "nodeTypeName" : "frontend"
+        },
+        "b1" : {
+            "currentState" : "running",
+            "id" : "b1", 
+            "node" : {},
+            "nodeTypeName" : "backend"
+        },
+        "n1" : {
+            "currentState" : "running",
+            "id" : "n1", 
+            "node" : {},
+            "nodeTypeName" : "node"
+        },
+        "n2" : {
+            "currentState" : "running",
+            "id" : "n2", 
+            "node" : {},
+            "nodeTypeName" : "node"
+        },
+        "m1" : {
+            "currentState" : "running",
+            "id" : "m1", 
+            "node" : {},
+            "nodeTypeName" : "mongo"
+        }
+    },
+    "runtimeBindings" : {
+        "f1" : [
+            {"requirement": {"name" : "host", "sort" : "CONTAINMENT"}, "targetInstanceID": "n1"},
+            {"requirement": {"name" : "conn", "sort" : "REPLICA_UNAWARE"}, "targetInstanceID": "b1"}
+
+        ],
+        "b1" : [
+            {"requirement": {"name" : "host", "sort" : "CONTAINMENT"}, "targetInstanceID": "n2"},
+            {"requirement": {"name" : "db", "sort" : "REPLICA_AWARE"}, "targetInstanceID": "m1"}
+
+        ],
+        "n1" : [],
+        "n2" : [],
+        "m1" : []
+    }
+
+}
