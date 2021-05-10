@@ -1,0 +1,79 @@
+{
+    "app" : {}, 
+    "activeInstances" : {
+        "g1" : {
+            "currentState" : "working", 
+            "id" : "g1", 
+            "node" : {}, 
+            "nodeName" : "gui"
+        }, 
+        "a1" : {
+            "currentState" : "running", 
+            "id" : "a1", 
+            "node" : {}, 
+            "nodeName" : "api"
+        }, 
+        "a2" : {
+            "currentState" : "running", 
+            "id" : "a2", 
+            "node" : {}, 
+            "nodeName" : "api"
+        }, 
+        "n1" : {
+            "currentState" : "running", 
+            "id" : "n1", 
+            "node" : {},
+            "nodeName" : "node"
+        }, 
+        "m1" : {
+            "currentState" : "running", 
+            "id" : "m1", 
+            "node" : {},
+            "nodeName" : "maven"
+        }, 
+        "m2" : {
+            "currentState" : "running", 
+            "id" : "m2", 
+            "node" : {},
+            "nodeName" : "maven"
+        }, 
+        "d1" : {
+            "currentState" : "running", 
+            "id" : "d1", 
+            "node" : {},
+            "nodeName" : "mongo"
+        }
+    }, 
+    "runtimeBindings" : {
+        "g1" : [
+            {
+                "requirement" : {"name" : "host", "sort" : "CONTAINMENT"},
+                "targetInstanceID" : "n1"
+            }, 
+            {
+                "requirement" : {"name" : "backend", "sort" : "UNAWARE"}, 
+                "targetInstanceID" : "a1"
+            }
+        ],
+        "a1" : [
+            {
+                "requirement" : {"name" : "host", "sort" : "CONTAINMENT"},
+                "targetInstanceID" : "m1"
+            }, 
+            {
+                "requirement" : {"name" : "data", "sort" : "AWARE"}, 
+                "targetInstanceID" : "d1"
+            }
+        ], 
+        "a2" : [
+            {
+                "requirement" : {"name" : "host", "sort" : "CONTAINMENT"},
+                "targetInstanceID" : "m2"
+            }, 
+            {
+                "requirement" : {"name" : "data", "sort" : "AWARE"}, 
+                "targetInstanceID" : "d1"
+            }
+        ]
+    }
+}

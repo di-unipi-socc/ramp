@@ -1,0 +1,338 @@
+{
+    "name" : "thinking", 
+    "piVersion" : "GREEDYPI", 
+    "nodes" : [
+        {
+            "name" : "gui", 
+            "requirements": {
+                "host" : {"name" : "host", "sort" : "CONTAINMENT"},
+                "backend" : {"name" : "backend", "sort" : "REPLICA_UNAWARE"}
+            },
+            "capabilities" : [],
+            "operations" : ["install", "config", "start", "uninstall", "stop"], 
+            "managementProtocol" : {
+                "initialState" : "not-installed",
+                "states" : [
+                    {
+                        "name" : "not-installed",
+                        "requires" : [], 
+                        "offer" : [],
+                        "faultHandlers" : []
+                    }, 
+                    {
+                        "name" : "installed",
+                        "requires" : [], 
+                        "offer" : [],
+                        "faultHandlers" : []
+                    }, 
+                    {
+                        "name" : "configured",
+                        "requires" : [], 
+                        "offer" : [],
+                        "faultHandlers" : []
+                    }, 
+                    {
+                        "name" : "working",
+                        "requires" : ["host", "backend"], 
+                        "offer" : [],
+                        "faultHandlers" : ["configured"]
+                    }, 
+                    {
+                        "name" : "damaged",
+                        "requires" : [], 
+                        "offer" : [],
+                        "faultHandlers" : []
+                    }
+                ], 
+                "transitions" : [
+                    {
+                        "startState" : "not-installed",
+                        "operation" : "install",
+                        "targetState" : "installed",
+                        "requires" : ["host"], 
+                        "offers" : [],
+                        "faultHandlers" : ["damaged"]
+                    },
+                    {
+                        "startState" : "installed",
+                        "operation" : "config",
+                        "targetState" : "configured",
+                        "requires" : ["host", "backend"], 
+                        "offers" : [],
+                        "faultHandlers" : ["installed"]
+                    },
+                    {
+                        "startState" : "configured",
+                        "operation" : "config",
+                        "targetState" : "configured",
+                        "requires" : ["host", "backend"], 
+                        "offers" : [],
+                        "faultHandlers" : ["installed"]
+                    },
+                    {
+                        "startState" : "configured",
+                        "operation" : "start",
+                        "targetState" : "working",
+                        "requires" : ["host", "backend"], 
+                        "offers" : [],
+                        "faultHandlers" : ["configured"]
+                    },
+                    {
+                        "startState" : "working",
+                        "operation" : "stop",
+                        "targetState" : "configured",
+                        "requires" : ["host"], 
+                        "offers" : [],
+                        "faultHandlers" : ["configured"]
+                    }, 
+                    {
+                        "startState" : "installed",
+                        "operation" : "uninstall",
+                        "targetState" : "not-installed",
+                        "requires" : ["host"], 
+                        "offers" : [],
+                        "faultHandlers" : ["damaged"]
+                    }, 
+                    {
+                        "startState" : "configured",
+                        "operation" : "uninstall",
+                        "targetState" : "not-installed",
+                        "requires" : ["host"], 
+                        "offers" : [],
+                        "faultHandlers" : ["damaged"]
+                    }
+                ]
+            }
+        },
+        {
+            "name" : "api", 
+            "requirements" : {
+                "host" : {"name" : "host", "sort" : "CONTAINMENT"},
+                "data" : {"name" : "data", "sort" : "REPLICA_AWARE"}
+            }, 
+            "capabilities" : ["endpoint"], 
+            "operations" : ["install", "uninstall", "start", "stop", "config"],
+            "managementProtocol" : {
+                "initialState" : "unavailable", 
+                "states" : [
+                    {
+                        "name" : "unavailable", 
+                        "requires" : [], 
+                        "offers" : [],
+                        "faultHandlers" : []
+                    }, 
+                    {
+                        "name" : "available", 
+                        "requires" : [], 
+                        "offers" : [],
+                        "faultHandlers" : []
+                    }, 
+                    {
+                        "name" : "running",
+                        "requires" : ["host", "data"],
+                        "offers" : ["endpoint"],
+                        "faultHandlers" : ["available"]
+                    }, 
+                    {
+                        "name" : "damaged",
+                        "requires" : [],
+                        "offers" : [],
+                        "faultHandlers" : []
+                    }
+                ], 
+                "transitions" : [
+                    {
+                        "startState" : "unavailable", 
+                        "operation" : "install", 
+                        "targetState" : "available", 
+                        "requires" : ["host"], 
+                        "offers" : [], 
+                        "faultHandlers" : ["damaged"]
+                    }, 
+                    {
+                        "startState" : "available", 
+                        "operation" : "uninstall", 
+                        "targetState" : "unavailable", 
+                        "requires" : ["host"], 
+                        "offers" : [], 
+                        "faultHandlers" : ["damaged"]
+                    }, 
+                    {
+                        "startState" : "available", 
+                        "operation" : "start", 
+                        "targetState" : "running", 
+                        "requires" : ["host"], 
+                        "offers" : [], 
+                        "faultHandlers" : ["available"]
+                    }, 
+                    {
+                        "startState" : "running", 
+                        "operation" : "config", 
+                        "targetState" : "running", 
+                        "requires" : ["host"], 
+                        "offers" : [], 
+                        "faultHandlers" : ["damaged"]
+                    }, 
+                    {
+                        "startState" : "running", 
+                        "operation" : "stop", 
+                        "targetState" : "available", 
+                        "requires" : ["host"], 
+                        "offers" : [], 
+                        "faultHandlers" : ["available"]
+                    }
+                ]
+            }
+        }, 
+        {
+            "name" : "node", 
+            "requirements" : [],
+            "capabilities" : ["host"],
+            "operations" : ["start", "stop"], 
+            "managementProtocol" : {
+                "initialState" : "stopped", 
+                "states" : [
+                    {
+                        "name" : "stopped", 
+                        "requires" : [],
+                        "offers" : [],
+                        "faultHandlers" : []
+                    }, 
+                    {
+                        "name" : "running", 
+                        "requires" : [],
+                        "offers" : ["host"],
+                        "faultHandlers" : []
+                    }
+                ]
+            },
+            "transitions" : [
+                {
+                    "startState" : "stopped", 
+                    "operation" : "start", 
+                    "targetState" : "running", 
+                    "requires" : [], 
+                    "offers" : [], 
+                    "faultHandlers" : []
+                }, 
+                {
+                    "startState" : "running", 
+                    "operation" : "stop", 
+                    "targetState" : "stopped", 
+                    "requires" : [], 
+                    "offers" : [], 
+                    "faultHandlers" : []
+                }
+            ]
+        }, 
+        {
+            "name" : "maven", 
+            "requirements" : [],
+            "capabilities" : ["host"],
+            "operations" : ["start", "stop"], 
+            "managementProtocol" : {
+                "initialState" : "stopped", 
+                "states" : [
+                    {
+                        "name" : "stopped", 
+                        "requires" : [],
+                        "offers" : [],
+                        "faultHandlers" : []
+                    }, 
+                    {
+                        "name" : "running", 
+                        "requires" : [],
+                        "offers" : ["host"],
+                        "faultHandlers" : []
+                    }
+                ]
+            },
+            "transitions" : [
+                {
+                    "startState" : "stopped", 
+                    "operation" : "start", 
+                    "targetState" : "running", 
+                    "requires" : [], 
+                    "offers" : [], 
+                    "faultHandlers" : []
+                }, 
+                {
+                    "startState" : "running", 
+                    "operation" : "stop", 
+                    "targetState" : "stopped", 
+                    "requires" : [], 
+                    "offers" : [], 
+                    "faultHandlers" : []
+                }
+            ]
+        }, 
+        {
+            "name" : "mongo", 
+            "requirements" : [],
+            "capabilities" : ["db"],
+            "operations" : ["start", "stop"], 
+            "managementProtocol" : {
+                "initialState" : "stopped", 
+                "states" : [
+                    {
+                        "name" : "stopped", 
+                        "requires" : [],
+                        "offers" : [],
+                        "faultHandlers" : []
+                    }, 
+                    {
+                        "name" : "running", 
+                        "requires" : [],
+                        "offers" : ["db"],
+                        "faultHandlers" : []
+                    }
+                ]
+            },
+            "transitions" : [
+                {
+                    "startState" : "stopped", 
+                    "operation" : "start", 
+                    "targetState" : "running", 
+                    "requires" : [], 
+                    "offers" : [], 
+                    "faultHandlers" : []
+                }, 
+                {
+                    "startState" : "running", 
+                    "operation" : "stop", 
+                    "targetState" : "stopped", 
+                    "requires" : [], 
+                    "offers" : [], 
+                    "faultHandlers" : []
+                }
+            ]
+        }
+
+    ],
+    "bindings" : [
+        {
+            "sourceNode" : "gui", 
+            "sourceRequirement" : "host",
+            "targetNode" : "node",
+            "targetCapability" : "host"
+        }, 
+        {
+            "sourceNode" : "gui", 
+            "sourceRequirement" : "backend", 
+            "targetNode" : "api", 
+            "targetCapability" : "endpoint"
+        }, 
+        {
+            "sourceNode" : "api",
+            "sourceRequirement" : "host", 
+            "targetNode" : "maven", 
+            "targetCapability" : "host"
+        }, 
+        {
+            "sourceNode" : "api", 
+            "sourceRequirement" : "data", 
+            "targetNode" : "mongo", 
+            "targetCapability" : "db"
+        }
+    ]
+}

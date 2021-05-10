@@ -1,0 +1,54 @@
+1) ho fatto nodeReq e nodeCap per leggibilita'
+    - da una parte mi turbava fare una sola classe che rappresenteasse sia chiave che valore
+      della binding function (statica)
+    - dall'altra fare una superclasse/interfaccia/classe-astratta non mi sembri che porti nessun
+      reale vantaggio (ed anzi renderebbe il codice piu' verboso perche' si dovrebbe usare instanceof
+      per poi fare il casting ecc)
+    > non e' bellissimo (soprattutto i nomi) ma credo sia la soluzione che vince il tradeoff
+
+2) nota per me
+    - nella scaleIn prima killavo l'istanza e poi rimuovevo both ways i runtime binding
+    > ora faccio l'inverso, cosi' posso usare il metodo per il controllo dell'esistenza 
+      dell'istanza TODO
+
+3) getPendingFaults() domanda efficienza
+
+// new 
+
+-> e' possibile creare dei metodi a visibilita' ridotta non tramite ereditarieta'?
+
+-> trovatp bug su greedyPi: le scaleOut non impongono un ordine in quanto le istanze attive
+sono messe dentro una hash table! (greedyPi test)
+-> randomPi test: questioni sul random 
+
+-> su removeALlRuntimeBindings ora uso clear e non replace
+  -> tutte queste cose vanno verificate per l'efficienza!
+
+-> fixato il discorso sulle broken instance
+  un'instanza e' broken se IL NODO ha un req di containment e 
+  nel relativo runtime binding dell'istanza l'istanza container e' morta
+    -> tutti gli altri casi NON SONO AMMESSI DAL MODELLO
+      -> non si puo' rimuovere un runtime binding relativo ad un
+        containment
+
+-> IMPORTANTE
+1) i constraint bloccano actions che non rispettano l'automa di un nodo
+   -> non posso fare start prima di config (anche tramite vincoli indotti)
+2) i constrain non forzano comportamenti inter-nodo
+  -> non ci sono constraint del tipo "prima: api fa start cosi' offre endpoint", dopo: gui fa config"
+    -> cosi ci sarebbe l'enforce al rispetto dei reqs, non ci sarebbero mai fault
+      -> stai facendo a mano inserendo constraints quello che vuole evitarti di fare il modello (cioe' fare piano a mano)
+
+  -> NO: GLI START DEI CONTAINER LO DEVI METTERE
+
+--> i constraint obbligano un nodo a rispettare il SUO protocollo e a rispettare lo scaleOut (cioe' prima creo container e poi containerizzato)
+  -> tutto il resto NO
+
+
+
+  A -> B -> C
+  {A,B} , {B, C}
+
+afterElems (A) = [B, C]
+afterElems (B) = [C]
+afterElems (C) = []

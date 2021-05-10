@@ -1,0 +1,27 @@
+{
+    "actions" : {
+        "scaleOutN1" : {"action" : "scaleOut", "nodeName" : "node", "idToAssign" : "n1"},
+        "scaleOutM1" : {"action" : "scaleOut", "nodeName" : "maven", "idToAssign" : "m1"},
+        "scaleOutM2" : {"action" : "scaleOut", "nodeName" : "maven", "idToAssign" : "m2"},
+        "scaleOutD1" : {"action" : "scaleOut", "nodeName" : "mongo", "idToAssign" : "d1"},
+       
+        "startN1" : {"action" : "op", "instanceID": "n1", "opName" : "start"},
+        "startD1" : {"action" : "op", "instanceID" : "d1", "opName" : "start"},
+        "startM1" : {"action" : "op", "instanceID": "m1", "opName" : "start"},
+        "startM2" : {"action" : "op", "instanceID": "m2", "opName" : "start"},
+
+        "scaleOutG1" : {"action" : "scaleOut", "nodeName" : "gui", "idToAssign" : "g1", "containerID" : "n1"},
+        "scaleOutA1" : {"action" : "scaleOut", "nodeName" : "api", "idToAssign" : "a1", "containerID" : "m1"},
+        "scaleOutA2" : {"action" : "scaleOut", "nodeName" : "api", "idToAssign" : "a2", "containerID" : "m2"},
+
+        "installG1" : {"action" : "op", "instanceID" : "g1", "opName": "install"},
+        "configG1" : {"action" : "op", "instanceID" : "g1", "opName": "config"},
+
+        "installA1" : {"action" : "op", "instanceID" : "a1", "opName" : "install"},
+        "startA1" : {"action" : "op", "instanceID" : "a1", "opName" : "start"},
+        "installA2" : {"action" : "op", "instanceID" : "a2", "opName" : "install"},
+        "startA2" : {"action" : "op", "instanceID" : "a2", "opName" : "start"},
+
+        "startG1" : {"action" : "op", "instanceID" : "gui", "opName" : "start"}
+    }
+}

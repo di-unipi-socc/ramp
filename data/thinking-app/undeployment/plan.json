@@ -1,0 +1,153 @@
+{
+    "actions" : {
+        "stopG1" : {"action" : "op", "instanceID" : "g1", "opName" : "stop"}, 
+
+        "stopA1" : {"action" : "op", "instanceID" : "a1", "opName" : "stop"},
+        "stopA2" : {"action" : "op", "instanceID" : "a2", "opName" : "stop"},
+        
+        "scaleInG1" : {"action" : "scaleIn", "instanceID" : "g1"},
+        "scaleInA1" : {"action" : "scaleIn", "instanceID" : "g2"},
+        "scaleInA2" : {"action" : "scaleIn", "instanceID" : "a2"},
+
+        "stopN1" : {"action" : "op", "instanceID" : "n1", "opName" : "stop"},
+
+        "stopM1" : {"action" : "op", "instanceID" : "m1", "opName" : "stop"},
+        "stopM2" : {"action" : "op", "instanceID" : "m2", "opName" : "stop"},
+
+        "stopD1" : {"action" : "op", "instanceID" : "d1", "opName" : "stop"},
+
+        "scaleInN1" : {"action" : "scaleIn", "instanceID" : "n1"},
+        "scaleInM1" : {"action" : "scaleIn", "instanceID" : "m1"},
+        "scaleInM2" : {"action" : "scaleIn", "instanceID" : "m2"},
+        "scaleInD1" : {"action" : "scaleIn", "instanceID" : "d1"}
+    }, 
+    "partialOrdering" : [
+
+        {
+            "before" : "scaleInG1", 
+            "after" : "stopM1"
+        },
+        {
+            "before" : "scaleInG1", 
+            "after" : "stopM2"
+        },
+        {
+            "before" : "scaleInG1", 
+            "after" : "stopD1"
+        },  
+        {
+            "before" : "scaleInG1", 
+            "after" : "stopN1"
+        },
+        
+        {
+            "before" : "stopG1", 
+            "after" : "stopM1"
+        },
+        {
+            "before" : "stopG1", 
+            "after" : "stopM2"
+        },
+        {
+            "before" : "stopG1", 
+            "after" : "stopD1"
+        },  
+        {
+            "before" : "stopG1", 
+            "after" : "stopN1"
+        },
+
+        {
+            "before" : "scaleInA1", 
+            "after" : "stopM1"
+        },
+        {
+            "before" : "scaleInA1", 
+            "after" : "stopM2"
+        },
+        {
+            "before" : "scaleInA1", 
+            "after" : "stopD1"
+        },  
+        {
+            "before" : "scaleInA1", 
+            "after" : "stopN1"
+        },
+
+        {
+            "before" : "stopA1", 
+            "after" : "stopM1"
+        },
+        {
+            "before" : "stopA1", 
+            "after" : "stopM2"
+        },
+        {
+            "before" : "stopA1", 
+            "after" : "stopD1"
+        },  
+        {
+            "before" : "stopA1", 
+            "after" : "stopN1"
+        },
+
+        {
+            "before" : "scaleInA2", 
+            "after" : "stopM1"
+        },
+        {
+            "before" : "scaleInA2", 
+            "after" : "stopM2"
+        },
+        {
+            "before" : "scaleInA2", 
+            "after" : "stopD1"
+        },  
+        {
+            "before" : "scaleInA2", 
+            "after" : "stopN1"
+        },
+
+        {
+            "before" : "stopA2", 
+            "after" : "stopM1"
+        },
+        {
+            "before" : "stopA2", 
+            "after" : "stopM2"
+        },
+        {
+            "before" : "stopA2", 
+            "after" : "stopD1"
+        },  
+        {
+            "before" : "stopA2", 
+            "after" : "stopN1"
+        },
+
+
+
+       
+
+
+
+
+
+        {
+            "before" : "stopN1", 
+            "after" : "scaleInN1"
+        },
+        {
+            "before" : "stopM1", 
+            "after" : "scaleInM1"
+        },
+        {
+            "before" : "stopM2", 
+            "after" : "scaleInM2"
+        },
+        {
+            "before" : "stopD1", 
+            "after" : "scaleInD1"
+        }
+    ]
+}
