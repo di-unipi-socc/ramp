@@ -1,0 +1,28 @@
+{
+    "actions" : {
+        "stopG1" : {"action" : "op", "instanceID" : "g1", "opName" : "stop"},
+        "configG1" : {"action" : "op", "instanceID" : "g1", "opName" : "configure"},
+        "configA1" : {"action" : "op", "instanceID" : "a1", "opName" : "configure"},
+        "configA2" : {"action" : "op", "instanceID" : "a2", "opName" : "configure"},
+        "startG1" : {"action" : "op", "instanceID" : "g1", "opName" : "start" }
+    }, 
+    "partialOrdering" : [{
+        "before" : "stopG1",
+        "after" : "configG1"
+    }, {
+        "before" : "stopG1",
+        "after" : "configA1"
+    }, {
+        "before" : "stopG1",
+        "after" : "configA2"
+    }, {
+        "before" : "configG1",
+        "after" : "startG1"
+    }, {
+        "before" : "configA1",
+        "after" : "startG1"
+    }, {
+        "before" : "configA2",
+        "after" : "startG1"
+    }]
+}
