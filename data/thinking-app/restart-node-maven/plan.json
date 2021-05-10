@@ -1,0 +1,73 @@
+{
+    "actions" : {
+        "scaleInN1" : { "action" : "scaleIn", "instanceID" : "n1" },
+        "scaleOutN2" : { "action" : "scaleOut", "nodeName" : "node", "idToAssign" : "n2" },
+        "scaleOutG2" : { "action" : "scaleOut", "nodeName" : "gui", "idToAssign" : "g2", "containerID" : "n2" },
+        "startN2" : { "action" : "op", "instanceID" : "n2", "opName" : "start" },
+        "installG2" : { "action" : "op", "instanceID" : "g2", "opName" : "install" },
+        "configureG2" : { "action" : "op", "instanceID" : "g2", "opName" : "configure" },
+        "startG2" : { "action" : "op", "instanceID" : "g2", "opName" : "start" },
+        "scaleInM1" : { "action" : "scaleIn", "instanceID" : "m1" },
+        "scaleOutM3" : { "action" : "scaleOut", "nodeName" : "maven", "idToAssign" : "m3" },
+        "scaleOutA3" : { "action" : "scaleOut", "nodeName" : "api", "idToAssign" : "a3", "containerID" : "m3" },
+        "startM3" : { "action" : "op", "instanceID" : "m3", "opName" : "start" },
+        "installA3" : { "action" : "op", "instanceID" : "a3", "opName" : "install" },
+        "startA3" : { "action" : "op", "instanceID" : "a3", "opName" : "start" },
+        "scaleInM2" : { "action" : "scaleIn", "instanceID" : "m2" },
+        "scaleOutM4" : { "action" : "scaleOut", "nodeName" : "maven", "idToAssign" : "m4" },
+        "scaleOutA4" : { "action" : "scaleOut", "nodeName" : "api", "idToAssign" : "a4", "containerID" : "m4" },
+        "startM4" : { "action" : "op", "instanceID" : "m4", "opName" : "start" },
+        "installA4" : { "action" : "op", "instanceID" : "a4", "opName" : "install" },
+        "startA4" : { "action" : "op", "instanceID" : "a4", "opName" : "start" }
+
+    }, 
+    "partialOrdering" : [{
+        "before" : "scaleInN1",
+        "after" : "scaleOutN2"
+    },{
+        "before" : "scaleOutN2",
+        "after" : "scaleOutG2"
+    },{
+        "before" : "scaleOutG2",
+        "after" : "startN2"
+    },{
+        "before" : "startN2",
+        "after" : "installG2"
+    },{
+        "before" : "installG2",
+        "after" : "configureG2"
+    },{
+        "before" : "configureG2",
+        "after" : "startG2"
+    },{
+        "before" : "scaleInM1",
+        "after" : "scaleOutM3"
+    },{
+        "before" : "scaleOutM3",
+        "after" : "scaleOutA3"
+    },{
+        "before" : "scaleOutA3",
+        "after" : "startM3"
+    },{
+        "before" : "startM3",
+        "after" : "installA3"
+    },{
+        "before" : "installA3",
+        "after" : "startA3"
+    },{
+        "before" : "scaleInM2",
+        "after" : "scaleOutM4"
+    },{
+        "before" : "scaleOutM4",
+        "after" : "scaleOutA4"
+    },{
+        "before" : "scaleOutA4",
+        "after" : "startM4"
+    },{
+        "before" : "startM4",
+        "after" : "installA4"
+    },{
+        "before" : "installA4",
+        "after" : "startA4"
+    }]
+}
