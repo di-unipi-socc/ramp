@@ -1,5 +1,5 @@
 # RAMP: Replica-Aware Management Protocols
-This repository provides an implementation of the modelling and analysis framework given by management protocols, which is presented in
+This repository provides an implementation of the modelling and analysis framework given by replica-aware management protocols, which is presented in
 > Soldani J, Cameriero M, Paparelli G, Brogi A. _Modelling and Analysing Replica- and Fault-aware Management of Horizontally Scalable Applications_, Submitted for Publication
 
 ## About RAMP
@@ -9,7 +9,9 @@ RAMP is a Maven project, whose sources are organized in two main parts:
 * [test](https://github.com/di-unipi-socc/ramp/tree/master/src/test/java/unipi/di/socc/ramp), providing all necessary classes to unit test the code.
 
 To compile the project, please issue
-> mvn clean install
+``` 
+mvn clean install 
+```
 
 after cloning the repository on your device.
 
