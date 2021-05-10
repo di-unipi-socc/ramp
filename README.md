@@ -4,7 +4,7 @@ This repository provides an implementation of the modelling and analysis framewo
 
 ## About RAMP
 RAMP is a Maven project, whose sources are organized in two main parts:
-* [core](https://github.com/di-unipi-socc/ramp/tree/master/src/main/java/unipi/di/socc/ramp/core), including an object model for representing application specifications in Java and an analyzer for checking the validity of existing management plans-
+* [core](https://github.com/di-unipi-socc/ramp/tree/master/src/main/java/unipi/di/socc/ramp/core), including an object model for representing application specifications in Java and an analyzer for checking the validity of existing management plans.
 * [cli](https://github.com/di-unipi-socc/ramp/tree/master/src/main/java/unipi/di/socc/ramp/cli), providing the main module to run analyses and a set of parsing classes to provide the analyzer with the necessary inputs. 
 * [test](https://github.com/di-unipi-socc/ramp/tree/master/src/test/java/unipi/di/socc/ramp), providing all necessary classes to unit test the code.
 
