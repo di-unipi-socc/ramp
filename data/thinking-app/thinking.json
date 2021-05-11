@@ -16,31 +16,31 @@
                     {
                         "name" : "not-installed",
                         "requires" : [], 
-                        "offer" : [],
+                        "offers" : [],
                         "faultHandlers" : []
                     }, 
                     {
                         "name" : "installed",
                         "requires" : [], 
-                        "offer" : [],
+                        "offers" : [],
                         "faultHandlers" : []
                     }, 
                     {
                         "name" : "configured",
                         "requires" : [], 
-                        "offer" : [],
+                        "offers" : [],
                         "faultHandlers" : []
                     }, 
                     {
                         "name" : "working",
                         "requires" : ["host", "backend"], 
-                        "offer" : [],
+                        "offers" : [],
                         "faultHandlers" : ["configured"]
                     }, 
                     {
                         "name" : "damaged",
                         "requires" : [], 
-                        "offer" : [],
+                        "offers" : [],
                         "faultHandlers" : []
                     }
                 ], 
@@ -204,26 +204,26 @@
                         "offers" : ["host"],
                         "faultHandlers" : []
                     }
+                ],
+                "transitions" : [
+                    {
+                        "startState" : "stopped", 
+                        "operation" : "start", 
+                        "targetState" : "running", 
+                        "requires" : [], 
+                        "offers" : [], 
+                        "faultHandlers" : []
+                    }, 
+                    {
+                        "startState" : "running", 
+                        "operation" : "stop", 
+                        "targetState" : "stopped", 
+                        "requires" : [], 
+                        "offers" : [], 
+                        "faultHandlers" : []
+                    }
                 ]
-            },
-            "transitions" : [
-                {
-                    "startState" : "stopped", 
-                    "operation" : "start", 
-                    "targetState" : "running", 
-                    "requires" : [], 
-                    "offers" : [], 
-                    "faultHandlers" : []
-                }, 
-                {
-                    "startState" : "running", 
-                    "operation" : "stop", 
-                    "targetState" : "stopped", 
-                    "requires" : [], 
-                    "offers" : [], 
-                    "faultHandlers" : []
-                }
-            ]
+            }
         }, 
         {
             "name" : "maven", 
@@ -245,26 +245,26 @@
                         "offers" : ["host"],
                         "faultHandlers" : []
                     }
+                ],
+                "transitions" : [
+                    {
+                        "startState" : "stopped", 
+                        "operation" : "start", 
+                        "targetState" : "running", 
+                        "requires" : [], 
+                        "offers" : [], 
+                        "faultHandlers" : []
+                    }, 
+                    {
+                        "startState" : "running", 
+                        "operation" : "stop", 
+                        "targetState" : "stopped", 
+                        "requires" : [], 
+                        "offers" : [], 
+                        "faultHandlers" : []
+                    }
                 ]
-            },
-            "transitions" : [
-                {
-                    "startState" : "stopped", 
-                    "operation" : "start", 
-                    "targetState" : "running", 
-                    "requires" : [], 
-                    "offers" : [], 
-                    "faultHandlers" : []
-                }, 
-                {
-                    "startState" : "running", 
-                    "operation" : "stop", 
-                    "targetState" : "stopped", 
-                    "requires" : [], 
-                    "offers" : [], 
-                    "faultHandlers" : []
-                }
-            ]
+            }
         }, 
         {
             "name" : "mongo", 
@@ -286,28 +286,27 @@
                         "offers" : ["db"],
                         "faultHandlers" : []
                     }
+                ],
+                "transitions" : [
+                    {
+                        "startState" : "stopped", 
+                        "operation" : "start", 
+                        "targetState" : "running", 
+                        "requires" : [], 
+                        "offers" : [], 
+                        "faultHandlers" : []
+                    }, 
+                    {
+                        "startState" : "running", 
+                        "operation" : "stop", 
+                        "targetState" : "stopped", 
+                        "requires" : [], 
+                        "offers" : [], 
+                        "faultHandlers" : []
+                    }
                 ]
-            },
-            "transitions" : [
-                {
-                    "startState" : "stopped", 
-                    "operation" : "start", 
-                    "targetState" : "running", 
-                    "requires" : [], 
-                    "offers" : [], 
-                    "faultHandlers" : []
-                }, 
-                {
-                    "startState" : "running", 
-                    "operation" : "stop", 
-                    "targetState" : "stopped", 
-                    "requires" : [], 
-                    "offers" : [], 
-                    "faultHandlers" : []
-                }
-            ]
+            }
         }
-
     ],
     "bindings" : [
         {

@@ -50,17 +50,19 @@ public class ManagementProtocol {
             NullPointerException, 
             IllegalArgumentException
     {
-        //TODO: check if state is already in states
 
         if(state == null)
             throw new NullPointerException();
         if(state.isBlank())
             throw new IllegalArgumentException();
         
-        this.states.add(state);
-        this.rho.put(state, new ArrayList<>());
-        this.gamma.put(state, new ArrayList<>());
-        this.phi.put(state, new ArrayList<>());
+        if(!this.states.contains(state)){
+            this.states.add(state);
+            this.rho.put(state, new ArrayList<>());
+            this.gamma.put(state, new ArrayList<>());
+            this.phi.put(state, new ArrayList<>());
+        }
+        //TODO else something??
     }
 
     public void addTransition(String startState, String op, String endState){

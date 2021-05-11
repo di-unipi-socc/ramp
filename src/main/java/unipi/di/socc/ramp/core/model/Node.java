@@ -15,7 +15,6 @@ public class Node {
     public Node(
         String name, 
         ManagementProtocol manProtocol, 
-        List<String> states,
         List<Requirement> reqs, 
         List<String> caps, 
         List<String> ops
@@ -24,7 +23,7 @@ public class Node {
             NullPointerException,
             IllegalArgumentException
     {
-        if(name == null || manProtocol == null || states == null || reqs == null || caps == null || ops == null)
+        if(name == null || manProtocol == null || reqs == null || caps == null || ops == null)
                 throw new NullPointerException();
         
         if(name.isBlank())

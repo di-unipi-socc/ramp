@@ -7,7 +7,7 @@ import java.util.Objects;
 
 public class NodeInstance {
     
-    private final Node nodeType;
+    private Node nodeType;
     private String currentState;
     private final String id;
 
@@ -26,7 +26,10 @@ public class NodeInstance {
         this.setCurrentState(currentState);
         this.id = id;
     }
-
+    public void setNode(Node n){
+        this.nodeType = n;
+    }
+    
     public void setCurrentState(String state){
         if(state == null)
             throw new NullPointerException();
