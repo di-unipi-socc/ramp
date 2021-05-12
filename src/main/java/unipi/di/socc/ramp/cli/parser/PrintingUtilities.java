@@ -1,11 +1,9 @@
 package unipi.di.socc.ramp.cli.parser;
 
-import unipi.di.socc.ramp.cli.parser.wrappers.ConstraintWrapper;
-import unipi.di.socc.ramp.cli.parser.wrappers.OperationWrapper;
-import unipi.di.socc.ramp.cli.parser.wrappers.PlanOrSequenceWrapper;
-import unipi.di.socc.ramp.cli.parser.wrappers.ScaleInWrapper;
-import unipi.di.socc.ramp.cli.parser.wrappers.ScaleOutWrapper;
+import unipi.di.socc.ramp.cli.parser.wrappers.*;
+import unipi.di.socc.ramp.core.analyzer.Plan;
 import unipi.di.socc.ramp.core.analyzer.actions.*;
+
 import unipi.di.socc.ramp.core.model.Application;
 import unipi.di.socc.ramp.core.model.ManagementProtocol;
 import unipi.di.socc.ramp.core.model.Node;
@@ -15,23 +13,23 @@ import unipi.di.socc.ramp.core.model.Transition;
 
 public class PrintingUtilities {
     
-    public static void printPlanOrSequence(PlanOrSequenceWrapper planWrap){
+    public static void printPlanOrSequenceWrapper(PlanOrSequenceWrapper planWrap){
 
         System.out.println("~~~~~~~~~~~~~~~~~ ACTIONS ~~~~~~~~~~~~~~~~~~~~~~");
 
-        for(Action action : planWrap.getActions().values()){
+        for(ActionWrapper action : planWrap.getActions().values()){
             if(action instanceof ScaleOutWrapper){
                 ScaleOutWrapper castedActionWrap = (ScaleOutWrapper) action;
                 //scaleOut1
                 if(castedActionWrap.getContainerID() == null)
                     System.out.println(
-                        castedActionWrap.getAction() + " " + 
+                        castedActionWrap.getActionName() + " " + 
                         castedActionWrap.getNodeName() + " " + 
                         castedActionWrap.getIDToAssign()
                     );
                 else
                 System.out.println(
-                    castedActionWrap.getAction() + " " + 
+                    castedActionWrap.getActionName() + " " + 
                     castedActionWrap.getNodeName() + " " + 
                     castedActionWrap.getIDToAssign() + " " +
                     castedActionWrap.getContainerID()
@@ -41,14 +39,14 @@ public class PrintingUtilities {
             if(action instanceof ScaleInWrapper){
                 ScaleInWrapper castedActionWrap = (ScaleInWrapper) action;
                 System.out.println(
-                    castedActionWrap.getAction() + " " + 
+                    castedActionWrap.getActionName() + " " + 
                     castedActionWrap.getInstanceID()
                 );
             }
             if(action instanceof OperationWrapper){
                 OperationWrapper castedActionWrap = (OperationWrapper) action;
                 System.out.println(
-                    castedActionWrap.getAction() + " " + 
+                    castedActionWrap.getActionName() + " " + 
                     castedActionWrap.getInstanceID() + " " + 
                     castedActionWrap.getOpName()
                 );
@@ -57,7 +55,7 @@ public class PrintingUtilities {
 
         System.out.println("~~~~~~~~~~~~~~~~~ CONSTRAINTS ~~~~~~~~~~~~~~~~~~~~~~");
 
-        for(ConstraintWrapper contraintWrap : planWrap.getPartialOrdering())
+        for(ConstraintWrapper contraintWrap : planWrap.getPartialOrderWrap())
             System.out.println(contraintWrap.getBefore() + " -> " + contraintWrap.getAfter());
 
     }
@@ -158,5 +156,68 @@ public class PrintingUtilities {
                 
             }
         }
+    }
+
+    public static void printPartialOrder(Plan plan){
+        for(Action before : plan.getPartialOrder().keySet()){
+
+            PrintingUtilities.printAction(before);
+            System.out.println(" -> ");
+
+            for(Action after : plan.getPartialOrder().get(before)){
+                System.out.print("\t");
+                PrintingUtilities.printAction(after);
+                System.out.println("");
+
+            }
+
+            System.out.println("\n");
+
+
+        }
+    }
+
+    public static void printAction(unipi.di.socc.ramp.core.analyzer.actions.Action action){
+        if(action instanceof ScaleOut1){
+            ScaleOut1 castedAction = (ScaleOut1) action;
+            System.out.print(
+                castedAction.getActionName() + " " + 
+                castedAction.getNodeName() + " " + 
+                castedAction.getIDToAssign()
+            );
+        }
+        if(action instanceof ScaleOut2){
+            ScaleOut2 castedAction = (ScaleOut2) action;
+            System.out.print(
+                castedAction.getActionName() + " " + 
+                castedAction.getNodeName() + " " + 
+                castedAction.getIDToAssign() + " " + 
+                castedAction.getContainerID()
+            );
+        }
+        if(action instanceof ScaleIn){
+            ScaleIn castedAction = (ScaleIn) action;
+            System.out.print(
+                castedAction.getActionName() + " " + 
+                castedAction.getInstanceID()
+            );
+        }
+        if(action instanceof OpStart){
+            OpStart castedAction = (OpStart) action;
+            System.out.print(
+                castedAction.getActionName() + " " + 
+                castedAction.getInstanceID() + " " + 
+                castedAction.getOpName()
+            );
+        }
+        if(action instanceof OpEnd){
+            OpEnd castedAction = (OpEnd) action;
+            System.out.print(
+                castedAction.getActionName() + " " + 
+                castedAction.getInstanceID() + " " + 
+                castedAction.getOpName()
+            );
+        }
+
     }
 }

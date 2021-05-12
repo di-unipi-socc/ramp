@@ -21,7 +21,7 @@
         "startA4" : { "action" : "op", "instanceID" : "a4", "opName" : "start" }
 
     }, 
-    "partialOrdering" : [{
+    "partialOrder" : [{
         "before" : "scaleInN1",
         "after" : "scaleOutN2"
     },{

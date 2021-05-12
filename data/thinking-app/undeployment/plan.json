@@ -21,7 +21,7 @@
         "scaleInM2" : {"action" : "scaleIn", "instanceID" : "m2"},
         "scaleInD1" : {"action" : "scaleIn", "instanceID" : "d1"}
     }, 
-    "partialOrdering" : [
+    "partialOrder" : [
         {
             "before" : "scaleInG1", 
             "after" : "stopM1"

@@ -1,8 +1,7 @@
 package unipi.di.socc.ramp.cli.parser.wrappers;
 
-import unipi.di.socc.ramp.core.analyzer.actions.Action;
 
-public class ScaleOutWrapper extends Action{
+public class ScaleOutWrapper extends ActionWrapper{
     private final String idToAssign;
     private final String nodeName;
     private final String containerID;

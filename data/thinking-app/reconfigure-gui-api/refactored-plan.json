@@ -6,7 +6,7 @@
         "configA2" : {"action" : "op", "instanceID" : "a2", "opName" : "configure"},
         "startG1" : {"action" : "op", "instanceID" : "g1", "opName" : "start" }
     }, 
-    "partialOrdering" : [{
+    "partialOrder" : [{
         "before" : "stopG1",
         "after" : "configG1"
     }, {

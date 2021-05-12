@@ -6,11 +6,7 @@ public abstract class Action {
 
     protected String action;
 
-    //TODO: for parsing purposes
-    //gson dont call the constructor, so each action has to be setted manually
-    public abstract void setAction();
-
-    public String getAction(){
+    public String getActionName(){
         return this.action;
     }
 

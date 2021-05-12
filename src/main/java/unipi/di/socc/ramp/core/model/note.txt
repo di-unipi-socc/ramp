@@ -41,14 +41,9 @@ sono messe dentro una hash table! (greedyPi test)
 
   -> NO: GLI START DEI CONTAINER LO DEVI METTERE
 
---> i constraint obbligano un nodo a rispettare il SUO protocollo e a rispettare lo scaleOut (cioe' prima creo container e poi containerizzato)
-  -> tutto il resto NO
 
+--> guardare i metodi del modello messi solo per il parsing
 
-
-  A -> B -> C
-  {A,B} , {B, C}
-
-afterElems (A) = [B, C]
-afterElems (B) = [C]
-afterElems (C) = []
+-> pasing ancora da fare
+  -> il parser deve tornare Sequence, Plan (elementi di core)
+    (cosi come torna Application)

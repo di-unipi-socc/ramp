@@ -4,27 +4,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import unipi.di.socc.ramp.core.analyzer.actions.Action;
 
 public class PlanOrSequenceWrapper {
-    private final Map<String, Action> actions;
-    private List<ConstraintWrapper> partialOrdering;
+    private final Map<String, ActionWrapper> actions;
+    private List<ConstraintWrapper> partialOrder;
 
     public PlanOrSequenceWrapper(
-        Map<String, Action> actions, 
-        List<ConstraintWrapper> partialOrdering
+        Map<String, ActionWrapper> actions, 
+        List<ConstraintWrapper> partialOrder
     ){
         this.actions = actions;
-        this.partialOrdering = partialOrdering;
+        this.partialOrder = partialOrder;
     }
 
     public void initializePartialOrdering(){
-        this.partialOrdering = new ArrayList<>();
+        this.partialOrder = new ArrayList<>();
     }
-    public Map<String, Action> getActions() {
+    public Map<String, ActionWrapper> getActions() {
         return actions;
     }
-    public List<ConstraintWrapper> getPartialOrdering() {
-        return partialOrdering;
+    public List<ConstraintWrapper> getPartialOrderWrap() {
+        return partialOrder;
     }
 }
