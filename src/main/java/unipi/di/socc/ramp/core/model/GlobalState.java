@@ -12,7 +12,7 @@ import unipi.di.socc.ramp.core.model.exceptions.*;
 
 public class GlobalState {
     
-    private final Application app;
+    private Application app;
     private final Map<String, NodeInstance> activeInstances;
     private final Map<String, List<RuntimeBinding>> runtimeBindings;
 
@@ -50,6 +50,11 @@ public class GlobalState {
             throw new InstanceUnknownException();
 
         return instance;
+    }
+
+    //TODO needed just for parsing purposes
+    public void setApplication(Application app){
+        this.app = app;
     }
 
     /**

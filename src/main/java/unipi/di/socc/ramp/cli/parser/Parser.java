@@ -31,17 +31,7 @@ import unipi.di.socc.ramp.core.model.exceptions.NodeUnknownException;
 
 public class Parser {
     
-    public static Application parseApplication(String jsonAppPath, String jsonGSPath) throws IOException, NullPointerException, IllegalArgumentException, NodeUnknownException{
-        Application app = parseApplication(jsonAppPath);
-        GlobalState gs = parseGlobalState(jsonGSPath);
-
-        for(NodeInstance instance : gs.getActiveInstances().values())
-            instance.setNode(app.getNodes().get(instance.getNodeType().getName()));
-
-        return app;
-    }
-
-    public static Application parseApplication(String jsonFilePath) 
+    private static Application parseApplication(String jsonFilePath) 
         throws 
             IOException, 
             NullPointerException, 
@@ -131,6 +121,28 @@ public class Parser {
         return app;
     }
 
+    public static Application parseApplication(String jsonAppPath, String jsonGSPath) 
+        throws 
+            IOException, 
+            NullPointerException, 
+            IllegalArgumentException, 
+            NodeUnknownException
+    {
+        Application app = parseApplication(jsonAppPath);
+    
+        if(jsonGSPath == null)
+            return app;
+
+        GlobalState gs = parseGlobalState(jsonGSPath);
+        for(NodeInstance instance : gs.getActiveInstances().values())
+            instance.setNode(app.getNodes().get(instance.getNodeType().getName()));
+
+        gs.setApplication(app);
+        app.setGlobalState(gs);
+
+        return app;
+    }
+
     public static Sequence parseSequence(String jsonFilePath) throws IOException{
         PlanOrSequenceWrapper sequenceWrapper = parsePlanOrSequence(jsonFilePath);
         List<Action> sequence = new ArrayList<>();
@@ -140,75 +152,6 @@ public class Parser {
         
         return new Sequence(sequence);
     }
-
-    public static List<Action> parseAction(ActionWrapper actionWrap){
-        List<Action> action = new ArrayList<>();
-
-        if(actionWrap instanceof OperationWrapper){
-            OperationWrapper opWrap = (OperationWrapper) actionWrap;
-            action.add(new OpStart(opWrap.getInstanceID(), opWrap.getOpName()));
-            action.add(new OpEnd(opWrap.getInstanceID(), opWrap.getOpName()));
-        }
-        if(actionWrap instanceof ScaleOutWrapper){
-            ScaleOutWrapper scaleOutWrap = (ScaleOutWrapper) actionWrap;
-            //scaleOut1
-            if(scaleOutWrap.getContainerID() == null)
-            action.add(
-                    new ScaleOut1(
-                        scaleOutWrap.getIDToAssign(), 
-                        scaleOutWrap.getNodeName()
-                    )
-                );
-            else
-                //scaleOut2
-                action.add(
-                    new ScaleOut2(
-                        scaleOutWrap.getIDToAssign(), 
-                        scaleOutWrap.getNodeName(), 
-                        scaleOutWrap.getContainerID()
-                    )
-                );
-        }
-        if(actionWrap instanceof ScaleInWrapper){
-            ScaleInWrapper scaleInWrap = (ScaleInWrapper) actionWrap;
-            action.add(new ScaleIn(scaleInWrap.getInstanceID()));
-        }
-
-        return action;
-    }
-    
-    public static List<Constraint> getConstraints(PlanOrSequenceWrapper planWrapper){
-        //json action name -> actual action (as a list)
-        //if op -> [opStart, opEnd], otherwise a list with only 1 element
-        Map<String, List<Action>> actionNameToAction = new HashMap<>();
-
-        for(String actionName : planWrapper.getActions().keySet())
-            actionNameToAction.put(actionName, parseAction(planWrapper.getActions().get(actionName)));
-        
-        List<Constraint> constraintsList = new ArrayList<>();
-
-        //we now add the constraints about op: opStart -> opEnd
-        for(List<Action> action : actionNameToAction.values()){
-            //this is an op
-            if(action.size() == 2)
-                constraintsList.add(new Constraint(action.get(0), action.get(1)));
-        }
-
-        //constraints adding
-        for(ConstraintWrapper constraintWrap : planWrapper.getPartialOrderWrap()){
-            List<Action> before = actionNameToAction.get(constraintWrap.getBefore());
-            List<Action> after = actionNameToAction.get(constraintWrap.getAfter());
-
-            //op -> action x, this become opEnd -> action x
-            if(before.size() == 2)
-                constraintsList.add(new Constraint(before.get(1), after.get(0)));
-            else
-                constraintsList.add(new Constraint(before.get(0), after.get(0)));
-        }
-
-        return constraintsList;
-    }
-
 
     public static Plan parsePlan(String jsonFilePath) throws IOException{
         //EXTRACT AND ORGANIZE DATA FROM THE JSON
@@ -271,8 +214,75 @@ public class Parser {
         return new Plan(planActions, partialOrder);
     }
 
+// ############################## SUPPORT ################################# 
 
-    public static PlanOrSequenceWrapper parsePlanOrSequence(String jsonFilePath) 
+    private static List<Action> parseAction(ActionWrapper actionWrap){
+        List<Action> action = new ArrayList<>();
+
+        if(actionWrap instanceof OperationWrapper){
+            OperationWrapper opWrap = (OperationWrapper) actionWrap;
+            action.add(new OpStart(opWrap.getInstanceID(), opWrap.getOpName()));
+            action.add(new OpEnd(opWrap.getInstanceID(), opWrap.getOpName()));
+        }
+        if(actionWrap instanceof ScaleOutWrapper){
+            ScaleOutWrapper scaleOutWrap = (ScaleOutWrapper) actionWrap;
+            //scaleOut1
+            if(scaleOutWrap.getContainerID() == null)
+            action.add(
+                    new ScaleOut1(
+                        scaleOutWrap.getIDToAssign(), 
+                        scaleOutWrap.getNodeName()
+                    )
+                );
+            else
+                //scaleOut2
+                action.add(
+                    new ScaleOut2(
+                        scaleOutWrap.getIDToAssign(), 
+                        scaleOutWrap.getNodeName(), 
+                        scaleOutWrap.getContainerID()
+                    )
+                );
+        }
+        if(actionWrap instanceof ScaleInWrapper){
+            ScaleInWrapper scaleInWrap = (ScaleInWrapper) actionWrap;
+            action.add(new ScaleIn(scaleInWrap.getInstanceID()));
+        }
+
+        return action;
+    }
+    private static List<Constraint> getConstraints(PlanOrSequenceWrapper planWrapper){
+        //json action name -> actual action (as a list)
+        //if op -> [opStart, opEnd], otherwise a list with only 1 element
+        Map<String, List<Action>> actionNameToAction = new HashMap<>();
+
+        for(String actionName : planWrapper.getActions().keySet())
+            actionNameToAction.put(actionName, parseAction(planWrapper.getActions().get(actionName)));
+        
+        List<Constraint> constraintsList = new ArrayList<>();
+
+        //we now add the constraints about op: opStart -> opEnd
+        for(List<Action> action : actionNameToAction.values()){
+            //this is an op
+            if(action.size() == 2)
+                constraintsList.add(new Constraint(action.get(0), action.get(1)));
+        }
+
+        //constraints adding
+        for(ConstraintWrapper constraintWrap : planWrapper.getPartialOrderWrap()){
+            List<Action> before = actionNameToAction.get(constraintWrap.getBefore());
+            List<Action> after = actionNameToAction.get(constraintWrap.getAfter());
+
+            //op -> action x, this become opEnd -> action x
+            if(before.size() == 2)
+                constraintsList.add(new Constraint(before.get(1), after.get(0)));
+            else
+                constraintsList.add(new Constraint(before.get(0), after.get(0)));
+        }
+
+        return constraintsList;
+    }
+    private static PlanOrSequenceWrapper parsePlanOrSequence(String jsonFilePath) 
         throws 
             IOException
     {
@@ -294,8 +304,7 @@ public class Parser {
 
         return planOrSeqWrap;
     }
-
-    public static GlobalState parseGlobalState(String jsonFilePath) throws IOException{
+    private static GlobalState parseGlobalState(String jsonFilePath) throws IOException{
         Gson gson = new Gson();
         Reader reader = Files.newBufferedReader(Paths.get(jsonFilePath));
         return gson.fromJson(reader, GlobalState.class);
