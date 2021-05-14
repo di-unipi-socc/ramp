@@ -30,7 +30,19 @@ The specification of such global state in JSON is provided in the file [running-
 To update the specification of the global state, or to create your own one, please adhere to the same JSON structure as in the linked JSON file.
 
 ### Plans
-TBA
+Examples of plans (both sequential and workflow plans) for deploying and managing an instance of Thinking are available in sub-folders of the present folder, each containing
+* an original, non-valid plan and 
+* its refactored, valid version.
+
+The currently available plans' folders are the following: 
+* [deployment](https://github.com/di-unipi-socc/ramp/tree/master/data/thinking-app/deployment), which contains (sequential) plans for deploying the Thinking application and reaching the above presented global state (starting from the global state where no instance of any service is avaiable),
+* [reconfigure-gui-api](https://github.com/di-unipi-socc/ramp/tree/master/data/thinking-app/reconfigure-gui-api), which contains plans for reconfiguring the running instances of _gui_ and _api_,
+* [restart-api-maven](https://github.com/di-unipi-socc/ramp/tree/master/data/thinking-app/restart-api-maven), which contains plans for restarting the instances of _node_ and _maven_, and
+* [undeployment](https://github.com/di-unipi-socc/ramp/tree/master/data/thinking-app/undeployment), which contains plans for undeploying the Thinking application.
+
+By opening the corresponding folders, diagrams displaying such plans will be available in the README. 
+
+To update the specification of a plan, or to create your own one, please adhere to the same JSON structure as in the available JSON files.
 
 ## Running the examples
 
@@ -49,31 +61,31 @@ java -jar ramp.jar data/thinking-app/thinking.json data/thinking-app/deployment/
 ### Reconfiguration Plan 
 The original plan can be analysed with the command
 ```
-java -jar ramp.jar data/thinking-app/thinking.json data/thinking-app/reconfigure-gui-api/plan.json --sequence --valid
+java -jar ramp.jar data/thinking-app/thinking.json data/thinking-app/running-globalstate.json data/thinking-app/reconfigure-gui-api/plan.json --sequence --valid
 ```
 whilst its refactored version can be validated with the command
 ```
-java -jar ramp.jar data/thinking-app/thinking.json data/thinking-app/reconfigure-gui-api/refactored-plan.json --sequence --valid
+java -jar ramp.jar data/thinking-app/thinking.json data/thinking-app/running-globalstate.json data/thinking-app/reconfigure-gui-api/refactored-plan.json --sequence --valid
 ```
 
 ### Restarting Plan 
 The original plan can be analysed with the command
 ```
-java -jar ramp.jar data/thinking-app/thinking.json data/thinking-app/restart-node-maven/plan.json --sequence --valid
+java -jar ramp.jar data/thinking-app/thinking.json data/thinking-app/running-globalstate.json data/thinking-app/restart-node-maven/plan.json --sequence --valid
 ```
 whilst its refactored version can be validated with the command
 ```
-java -jar ramp.jar data/thinking-app/thinking.json data/thinking-app/restart-node-maven/refactored-plan.json --sequence --valid
+java -jar ramp.jar data/thinking-app/thinking.json data/thinking-app/running-globalstate.json data/thinking-app/restart-node-maven/refactored-plan.json --sequence --valid
 ```
 
 ### Undeployment Plan 
 The original plan can be analysed with the command
 ```
-java -jar ramp.jar data/thinking-app/thinking.json data/thinking-app/undeployment/plan.json --sequence --valid
+java -jar ramp.jar data/thinking-app/thinking.json data/thinking-app/running-globalstate.json data/thinking-app/undeployment/plan.json --sequence --valid
 ```
 whilst its refactored version can be validated with the command
 ```
-java -jar ramp.jar data/thinking-app/thinking.json data/thinking-app/undeployment/refactored-plan.json --sequence --valid
+java -jar ramp.jar data/thinking-app/thinking.json data/thinking-app/running-globalstate.json data/thinking-app/undeployment/refactored-plan.json --sequence --valid
 ```
 
 
