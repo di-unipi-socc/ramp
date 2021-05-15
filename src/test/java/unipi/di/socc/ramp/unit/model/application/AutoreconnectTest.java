@@ -59,7 +59,7 @@ public class AutoreconnectTest {
         assertThrows(NullPointerException.class, () -> this.testApp.autoreconnect(null));
 
         this.testApp.scaleOut1("needy", "needyID");
-        //needyID has two fault pendind non resolvable fault now
+        //needyID has two fault pending non resolvable fault now
         assertTrue(this.testApp.getGlobalState().getPendingFaults("needyID").size() == 2);
         assertTrue(this.testApp.getGlobalState().getResolvableFaults("needyID").isEmpty());
 
@@ -68,10 +68,10 @@ public class AutoreconnectTest {
             RuleNotApplicableException.class, 
             () -> this.testApp.autoreconnect(nonResolvableFault)
         );
-        Fault unknownInstanceFualt = new Fault("unknownID", this.awReq);
+        Fault unknownInstanceFault = new Fault("unknownID", this.awReq);
         assertThrows(
             InstanceUnknownException.class, 
-            () -> this.testApp.autoreconnect(unknownInstanceFualt)
+            () -> this.testApp.autoreconnect(unknownInstanceFault)
         );
 
         //REAL TESTS

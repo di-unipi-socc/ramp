@@ -5,75 +5,79 @@
             "currentState" : "working", 
             "id" : "g1", 
             "node" : {}, 
-            "nodeName" : "gui"
+            "nodeTypeName" : "gui"
         }, 
         "a1" : {
             "currentState" : "running", 
             "id" : "a1", 
             "node" : {}, 
-            "nodeName" : "api"
+            "nodeTypeName" : "api"
         }, 
         "a2" : {
             "currentState" : "running", 
             "id" : "a2", 
             "node" : {}, 
-            "nodeName" : "api"
+            "nodeTypeName" : "api"
         }, 
         "n1" : {
             "currentState" : "running", 
             "id" : "n1", 
             "node" : {},
-            "nodeName" : "node"
+            "nodeTypeName" : "node"
         }, 
         "m1" : {
             "currentState" : "running", 
             "id" : "m1", 
             "node" : {},
-            "nodeName" : "maven"
+            "nodeTypeName" : "maven"
         }, 
         "m2" : {
             "currentState" : "running", 
             "id" : "m2", 
             "node" : {},
-            "nodeName" : "maven"
+            "nodeTypeName" : "maven"
         }, 
         "d1" : {
             "currentState" : "running", 
             "id" : "d1", 
             "node" : {},
-            "nodeName" : "mongo"
+            "nodeTypeName" : "mongo"
         }
     }, 
     "runtimeBindings" : {
         "g1" : [
             {
-                "requirement" : {"name" : "host", "sort" : "CONTAINMENT"},
-                "targetInstanceID" : "n1"
+                "req" : {"name" : "host", "sort" : "CONTAINMENT"},
+                "instanceID" : "n1"
             }, 
             {
-                "requirement" : {"name" : "backend", "sort" : "UNAWARE"}, 
-                "targetInstanceID" : "a1"
+                "req" : {"name" : "backend", "sort" : "UNAWARE"}, 
+                "instanceID" : "a1"
             }
         ],
         "a1" : [
             {
-                "requirement" : {"name" : "host", "sort" : "CONTAINMENT"},
-                "targetInstanceID" : "m1"
+                "req" : {"name" : "host", "sort" : "CONTAINMENT"},
+                "instanceID" : "m1"
             }, 
             {
-                "requirement" : {"name" : "data", "sort" : "AWARE"}, 
-                "targetInstanceID" : "d1"
+                "req" : {"name" : "data", "sort" : "AWARE"}, 
+                "instanceID" : "d1"
             }
         ], 
         "a2" : [
             {
-                "requirement" : {"name" : "host", "sort" : "CONTAINMENT"},
-                "targetInstanceID" : "m2"
+                "req" : {"name" : "host", "sort" : "CONTAINMENT"},
+                "instanceID" : "m2"
             }, 
             {
-                "requirement" : {"name" : "data", "sort" : "AWARE"}, 
-                "targetInstanceID" : "d1"
+                "req" : {"name" : "data", "sort" : "AWARE"}, 
+                "instanceID" : "d1"
             }
-        ]
+        ], 
+        "n1" : [], 
+        "m1" : [], 
+        "m2" : [], 
+        "d1" : []
     }
 }

@@ -290,6 +290,7 @@ public class Application{
         this.globalState.addNewRuntimeBindings(instanceID);
     }
 
+    //TODO questo si chiama scaleOut
     /**
      * 
      * @param nodeName name of the Node of which we want to create an instance
@@ -340,6 +341,8 @@ public class Application{
         return newNodeInstance;
     }   
 
+    //TODO: questo si chiama scaleOutC
+    //adatta anche nomi actions analyzer
     public NodeInstance scaleOut2(String nodeName, String newNodeInstanceID, String containerID)
         throws 
             RuleNotApplicableException,
@@ -413,7 +416,7 @@ public class Application{
         this.autodestory();
     }
 
-    //destorys broken instances
+    //TODO: si chiama destroy, destorys broken instances
     private void autodestory()
         throws 
             RuleNotApplicableException, 
@@ -426,7 +429,7 @@ public class Application{
             this.scaleIn(brokenInstances.get(0).getID());
     }
 
-    //this was fault()
+    //this was fault() TODO: si chiama handleFault
     public void faultHandler(Fault fault)
         throws  
         FailedFaultHandlingExecption, 
@@ -481,6 +484,7 @@ public class Application{
         this.globalState.addNewRuntimeBindings(instance.getID());
     }
 
+    //TODO: si chiama resolveFault
     /***
      * @param fault the fault to solve by finding a new server instance for the failed requirement
      * @throws NullPointerException
@@ -510,4 +514,123 @@ public class Application{
         //pi cant return null because the fault is resolvable
         this.globalState.addRuntimeBinding(instanceID, failedReq, this.pi(instanceID, failedReq).getID());
     }
+
+    //#region UTILITIES
+
+    @Override
+    public Application clone(){ 
+        Application clonedApp = new Application(this.name, this.piVersion);
+
+        //CLONE APPLICATION TOPOLOGY
+
+        //cloning nodes
+        for(String nodeName : this.nodes.keySet()){
+            Node node = this.nodes.get(nodeName);
+            ManagementProtocol nodeMP = node.getManProtocol();
+
+            Node clonedNode = new Node(node.getName(), new ManagementProtocol(new String(nodeMP.getInitialState())));
+            ManagementProtocol clonedNodeMP = clonedNode.getManProtocol();
+
+            //cloning ops
+            for(String nO : node.getOps())
+                clonedNode.addOperation(nO);
+            
+            //cloning reqs
+            for(Requirement nR : node.getReqs())
+                clonedNode.addRequirement(nR.clone());
+            
+            //cloning caps
+            for(String nC : node.getCaps())
+                clonedNode.addCapability(nC);
+
+            //cloning states
+            for(String nS : nodeMP.getStates())
+                clonedNodeMP.addState(nS);
+
+            //cloning transitons
+            for(Transition nT : nodeMP.getTransitions().values())
+                clonedNodeMP.addTransition(nT.getStartState(), nT.getOp(), nT.getEndState());
+            
+            //cloning rho
+            for(String nS : nodeMP.getRho().keySet()){
+                for(Requirement req : nodeMP.getRho().get(nS))
+                    clonedNodeMP.getRho().get(nS).add(req.clone());
+            }
+            //cloning gamma
+            for(String nS : nodeMP.getGamma().keySet()){
+                for(String cap : nodeMP.getGamma().get(nS))
+                    clonedNodeMP.getGamma().get(nS).add(cap);
+            }
+            //cloning phi
+            for(String nS : nodeMP.getPhi().keySet()){
+                for(String faultHandleState : nodeMP.getPhi().get(nS))
+                    clonedNodeMP.getPhi().get(nS).add(faultHandleState);
+            }
+
+            clonedApp.addNode(clonedNode);
+        }
+
+        //cloning static binding
+        for(NodeReq nodeReq : this.bindingFunction.keySet()){
+            NodeCap nodeCap = this.bindingFunction.get(nodeReq);
+
+            NodeReq clonedNodeReq = new NodeReq(nodeReq.getNodeName(), nodeReq.getReqName());
+            NodeCap clonedNodeCap = new NodeCap(nodeCap.getNodeName(), nodeCap.getCap());
+
+            clonedApp.bindingFunction.put(clonedNodeReq, clonedNodeCap);
+        }
+
+        //CLONE THE GLOBAL STATE
+
+        //clone the active instances
+        for(NodeInstance activeInstance : this.globalState.getActiveInstances().values()){
+            //retrieve the node type (CLONED) of the cloned instance we're about to make
+            Node clonedNode = clonedApp.getNodes().get(activeInstance.getNodeType().getName());
+
+            //it is important that the cloned instance has as a node type referement the cloned node
+            NodeInstance clonedInstance = new NodeInstance(
+                clonedNode, 
+                activeInstance.getCurrentState(), 
+                activeInstance.getID()
+            );
+
+            clonedApp.getGlobalState().getActiveInstances().put(clonedInstance.getID(), clonedInstance);
+        }
+
+        //clone the runtime bindings
+        for(String instanceID : this.globalState.getRuntimeBindings().keySet()){
+            List<RuntimeBinding> clonedRuntimeBindings = new ArrayList<>();
+
+            for(RuntimeBinding instanceRB : this.globalState.getRuntimeBindings().get(instanceID)){
+
+                RuntimeBinding clonedRuntimeBinding = new RuntimeBinding(
+                    instanceRB.getReq().clone(), 
+                    instanceRB.getNodeInstanceID()
+                );
+                
+                clonedRuntimeBindings.add(clonedRuntimeBinding);
+            }
+            clonedApp.globalState.getRuntimeBindings().put(instanceID, clonedRuntimeBindings);
+        }
+
+        return clonedApp;
+    }
+
+    @Override
+    public boolean equals(Object obj){
+
+        Application check = (Application) obj;
+
+        return 
+            this.bindingFunction.equals(check.bindingFunction) &&
+            this.deterministicPi == check.deterministicPi &&
+            this.globalState.equals(check.globalState) &&
+            this.nodes.equals(check.nodes) && 
+            this.name.equals(check.name) &&
+            this.piVersion == check.piVersion
+        ;
+    }
+
+    //#endregion
+
 }

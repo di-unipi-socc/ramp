@@ -45,6 +45,4 @@ public class Fault {
         Fault f = (Fault) obj;
         return this.instanceID.equals(f.getNodeInstanceID()) && this.req.equals(f.getReq());
     }
-
-    
 }

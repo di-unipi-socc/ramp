@@ -18,8 +18,8 @@ In such global state, the _gui_ is to be connected to any of the instances of th
 
 | instance id | node | state | bindings | 
 | - | - | - | - | 
-| a1 | api | running | host->m1, backend->d1 |
-| a2 | api | running | host->m2, backend->d1 |
+| a1 | api | running | host->m1, data->d1 |
+| a2 | api | running | host->m2, data->d1 |
 | d1 | mongo | running | - |
 | g1 | gui | working | host->n1, backend->a1 |
 | n1 | node | running | - |

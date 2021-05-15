@@ -52,7 +52,10 @@ public class RuntimeBinding {
             throw new NullPointerException();
             
         RuntimeBinding runBinding = (RuntimeBinding) obj;
-        return this.instanceID.equals(runBinding.getNodeInstanceID()) && this.req.equals(runBinding.getReq());
+        return 
+            this.instanceID.equals(runBinding.getNodeInstanceID()) && 
+            this.req.equals(runBinding.getReq())
+        ;
     }
 
 

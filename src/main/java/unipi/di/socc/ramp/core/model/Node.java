@@ -85,13 +85,13 @@ public class Node {
         if(obj == null)
             throw new NullPointerException();
 
-        Node n = (Node) obj;
+        Node check = (Node) obj;
         return
-            this.caps.equals(n.getCaps()) && 
-            this.ops.equals(n.getOps()) && 
-            this.manProtocol.equals(n.getManProtocol()) &&
-            this.reqs.equals(n.getReqs()) && 
-            this.name.equals(n.getName());
+            this.caps.equals(check.getCaps()) && 
+            this.ops.equals(check.getOps()) && 
+            this.manProtocol.equals(check.getManProtocol()) &&
+            this.reqs.equals(check.getReqs()) && 
+            this.name.equals(check.getName());
     }
 
     @Override

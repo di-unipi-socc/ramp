@@ -1,14 +1,20 @@
 package unipi.di.socc.ramp.cli.parser;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import unipi.di.socc.ramp.cli.parser.wrappers.*;
 import unipi.di.socc.ramp.core.analyzer.Plan;
 import unipi.di.socc.ramp.core.analyzer.actions.*;
 
 import unipi.di.socc.ramp.core.model.Application;
+import unipi.di.socc.ramp.core.model.GlobalState;
 import unipi.di.socc.ramp.core.model.ManagementProtocol;
 import unipi.di.socc.ramp.core.model.Node;
+import unipi.di.socc.ramp.core.model.NodeInstance;
 import unipi.di.socc.ramp.core.model.NodeReq;
 import unipi.di.socc.ramp.core.model.Requirement;
+import unipi.di.socc.ramp.core.model.RuntimeBinding;
 import unipi.di.socc.ramp.core.model.Transition;
 
 public class PrintingUtilities {
@@ -61,6 +67,8 @@ public class PrintingUtilities {
     }
 
     public static void printAppStructure(Application app) {
+        System.out.println("APP NAME: " + app.getName());
+
         System.out.println("STATIC BINDINGS: ");
         for(NodeReq key : app.getBindingFunction().keySet())
             System.out.println(
@@ -219,5 +227,37 @@ public class PrintingUtilities {
             );
         }
 
+    }
+
+    public static void printGlobalState(GlobalState gs){
+        PrintingUtilities.printActiveNodes(gs);
+        PrintingUtilities.printRuntimeBindings(gs);
+    }
+
+    public static void printActiveNodes(GlobalState gs){
+        System.out.println("ALL ACTIVE INSTANCES (G SET)");
+
+        for (NodeInstance instance : gs.getActiveInstances().values())
+            System.out.printf("\t" + "%-15s" + "%-15s" + "%-15s" + "\n", instance.getNodeType().getName(), instance.getID(), instance.getCurrentState());
+        
+        System.out.println("\n");
+    }
+
+    public static void printRuntimeBindings(GlobalState gs) {
+
+        System.out.println("ALL RUNTIME BINDINGS");
+
+        for (NodeInstance instance : gs.getActiveInstances().values()) {
+            List<RuntimeBinding> runtimeBindings = (ArrayList<RuntimeBinding>) gs.getRuntimeBindings().get(instance.getID());
+
+            System.out.println(instance.getID());
+            if (runtimeBindings.size() == 0)
+                System.out.println("     " + "none");
+
+            for (RuntimeBinding binding : runtimeBindings) 
+                System.out.printf("\t" + "%-10s" + "%-10s" + "\n", binding.getReq().getName(), binding.getNodeInstanceID());            
+        }
+
+        System.out.println("\n");
     }
 }

@@ -484,5 +484,18 @@ public class GlobalState {
         return resolvableFaults;
     }
 
+    @Override
+    public boolean equals(Object obj){
+        GlobalState check = (GlobalState) obj;
+
+        //dont need to check if the application is the same
+        //it could be usefull to see if two different app have equals gs
+
+        return 
+            this.activeInstances.equals(check.activeInstances) &&
+            this.runtimeBindings.equals(check.runtimeBindings)
+        ;
+
+    }
 
 }

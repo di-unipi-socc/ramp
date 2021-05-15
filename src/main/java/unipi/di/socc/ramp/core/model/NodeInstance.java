@@ -7,6 +7,8 @@ import java.util.Objects;
 
 public class NodeInstance {
     
+    private final String nodeTypeName; //for parsing purposes only
+
     private Node nodeType;
     private String currentState;
     private final String id;
@@ -23,6 +25,7 @@ public class NodeInstance {
             throw new IllegalArgumentException();
 
         this.nodeType = nodeType;
+        this.nodeTypeName = nodeType.getName();
         this.setCurrentState(currentState);
         this.id = id;
     }
@@ -40,6 +43,9 @@ public class NodeInstance {
     }
     public Node getNodeType() {
         return nodeType;
+    }
+    public String getNodeTypeName(){
+        return this.nodeTypeName;
     }
     public String getID() {
         return id;
@@ -102,4 +108,5 @@ public class NodeInstance {
             this.id.equals(instance.getID()) && 
             this.nodeType.equals(instance.getNodeType());
     }
+
 }

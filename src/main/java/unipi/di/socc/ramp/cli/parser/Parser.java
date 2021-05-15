@@ -135,7 +135,8 @@ public class Parser {
 
         GlobalState gs = parseGlobalState(jsonGSPath);
         for(NodeInstance instance : gs.getActiveInstances().values())
-            instance.setNode(app.getNodes().get(instance.getNodeType().getName()));
+            instance.setNode(app.getNodes().get(instance.getNodeTypeName()));
+
 
         gs.setApplication(app);
         app.setGlobalState(gs);

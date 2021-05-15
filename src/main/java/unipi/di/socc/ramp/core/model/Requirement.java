@@ -55,5 +55,9 @@ public class Requirement {
     public int hashCode(){
         return Objects.hash(this.name, this.sort);
     }
+    @Override
+    public Requirement clone(){
+        return new Requirement(this.name, this.sort);
+    }
 
 }

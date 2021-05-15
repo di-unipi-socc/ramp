@@ -81,7 +81,11 @@ public class ManagementProtocol {
             this.gamma.equals(mp.getGamma()) && 
             this.rho.equals(mp.getRho()) && 
             this.phi.equals(mp.getPhi()) &&
-            this.transitions.equals(mp.getTransitions());
+            this.transitions.equals(mp.getTransitions()) &&
+            this.states.equals(mp.states) &&
+            this.initialState.equals(mp.initialState)
+        ;
+        
     }
     @Override
     public int hashCode(){
