@@ -235,7 +235,7 @@ public class PrintingUtilities {
     }
 
     public static void printActiveNodes(GlobalState gs){
-        System.out.println("ALL ACTIVE INSTANCES (G SET)");
+        System.out.println("ACTIVE INSTANCES");
 
         for (NodeInstance instance : gs.getActiveInstances().values())
             System.out.printf("\t" + "%-15s" + "%-15s" + "%-15s" + "\n", instance.getNodeType().getName(), instance.getID(), instance.getCurrentState());
@@ -245,7 +245,7 @@ public class PrintingUtilities {
 
     public static void printRuntimeBindings(GlobalState gs) {
 
-        System.out.println("ALL RUNTIME BINDINGS");
+        System.out.println("RUNTIME BINDINGS");
 
         for (NodeInstance instance : gs.getActiveInstances().values()) {
             List<RuntimeBinding> runtimeBindings = (ArrayList<RuntimeBinding>) gs.getRuntimeBindings().get(instance.getID());

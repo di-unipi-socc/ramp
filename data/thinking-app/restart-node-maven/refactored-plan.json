@@ -5,7 +5,7 @@
         "scaleOutG2" : { "action" : "scaleOut", "nodeName" : "gui", "idToAssign" : "g2", "containerID" : "n2" },
         "startN2" : { "action" : "op", "instanceID" : "n2", "opName" : "start" },
         "installG2" : { "action" : "op", "instanceID" : "g2", "opName" : "install" },
-        "configureG2" : { "action" : "op", "instanceID" : "g2", "opName" : "configure" },
+        "configureG2" : { "action" : "op", "instanceID" : "g2", "opName" : "config" },
         "startG2" : { "action" : "op", "instanceID" : "g2", "opName" : "start" },
         "scaleInM1" : { "action" : "scaleIn", "instanceID" : "m1" },
         "scaleOutM3" : { "action" : "scaleOut", "nodeName" : "maven", "idToAssign" : "m3" },

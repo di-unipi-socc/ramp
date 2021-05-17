@@ -41,5 +41,10 @@ public class OpEnd extends Action{
     public int hashCode(){
         return Objects.hash(this.action, this.instanceID, this.opName);
     }
+
+    @Override
+    public OpEnd clone(){
+        return new OpEnd(this.instanceID, this.opName);
+    }
     
 }

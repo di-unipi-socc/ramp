@@ -40,4 +40,9 @@ public class ScaleOut1 extends Action{
     public int hashCode(){
         return Objects.hash(this.action, this.idToAssign, this.nodeName);
     }
+
+    @Override
+    public ScaleOut1 clone(){
+        return new ScaleOut1(this.idToAssign, this.nodeName);
+    }
 }

@@ -1,24 +1,39 @@
 package unipi.di.socc.ramp.core.analyzer;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
+import unipi.di.socc.ramp.cli.parser.PrintingUtilities;
+import unipi.di.socc.ramp.core.analyzer.actions.Action;
+import unipi.di.socc.ramp.core.analyzer.actions.OpEnd;
 import unipi.di.socc.ramp.core.model.Application;
+import unipi.di.socc.ramp.core.model.Fault;
+import unipi.di.socc.ramp.core.model.NodeInstance;
+
+import unipi.di.socc.ramp.core.model.exceptions.FailedOperationException;
 
 public class Analyzer {
     
-    private static AnalysisReport report;
+    private AnalysisReport report;
 
-    public static AnalysisReport getReport(){
+
+    public Analyzer(){
+        this.report = new AnalysisReport();
+    }
+
+    public AnalysisReport getReport(){
         return report;
     }
 
+
+
     //#region utilities
-    //#endregion
 
 
     //clone a list making another list with the same object refs
-    public static <E> List<E> cloneList(List<E> list){
+    private <E> List<E> cloneList(List<E> list){
         List<E> cloneList = new ArrayList<>();
         for(E element : list)
             cloneList.add(element);
@@ -26,21 +41,348 @@ public class Analyzer {
         return cloneList;
     }
 
+    //#endregion
 
 
     //########################### OFFERED METHODS ###########################
-    public static void planAnalysis(Application app, Plan plan, String property){
+    public boolean sequenceAnalysis(Application app, Sequence sequence, String property){
+
+        if(property.equals("--valid")){
+            //saves the sequence
+            this.report.setFailedSequence(new Sequence(this.cloneList(sequence.getActions())));
+            return isValidSequence(app, sequence);
+        }
+
+        if(property.equals("--weakly-valid")){
+            //saves the sequence
+            this.report.setFailedSequence(new Sequence(this.cloneList(sequence.getActions())));
+            return isWeaklyValidSequence(app, sequence);
+        }
+
+        //TOOD fix
+        return false;
+
+
     }
 
+    public boolean planAnalysis(Application app, Plan plan, String property){
+
+        if(property.equals("--valid"))
+            return this.isValidPlan(app, plan);
+        
+        if(property.equals("--weakly-valid"));
+            //return is weakly valid plan
+            
+        
+
+        //TOOD fix
+        return false;
+
+    }
+    
+
+    //#region SEQUENCE ANALYSIS
+
+    private boolean isValidSequence(Application app, Sequence sequence) {
+
+        //base case
+        if(sequence.getActions().isEmpty())
+            return true;
+
+        // pop the first action of the sequential plan
+        Action action = sequence.getActions().get(0);
+        boolean faultedOpEnd = false;
 
 
-    public static void sequenceAnalysis(Application app, Sequence sequence, String property){
-        //Sequence backupSeq = new Sequence(cloneList(sequence.getSequence()));
+        try {
+            app.execute(action);
+            sequence.getActions().remove(0);
+        } catch (FailedOperationException e) {
+            faultedOpEnd = true;
+            //go on, this will be a fault
+        } catch (Exception e) {
+            this.report.setFailedAction(action);
+            this.report.setFailException(e);
+            return false;
+        }
 
-        if(app.isPiDeterministic());
-            //deterministicSequenceAnalysis(app, sequence, property);
 
 
+        //check the branches of the faults
+        if(!checkFaultsValid(app, sequence, faultedOpEnd)){
+            this.report.setFailedAction(action);
+            return false;
+        }
+
+        return true;
+    }
+    private boolean checkFaultsValid(Application app, Sequence sequence, boolean faultedOpEnd) {
+        //list of broken instances and pending faults of app just after the execution of action
+        List<NodeInstance> brokenInstances;
+        List<Fault> pendingFaults;
+        try {
+            brokenInstances = app.getGlobalState().getBrokenInstances();
+            pendingFaults = app.getGlobalState().getPendingFaults();
+        } catch (Exception e) {
+            return false;
+        }
+
+        if(app.isPiDeterministic()){
+            //application of no-broken-instances
+            if(!brokenInstances.isEmpty()){
+                try {
+                    //this will kill all the broken instances
+                    app.scaleIn(brokenInstances.get(0).getID());
+                } catch (Exception e) {
+                    return false;
+                }
+            }
+
+            //branching: we keep exploring not handling a single fault
+            if(!faultedOpEnd && !this.isValidSequence(app.clone(), sequence))
+                return false;
+
+            //branching: for each fault we fix it and starts exploring
+            if(!pendingFaults.isEmpty()){
+                for(Fault pendingFault : pendingFaults){
+
+                    Application clonedApp = app.clone();
+
+                    boolean isResolvableFault;
+                    try {
+                        isResolvableFault = clonedApp.getGlobalState().isResolvableFault(pendingFault);
+                    } catch (Exception e) {
+                        return false;
+                    }
+
+                    if(isResolvableFault){
+                        try {
+                            //fix the fault by creating a new runtime binding that safisfy it
+                            clonedApp.autoreconnect(pendingFault);
+                            if(!this.isValidSequence(clonedApp, sequence))
+                                return false;
+
+                        } catch (Exception e) {
+                            return false;
+                        }
+                    }else{
+                        try {
+                            //handle the fault by applying the fault handler
+                            clonedApp.faultHandler(pendingFault);
+
+                            if(faultedOpEnd)
+                                sequence.getActions().remove(0);
+
+                            if(!this.isValidSequence(clonedApp, sequence))
+                                return false;
+
+                        } catch (Exception e) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    private boolean isWeaklyValidSequence(Application app, Sequence sequence){
+
+        //base case
+        if(sequence.getActions().isEmpty())
+            return true;
+
+        // pop the first action of the sequential plan
+        Action action = sequence.getActions().remove(0);
+        try {
+            app.execute(action);
+        } catch (FailedOperationException e) {
+            //go on, this will be a fault
+        } catch (Exception e) {
+            this.report.setFailedAction(action);
+            this.report.setFailException(e);
+            return false;
+        }
+
+        //check the branches of the faults
+        if(this.checkFaultsWeaklyValid(app, sequence))
+            return true;
+        
+        this.report.setFailedAction(action);
+        return false;
+    }
+    private boolean checkFaultsWeaklyValid(Application app, Sequence sequence){
+        //list of broken instances and pending faults of app just after the execution of action
+        List<NodeInstance> brokenInstances;
+        List<Fault> pendingFaults;
+        try {
+            brokenInstances = app.getGlobalState().getBrokenInstances();
+            pendingFaults = app.getGlobalState().getPendingFaults();
+        } catch (Exception e) {
+            return false;
+        }
+
+        if(app.isPiDeterministic()){
+            //application of no-broken-instances
+            if(!brokenInstances.isEmpty()){
+                Application clonedApp = app.clone();
+                try {
+                    //this will kill all the broken instances
+                    clonedApp.scaleIn(brokenInstances.get(0).getID());
+                } catch (Exception e) {
+                    return false;
+                }
+            }
+
+            //branching: we keep exploring not handling a single fault
+            if(this.isWeaklyValidSequence(app.clone(), sequence))
+                return true;
+
+            //branching: for each fault we fix it and starts exploring
+            if(!pendingFaults.isEmpty()){
+                for(Fault pendingFault : pendingFaults){
+                    Application clonedApp = app.clone();
+
+                    boolean isResolvableFault;
+                    try {
+                        isResolvableFault = clonedApp.getGlobalState().isResolvableFault(pendingFault);
+                    } catch (Exception e) {
+                        return false;
+                    }
+
+                    if(isResolvableFault){
+                        try {
+                            //fix the fault by creating a new runtime binding that safisfy it
+                            clonedApp.autoreconnect(pendingFault);
+                            if(this.isWeaklyValidSequence(clonedApp, sequence))
+                                return true;
+
+                        } catch (Exception e) {
+                            return false;
+                        }
+                    }else{
+                        try {
+                            //handle the fault by applying the fault handler
+                            clonedApp.faultHandler(pendingFault);
+                            if(this.isWeaklyValidSequence(clonedApp, sequence))
+                                return true;
+
+                        } catch (Exception e) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    //#endregion
+
+    //#region PLAN ANALYSIS
+
+    public boolean isValidPlan(Application app, Plan plan){
+        int permSize = plan.getActions().size();
+
+
+
+        //creates all perms and check one by one (heap algorithm)
+        int[] c = new int[permSize];        
+        for(int i = 0; i < permSize; i++)
+            c[i] = 0;
+        
+        int i = 0;
+        while(i < permSize){
+            
+            if(c[i] < i){            
+                if(i % 2 == 0)
+                    Collections.swap(plan.getActions(), 0, i);
+                else
+                    Collections.swap(plan.getActions(), i, c[i]);
+              
+                //for each generated permutation of planExecutableElements we check if it respect the constraints, 
+                //if so this is a sequence generated by the management plan
+                
+                Sequence sequentialTrace = new Sequence(plan.getActions());
+
+                if(this.checkConstraints(sequentialTrace, plan.getPartialOrder())){
+
+                    Application clonedApp = app.clone();
+
+                    if(!this.sequenceAnalysis(clonedApp, sequentialTrace.clone(), "--valid")){
+                        PrintingUtilities.printGlobalState(clonedApp.getGlobalState());
+                        return false;
+                    }
+                    
+
+                
+                }
+                
+                c[i]++;
+                i = 0;
+            
+            }else{
+                c[i] = 0;
+                i++;
+            }
+                                
+        }
+        return true;
+
+    }
+    private boolean checkConstraints(Sequence sequentialTrace, Map<Action, List<Action>> partialOrder){
+
+        List<Action> seqTraceActions = sequentialTrace.getActions();
+
+        for(Action action : seqTraceActions){
+            
+            //actions that have to be executed after action
+            List<Action> afterActions = partialOrder.get(action);
+
+            if(!afterActions.isEmpty()){
+
+                List<Action> subsequence = seqTraceActions.subList(
+                    seqTraceActions.indexOf(action) + 1, 
+                    seqTraceActions.size()
+                );
+
+                if(subsequence.isEmpty())
+                    return false;
+                
+                //for each afterAction we check if it is really scheduled to be executed after action
+                for(Action afterAction : afterActions){
+                    if(!subsequence.contains(afterAction))
+                        return false;
+                }
+
+            }
+        }
+        return true;
+    }
+
+    //#endregion
+
+
+
+
+
+    public void printReport(){
+        System.out.println("FAILED SEQUENCE: ");
+        for(Action action : this.report.getFailedSequence().getActions()){
+            System.out.print("\t");
+            PrintingUtilities.printAction(action);
+            System.out.print("\n");
+
+        }
+    
+        System.out.println("");
+        System.out.println("FAILED ACTION: ");
+        System.out.print("\t");
+        PrintingUtilities.printAction(this.report.getFailedAction());
+
+        System.out.println("");
+        System.out.println("EXCEPTION: " + this.report.getFailException().getClass());
+        
     }
 
 

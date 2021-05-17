@@ -1,13 +1,25 @@
 package unipi.di.socc.ramp.cli;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import unipi.di.socc.ramp.cli.parser.Parser;
 import unipi.di.socc.ramp.cli.parser.PrintingUtilities;
+import unipi.di.socc.ramp.core.analyzer.Analyzer;
 import unipi.di.socc.ramp.core.analyzer.Plan;
 import unipi.di.socc.ramp.core.analyzer.Sequence;
+import unipi.di.socc.ramp.core.analyzer.actions.Action;
+import unipi.di.socc.ramp.core.analyzer.actions.OpEnd;
+import unipi.di.socc.ramp.core.analyzer.actions.OpStart;
 import unipi.di.socc.ramp.core.model.Application;
+import unipi.di.socc.ramp.core.model.Fault;
+import unipi.di.socc.ramp.core.model.exceptions.AlreadyUsedIDException;
+import unipi.di.socc.ramp.core.model.exceptions.FailedOperationException;
+import unipi.di.socc.ramp.core.model.exceptions.InstanceUnknownException;
 import unipi.di.socc.ramp.core.model.exceptions.NodeUnknownException;
+import unipi.di.socc.ramp.core.model.exceptions.OperationNotAvailableException;
+import unipi.di.socc.ramp.core.model.exceptions.RuleNotApplicableException;
 
 public class Main {
 
@@ -15,19 +27,67 @@ public class Main {
         throws 
             NullPointerException, 
             IllegalArgumentException, 
-            NodeUnknownException, IOException
+            NodeUnknownException, IOException, InstanceUnknownException, RuleNotApplicableException, AlreadyUsedIDException, OperationNotAvailableException, FailedOperationException
     {
 
         String appPath = null;
         String globalStatePath = null;
         String toAnalizePath = null;
 
+        String appPathFile = System.getProperty("user.dir").concat("/data/thinking-app/thinking.json"); 
+        String sequencePathFile = System.getProperty("user.dir").concat("/data/thinking-app/deployment/sequence.json");
+        String planPathFile = System.getProperty("user.dir").concat("/data/thinking-app/reconfigure-gui-api/plan.json");
+        String gsPathFile = System.getProperty("user.dir").concat("/data/thinking-app/running-globalstate.json");
+
+        Application app = Parser.parseApplication(appPathFile, gsPathFile);
+        Sequence sequence = Parser.parseSequence(sequencePathFile);
+        Plan plan = Parser.parsePlan(planPathFile);
+            
+
+        Analyzer analyzer = new Analyzer();
+
+        if(!analyzer.planAnalysis(app, plan, "--valid"))
+            analyzer.printReport();
+        else
+            System.out.println("valid plan");
+
+
+        System.out.println("\n \n \n \n");
+        System.out.println("###########################################################################################");
+
+
+        List<Action> failedSeq = analyzer.getReport().getFailedSequence().getActions();
+
+        for(Action action : failedSeq){
+
+            System.out.println("ACTION DA FARE");
+            PrintingUtilities.printAction(action);
+            System.out.println("");
+
+            
+
+            try {
+                app.execute(action);
+                
+            } catch (Exception e) {
+                System.out.println(app.getGlobalState().getResolvableFaults().size());
+                app.autoreconnect(app.getGlobalState().getResolvableFaults().get(0));
+                PrintingUtilities.printGlobalState(app.getGlobalState());
+
+                app.execute(action);
+                System.out.println("dopo exectue");
+                PrintingUtilities.printGlobalState(app.getGlobalState());
+
+            }
+            
+            // System.out.println("GLOBAL STATE");
+            // PrintingUtilities.printGlobalState(app.getGlobalState());
+
+
+        }
 
 
 
-
-
-        
         // String property = null;
         // String type = null;   
 
@@ -113,5 +173,7 @@ public class Main {
 
         System.out.print("\n\n");
     }
+
+
 
 }

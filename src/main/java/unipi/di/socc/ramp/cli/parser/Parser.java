@@ -164,7 +164,7 @@ public class Parser {
         //NOW WE BUILD THE PLAN
 
         //set of actions that compose the plan
-        List<Action> planActions = parseSequence(jsonFilePath).getSequence();
+        List<Action> planActions = parseSequence(jsonFilePath).getActions();
 
         //partialOrder: action x -> list of actions that have to executed after x
         Map<Action, List<Action>> partialOrder = new HashMap<>();

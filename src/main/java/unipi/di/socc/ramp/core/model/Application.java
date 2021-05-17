@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import unipi.di.socc.ramp.cli.parser.PrintingUtilities;
+import unipi.di.socc.ramp.core.analyzer.actions.*;
 import unipi.di.socc.ramp.core.model.exceptions.*;
 
 public class Application{
@@ -253,6 +255,7 @@ public class Application{
         this.globalState.removeOldRuntimeBindings(instanceID);
         //add new runtime bindings (about new transient state)
         this.globalState.addNewRuntimeBindings(instanceID);
+
     }
 
     public void opEnd(String instanceID, String op)
@@ -272,15 +275,13 @@ public class Application{
         if(this.globalState.isBrokenInstance(instanceID))
             throw new FailedOperationException();
 
+        Transition targetTransition = 
+            instance.getNodeType().getManProtocol().getTransitions().get(instance.getCurrentState());
+        
         if(!this.globalState.getPendingFaults(instanceID).isEmpty())
             throw new FailedOperationException();
         
-        //TODO caso tricky: come e' possibile una cosa del genere? utente definito male applicazione (?)
-        //da testare bene in OpEndTest
-        Transition targetTransition = 
-            instance.getNodeType().getManProtocol().getTransitions().get(instance.getCurrentState());
-        if(targetTransition == null)
-            throw new FailedOperationException();
+
 
         //instance goes in the new final state of the transition
         instance.setCurrentState(targetTransition.getEndState());
@@ -513,6 +514,7 @@ public class Application{
         //add new runtime binding with the new instance (retireved by pi)
         //pi cant return null because the fault is resolvable
         this.globalState.addRuntimeBinding(instanceID, failedReq, this.pi(instanceID, failedReq).getID());
+
     }
 
     //#region UTILITIES
@@ -632,5 +634,44 @@ public class Application{
     }
 
     //#endregion
+
+
+    public void execute(Action action) 
+        throws 
+            NullPointerException, 
+            RuleNotApplicableException, 
+            AlreadyUsedIDException, 
+            InstanceUnknownException, 
+            NodeUnknownException, 
+            IllegalArgumentException, 
+            OperationNotAvailableException, 
+            FailedOperationException
+    {
+        switch (action.getActionName()) {
+            case "opStart":
+                OpStart opStart = (OpStart) action;
+                this.opStart(opStart.getInstanceID(), opStart.getOpName());
+                break;
+            case "opEnd":
+                OpEnd opEnd = (OpEnd) action;
+                this.opEnd(opEnd.getInstanceID(), opEnd.getOpName());
+                break;
+            case "scaleIn":
+                ScaleIn scaleIn = (ScaleIn) action;
+                this.scaleIn(scaleIn.getInstanceID());
+                break;
+            case "scaleOut1":
+                ScaleOut1 scaleOut1 = (ScaleOut1) action;
+                this.scaleOut1(scaleOut1.getNodeName(), scaleOut1.getIDToAssign());
+                break;
+            case "scaleOut2": 
+                ScaleOut2 scaleOut2 = (ScaleOut2) action;
+                this.scaleOut2(scaleOut2.getNodeName(), scaleOut2.getIDToAssign(), scaleOut2.getContainerID());
+                break;
+
+            default:
+                break;
+        }
+    }
 
 }

@@ -315,9 +315,21 @@ public class GlobalState {
 
         //for each needed requirement (non containment), if it is not satisfied we have a fault
         for(Requirement neededReq : instance.getNeededReqs()){
-            //TODO non fa l'and vero? il primo e' falso 
-            if(!neededReq.isContainment() && !this.getSatisfiedReqs(instanceID).contains(neededReq))
-                pendingFaults.add(new Fault(instanceID, neededReq));
+            // if(!neededReq.isContainment() && !this.getSatisfiedReqs(instanceID).contains(neededReq))
+            //     pendingFaults.add(new Fault(instanceID, neededReq));
+
+            if(!neededReq.isContainment()){
+                boolean satisfied = false;
+                for(Requirement r : this.getSatisfiedReqs(instanceID)){
+                    if(r.getName().equals(neededReq.getName()))
+                        satisfied = true;
+                }
+
+                if(!satisfied)
+                    pendingFaults.add(new Fault(instanceID, neededReq));
+
+            }
+
         }
 
         return pendingFaults;
@@ -459,7 +471,7 @@ public class GlobalState {
 
         List<Fault> resolvableFaults = new ArrayList<>();
 
-        for(Fault fault : this.getPendingFaults()){
+        for(Fault fault : this.getPendingFaults(instanceID)){
             if(this.isResolvableFault(fault))
                 resolvableFaults.add(fault);
         }

@@ -44,4 +44,31 @@ public abstract class Action {
     public int hashCode(){
         return Objects.hash(this.action);
     }
+
+    @Override
+    public Action clone(){
+        if(this instanceof OpStart){
+            OpStart castedThis = (OpStart) this;
+            return castedThis.clone();
+        }
+        if(this instanceof OpEnd){
+            OpEnd castedThis = (OpEnd) this;
+            return castedThis.clone();
+        }
+        if(this instanceof ScaleIn){
+            ScaleIn castedThis = (ScaleIn) this;
+            return castedThis.clone();
+        }
+        if(this instanceof ScaleOut1){
+            ScaleOut1 castedThis = (ScaleOut1) this;
+            return castedThis.clone();
+        }
+        if(this instanceof ScaleOut2){
+            ScaleOut2 castedThis = (ScaleOut2) this;
+            return castedThis.clone();
+        }
+
+        return null;
+        
+    }
 }

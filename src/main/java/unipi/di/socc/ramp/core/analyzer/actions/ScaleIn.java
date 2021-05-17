@@ -34,4 +34,8 @@ public class ScaleIn extends Action{
         return Objects.hash(this.action, this.instanceID);
     }
     
+    @Override
+    public ScaleIn clone(){
+        return new ScaleIn(this.instanceID);
+    }
 }

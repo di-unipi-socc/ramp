@@ -42,4 +42,9 @@ public class OpStart extends Action{
         return Objects.hash(this.action, this.instanceID, this.opName);
     }
 
+    @Override
+    public OpStart clone(){
+        return new OpStart(this.instanceID, this.opName);
+    }
+
 }

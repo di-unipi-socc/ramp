@@ -49,4 +49,9 @@ public class ScaleOut2 extends Action{
             this.containerID
         );
     }
+
+    @Override
+    public ScaleOut2 clone(){
+        return new ScaleOut2(this.idToAssign, this.nodeName, this.containerID);
+    }
 }

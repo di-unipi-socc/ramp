@@ -22,6 +22,6 @@
         "installA2" : {"action" : "op", "instanceID" : "a2", "opName" : "install"},
         "startA2" : {"action" : "op", "instanceID" : "a2", "opName" : "start"},
 
-        "startG1" : {"action" : "op", "instanceID" : "gui", "opName" : "start"}
+        "startG1" : {"action" : "op", "instanceID" : "g1", "opName" : "start"}
     }
 }
