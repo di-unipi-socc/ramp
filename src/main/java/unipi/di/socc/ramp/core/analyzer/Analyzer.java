@@ -103,6 +103,7 @@ public class Analyzer {
         } catch (Exception e) {
             this.report.setFailedAction(action);
             this.report.setFailException(e);
+            this.report.setGlobalState(app.getGlobalState());
             return false;
         }
 
@@ -111,6 +112,7 @@ public class Analyzer {
         //check the branches of the faults
         if(!checkFaultsValid(app, sequence, faultedOpEnd)){
             this.report.setFailedAction(action);
+            this.report.setGlobalState(app.getGlobalState());
             return false;
         }
 
@@ -127,16 +129,18 @@ public class Analyzer {
             return false;
         }
 
-        if(app.isPiDeterministic()){
-            //application of no-broken-instances
-            if(!brokenInstances.isEmpty()){
-                try {
-                    //this will kill all the broken instances
-                    app.scaleIn(brokenInstances.get(0).getID());
-                } catch (Exception e) {
-                    return false;
-                }
+
+        //application of no-broken-instances
+        if(!brokenInstances.isEmpty()){
+            try {
+                //this will kill all the broken instances
+                app.scaleIn(brokenInstances.get(0).getID());
+            } catch (Exception e) {
+                return false;
             }
+        }
+
+        if(app.isPiDeterministic()){
 
             //branching: we keep exploring not handling a single fault
             if(!faultedOpEnd && !this.isValidSequence(app.clone(), sequence))
@@ -152,6 +156,7 @@ public class Analyzer {
                     try {
                         isResolvableFault = clonedApp.getGlobalState().isResolvableFault(pendingFault);
                     } catch (Exception e) {
+                        this.report.faultedGS = clonedApp.getGlobalState();
                         return false;
                     }
 
@@ -169,6 +174,7 @@ public class Analyzer {
                         try {
                             //handle the fault by applying the fault handler
                             clonedApp.faultHandler(pendingFault);
+                            
 
                             if(faultedOpEnd)
                                 sequence.getActions().remove(0);
@@ -307,12 +313,16 @@ public class Analyzer {
 
                 if(this.checkConstraints(sequentialTrace, plan.getPartialOrder())){
 
+
+
                     Application clonedApp = app.clone();
 
                     if(!this.sequenceAnalysis(clonedApp, sequentialTrace.clone(), "--valid")){
-                        PrintingUtilities.printGlobalState(clonedApp.getGlobalState());
+                        this.report.setFailedSequence(sequentialTrace);
                         return false;
+                        
                     }
+                    
                     
 
                 
@@ -374,6 +384,10 @@ public class Analyzer {
             System.out.print("\n");
 
         }
+
+        System.out.println("");
+        System.out.println("GLOBAL STATE ");
+        PrintingUtilities.printGlobalState(this.report.faultedGS);
     
         System.out.println("");
         System.out.println("FAILED ACTION: ");

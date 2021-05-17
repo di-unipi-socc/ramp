@@ -35,56 +35,63 @@ public class Main {
         String toAnalizePath = null;
 
         String appPathFile = System.getProperty("user.dir").concat("/data/thinking-app/thinking.json"); 
-        String sequencePathFile = System.getProperty("user.dir").concat("/data/thinking-app/deployment/sequence.json");
-        String planPathFile = System.getProperty("user.dir").concat("/data/thinking-app/reconfigure-gui-api/plan.json");
+        String sequencePathFile = System.getProperty("user.dir").concat("/data/thinking-app/deployment/refactored-sequence.json");
+        String planPathFile = System.getProperty("user.dir").concat("/data/thinking-app/restart-node-maven/plan.json");
         String gsPathFile = System.getProperty("user.dir").concat("/data/thinking-app/running-globalstate.json");
 
-        Application app = Parser.parseApplication(appPathFile, gsPathFile);
+        Application app = Parser.parseApplication(appPathFile, null);
         Sequence sequence = Parser.parseSequence(sequencePathFile);
         Plan plan = Parser.parsePlan(planPathFile);
             
 
         Analyzer analyzer = new Analyzer();
 
-        if(!analyzer.planAnalysis(app, plan, "--valid"))
+
+        if(!analyzer.sequenceAnalysis(app, sequence, "--valid"))
             analyzer.printReport();
         else
             System.out.println("valid plan");
 
 
-        System.out.println("\n \n \n \n");
-        System.out.println("###########################################################################################");
+        // if(!analyzer.planAnalysis(app, plan, "--valid"))
+        //     analyzer.printReport();
+        // else
+        //     System.out.println("valid plan");
 
 
-        List<Action> failedSeq = analyzer.getReport().getFailedSequence().getActions();
+        // System.out.println("\n \n \n \n");
+        // System.out.println("###########################################################################################");
 
-        for(Action action : failedSeq){
 
-            System.out.println("ACTION DA FARE");
-            PrintingUtilities.printAction(action);
-            System.out.println("");
+        // List<Action> failedSeq = analyzer.getReport().getFailedSequence().getActions();
+
+        // for(Action action : failedSeq){
+
+        //     System.out.println("ACTION DA FARE");
+        //     PrintingUtilities.printAction(action);
+        //     System.out.println("");
 
             
 
-            try {
-                app.execute(action);
+        //     try {
+        //         app.execute(action);
                 
-            } catch (Exception e) {
-                System.out.println(app.getGlobalState().getResolvableFaults().size());
-                app.autoreconnect(app.getGlobalState().getResolvableFaults().get(0));
-                PrintingUtilities.printGlobalState(app.getGlobalState());
+        //     } catch (Exception e) {
+        //         System.out.println(app.getGlobalState().getResolvableFaults().size());
+        //         app.autoreconnect(app.getGlobalState().getResolvableFaults().get(0));
+        //         PrintingUtilities.printGlobalState(app.getGlobalState());
 
-                app.execute(action);
-                System.out.println("dopo exectue");
-                PrintingUtilities.printGlobalState(app.getGlobalState());
+        //         app.execute(action);
+        //         System.out.println("dopo exectue");
+        //         PrintingUtilities.printGlobalState(app.getGlobalState());
 
-            }
+        //     }
             
-            // System.out.println("GLOBAL STATE");
-            // PrintingUtilities.printGlobalState(app.getGlobalState());
+        //     // System.out.println("GLOBAL STATE");
+        //     // PrintingUtilities.printGlobalState(app.getGlobalState());
 
 
-        }
+        // }
 
 
 

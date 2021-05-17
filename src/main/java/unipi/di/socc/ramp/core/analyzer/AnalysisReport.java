@@ -1,6 +1,7 @@
 package unipi.di.socc.ramp.core.analyzer;
 
 import unipi.di.socc.ramp.core.analyzer.actions.Action;
+import unipi.di.socc.ramp.core.model.GlobalState;
 
 public class AnalysisReport {
     
@@ -8,16 +9,30 @@ public class AnalysisReport {
     private Exception failException;
     private Action failedAction;
 
+
+    public GlobalState faultedGS;
+
     public AnalysisReport() {
         this.failedSequence = null;
         this.failException = null;
         this.failedAction = null;
+        this.faultedGS = null;
     }
 
     //#region getter & setter
 
     public Action getFailedAction() {
         return failedAction;
+    }
+
+
+    public GlobalState getGlobalState(){
+        return this.faultedGS;
+    }
+
+    public void setGlobalState(GlobalState gs){
+        if(this.faultedGS == null)
+            this.faultedGS = gs;
     }
 
     public void setFailedAction(Action failedAction) {
@@ -39,8 +54,7 @@ public class AnalysisReport {
     }
 
     public void setFailedSequence(Sequence failedSequence) {
-        if(this.failedSequence == null)
-            this.failedSequence = failedSequence;
+        this.failedSequence = failedSequence;
     }
 
 
