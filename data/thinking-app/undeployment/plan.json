@@ -1,21 +1,15 @@
 {
     "actions" : {
         "stopG1" : {"action" : "op", "instanceID" : "g1", "opName" : "stop"}, 
-
         "stopA1" : {"action" : "op", "instanceID" : "a1", "opName" : "stop"},
-        "stopA2" : {"action" : "op", "instanceID" : "a2", "opName" : "stop"},
-        
         "scaleInG1" : {"action" : "scaleIn", "instanceID" : "g1"},
         "scaleInA1" : {"action" : "scaleIn", "instanceID" : "a1"},
         "scaleInA2" : {"action" : "scaleIn", "instanceID" : "a2"},
-
+        "stopA2" : {"action" : "op", "instanceID" : "a2", "opName" : "stop"},      
         "stopN1" : {"action" : "op", "instanceID" : "n1", "opName" : "stop"},
-
         "stopM1" : {"action" : "op", "instanceID" : "m1", "opName" : "stop"},
         "stopM2" : {"action" : "op", "instanceID" : "m2", "opName" : "stop"},
-
         "stopD1" : {"action" : "op", "instanceID" : "d1", "opName" : "stop"},
-
         "scaleInN1" : {"action" : "scaleIn", "instanceID" : "n1"},
         "scaleInM1" : {"action" : "scaleIn", "instanceID" : "m1"},
         "scaleInM2" : {"action" : "scaleIn", "instanceID" : "m2"},
