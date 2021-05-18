@@ -289,7 +289,7 @@ public class Analyzer {
                 return true;
             // Case: Valid plan analysis (violation to validity constraints, return false)
             if(!validTrace && !weakValidity) {
-                this.report.setFailedSequence(traceFragment);
+                this.report.setFailedSequence(traceFragment.clone());
                 return false;
             }
         }
@@ -318,7 +318,6 @@ public class Analyzer {
                     return true;
                 // Case: Valid plan analysis (violation to validity constraints, return false)
                 if(!validPlan && !weakValidity) {
-                    this.report.setFailedSequence(traceFragment);
                     return false;
                 }
             }
@@ -338,12 +337,7 @@ public class Analyzer {
 
     public void printReport(){
         System.out.println("FAILED SEQUENCE: ");
-        for(Action action : this.report.getFailedSequence().getActions()){
-            System.out.print("\t");
-            PrintingUtilities.printAction(action);
-            System.out.print("\n");
-
-        }
+        PrintingUtilities.printSequence(this.report.getFailedSequence());
 
         System.out.println("");
         System.out.println("GLOBAL STATE ");

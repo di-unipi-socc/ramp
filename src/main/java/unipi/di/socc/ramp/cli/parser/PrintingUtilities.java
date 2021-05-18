@@ -5,6 +5,7 @@ import java.util.List;
 
 import unipi.di.socc.ramp.cli.parser.wrappers.*;
 import unipi.di.socc.ramp.core.analyzer.Plan;
+import unipi.di.socc.ramp.core.analyzer.Sequence;
 import unipi.di.socc.ramp.core.analyzer.actions.*;
 
 import unipi.di.socc.ramp.core.model.Application;
@@ -259,5 +260,13 @@ public class PrintingUtilities {
         }
 
         System.out.println("\n");
+    }
+
+    public static void printSequence(Sequence s) {
+        for(Action action : s.getActions()){
+            System.out.print("\t");
+            PrintingUtilities.printAction(action);
+            System.out.print("\n");
+        }
     }
 }
