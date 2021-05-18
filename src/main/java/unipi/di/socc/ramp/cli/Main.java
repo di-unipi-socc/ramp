@@ -36,7 +36,7 @@ public class Main {
 
         String appPathFile = System.getProperty("user.dir").concat("/data/thinking-app/thinking.json"); 
         String sequencePathFile = System.getProperty("user.dir").concat("/data/thinking-app/deployment/refactored-sequence.json");
-        String planPathFile = System.getProperty("user.dir").concat("/data/thinking-app/undeployment/plan.json");
+        String planPathFile = System.getProperty("user.dir").concat("/data/thinking-app/reconfigure-gui-api/refactored-plan.json");
         String gsPathFile = System.getProperty("user.dir").concat("/data/thinking-app/running-globalstate.json");
 
         Application app = Parser.parseApplication(appPathFile, null);
@@ -48,11 +48,14 @@ public class Main {
         Analyzer analyzer = new Analyzer();
 
         Sequence actions = new Sequence(plan.getActions());
-        if(!analyzer._isValidPlanNew(appGS, plan, new Sequence(),actions.clone()))
-            analyzer.printReport();
-        else
-            System.out.println("valid plan");
-
+        try{ 
+            if(!analyzer.isValidPlan(appGS, plan))
+                analyzer.printReport();
+            else
+                System.out.println("valid plan");
+        } catch(Exception e) {
+            // 
+        }
         // if(!analyzer.sequenceAnalysis(app, sequence, "--valid"))
         //     analyzer.printReport();
         // else

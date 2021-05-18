@@ -287,69 +287,16 @@ public class Analyzer {
 
     //#region PLAN ANALYSIS
 
-    public List<Sequence> generateTraces(Plan plan) {
-        // Clone plan's list of actions and invoke "_generateTraces"
+    public boolean isValidPlan(Application app, Plan plan) {
         Sequence actions = new Sequence(plan.getActions());
-        return _generateTraces(plan, new Sequence(), actions.clone());
+        return _isValidPlan(app,plan,new Sequence(),actions.clone());
     }
-    private List<Sequence> _generateTraces(Plan plan, Sequence traceFragment, Sequence remainingActions) {
-        // Create empty list of traces
-        List<Sequence> traces = new ArrayList<Sequence>();
-
-        // If there are no remainingActions, return the singleton set containing
-        // the sequence denoted by traceFragment
+    
+    private boolean _isValidPlan(Application app, Plan plan, Sequence traceFragment, Sequence remainingActions) {
+        // If there are no remainingActions, check the validity of the trace denoted by traceFragment
         if(remainingActions.getActions().isEmpty()) {
-            List<Action> traceActions = new ArrayList<Action>();
-            traceActions.addAll(traceFragment.getActions());
-            traces.add(new Sequence(traceActions));
-            return traces;
-        }
-        
-        // Otherwise, expand traceFragment with any of the remainingActions (if possible) and recur
-        for(int i=0; i<remainingActions.getActions().size(); i++) {
-            // Extract action "a" to consider and compute "new" remainingActions
-            Sequence newRemainingActions = remainingActions.clone();
-            Action a = newRemainingActions.getActions().remove(i);
-            // If "a" can be added before the other remaining actions
-            boolean validChoice = true;
-            for(Action remaining : newRemainingActions.getActions()) {
-                if(plan.getPartialOrder().get(remaining).contains(a)) {
-                    validChoice = false;
-                    break;
-                }
-            }
-            if(validChoice) {
-                // Concat "a" to "new" traceFragment
-                Sequence newTraceFragment = traceFragment.clone();
-                newTraceFragment.getActions().add(a);
-                // Recur with new traceFragment and new remainingActions
-                traces.addAll(_generateTraces(plan, newTraceFragment, newRemainingActions));
-            }
-        }
-
-        System.out.println(traces.size());
-        // Return all computed traces
-        return traces;
-    }
-
-    public boolean isValidPlanNew(Application app, Plan plan) {
-        // Generate all plan's possible sequential traces
-        List<Sequence> traces = generateTraces(plan);
-        // If any trace is not valid, return false and set failing sequence
-        for(Sequence trace : traces) {
-            if(!this.sequenceAnalysis(app.clone(), trace, "--valid")){
-                this.report.setFailedSequence(trace);
-                return false;
-            }
-        }
-        // Otherwise, return true
-        return true;
-    }
-
-    public boolean _isValidPlanNew(Application app, Plan plan, Sequence traceFragment, Sequence remainingActions) {
-        // If there are no remainingActions, check the trace corresponding to traceFragment
-        if(remainingActions.getActions().isEmpty()) {
-            if(!this.sequenceAnalysis(app.clone(), traceFragment, "--valid")){
+            boolean validTrace = isValidSequence(app.clone(), traceFragment.clone());
+            if(!validTrace) {
                 this.report.setFailedSequence(traceFragment);
                 return false;
             }
@@ -361,109 +308,111 @@ public class Analyzer {
             Sequence newRemainingActions = remainingActions.clone();
             Action a = newRemainingActions.getActions().remove(i);
             // If "a" can be added before the other remaining actions
-            boolean validChoice = true;
+            boolean constraintCompliantAction = true;
             for(Action remaining : newRemainingActions.getActions()) {
                 if(plan.getPartialOrder().get(remaining).contains(a)) {
-                    validChoice = false;
+                    constraintCompliantAction = false;
                     break;
                 }
             }
-            if(validChoice) {
+            if(constraintCompliantAction) {
                 // Concat "a" to "new" traceFragment
                 Sequence newTraceFragment = traceFragment.clone();
                 newTraceFragment.getActions().add(a);
                 // Recur with new traceFragment and new remainingActions
-                if(!_isValidPlanNew(app,plan,newTraceFragment,newRemainingActions))
+                boolean validPlan = _isValidPlan(app,plan,newTraceFragment,newRemainingActions);
+                if(!validPlan)
                     return false;
             }
         }
-
-        // Return all computed traces
+        // If no violation to plan's validity is found, the plan is assumed valid
         return true;
     }
-    
-    public boolean isValidPlan(Application app, Plan plan){
-        int permSize = plan.getActions().size();
+
+
+  
+    // public boolean isValidPlan(Application app, Plan plan){
+    //     int permSize = plan.getActions().size();
 
 
 
-        //creates all perms and check one by one (heap algorithm)
-        int[] c = new int[permSize];        
-        for(int i = 0; i < permSize; i++)
-            c[i] = 0;
+    //     //creates all perms and check one by one (heap algorithm)
+    //     int[] c = new int[permSize];        
+    //     for(int i = 0; i < permSize; i++)
+    //         c[i] = 0;
         
-        int i = 0;
-        while(i < permSize){
+    //     int i = 0;
+    //     while(i < permSize){
             
-            if(c[i] < i){            
-                if(i % 2 == 0)
-                    Collections.swap(plan.getActions(), 0, i);
-                else
-                    Collections.swap(plan.getActions(), i, c[i]);
+    //         if(c[i] < i){            
+    //             if(i % 2 == 0)
+    //                 Collections.swap(plan.getActions(), 0, i);
+    //             else
+    //                 Collections.swap(plan.getActions(), i, c[i]);
               
-                //for each generated permutation of planExecutableElements we check if it respect the constraints, 
-                //if so this is a sequence generated by the management plan
+    //             //for each generated permutation of planExecutableElements we check if it respect the constraints, 
+    //             //if so this is a sequence generated by the management plan
                 
-                Sequence sequentialTrace = new Sequence(plan.getActions());
+    //             Sequence sequentialTrace = new Sequence(plan.getActions());
 
-                if(this.checkConstraints(sequentialTrace, plan.getPartialOrder())){
+    //             if(this.checkConstraints(sequentialTrace, plan.getPartialOrder())){
 
 
 
-                    Application clonedApp = app.clone();
+    //                 Application clonedApp = app.clone();
 
-                    if(!this.sequenceAnalysis(clonedApp, sequentialTrace.clone(), "--valid")){
-                        this.report.setFailedSequence(sequentialTrace);
-                        return false;
+    //                 if(!this.sequenceAnalysis(clonedApp, sequentialTrace.clone(), "--valid")){
+    //                     this.report.setFailedSequence(sequentialTrace);
+    //                     return false;
                         
-                    }
+    //                 }
                     
                     
 
                 
-                }
+    //             }
                 
-                c[i]++;
-                i = 0;
+    //             c[i]++;
+    //             i = 0;
             
-            }else{
-                c[i] = 0;
-                i++;
-            }
+    //         }else{
+    //             c[i] = 0;
+    //             i++;
+    //         }
                                 
-        }
-        return true;
+    //     }
+    //     return true;
 
-    }
-    private boolean checkConstraints(Sequence sequentialTrace, Map<Action, List<Action>> partialOrder){
+    // }
+    // private boolean checkConstraints(Sequence sequentialTrace, Map<Action, List<Action>> partialOrder){
 
-        List<Action> seqTraceActions = sequentialTrace.getActions();
+    //     List<Action> seqTraceActions = sequentialTrace.getActions();
 
-        for(Action action : seqTraceActions){
+    //     for(Action action : seqTraceActions){
             
-            //actions that have to be executed after action
-            List<Action> afterActions = partialOrder.get(action);
+    //         //actions that have to be executed after action
+    //         List<Action> afterActions = partialOrder.get(action);
 
-            if(!afterActions.isEmpty()){
+    //         if(!afterActions.isEmpty()){
 
-                List<Action> subsequence = seqTraceActions.subList(
-                    seqTraceActions.indexOf(action) + 1, 
-                    seqTraceActions.size()
-                );
+    //             List<Action> subsequence = seqTraceActions.subList(
+    //                 seqTraceActions.indexOf(action) + 1, 
+    //                 seqTraceActions.size()
+    //             );
 
-                if(subsequence.isEmpty())
-                    return false;
+    //             if(subsequence.isEmpty())
+    //                 return false;
                 
-                //for each afterAction we check if it is really scheduled to be executed after action
-                for(Action afterAction : afterActions){
-                    if(!subsequence.contains(afterAction))
-                        return false;
-                }
+    //             //for each afterAction we check if it is really scheduled to be executed after action
+    //             for(Action afterAction : afterActions){
+    //                 if(!subsequence.contains(afterAction))
+    //                     return false;
+    //             }
 
-            }
-        }
-        return true;
-    }
+    //         }
+    //     }
+    //     return true;
+    // }
 
     //#endregion
 
