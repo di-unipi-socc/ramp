@@ -19,7 +19,6 @@
         "startM4" : { "action" : "op", "instanceID" : "m4", "opName" : "start" },
         "installA4" : { "action" : "op", "instanceID" : "a4", "opName" : "install" },
         "startA4" : { "action" : "op", "instanceID" : "a4", "opName" : "start" }
-
     }, 
     "partialOrder" : [{
         "before" : "scaleInN1",

@@ -6,7 +6,7 @@
         "stopA2" : {"action" : "op", "instanceID" : "a2", "opName" : "stop"},
         
         "scaleInG1" : {"action" : "scaleIn", "instanceID" : "g1"},
-        "scaleInA1" : {"action" : "scaleIn", "instanceID" : "g2"},
+        "scaleInA1" : {"action" : "scaleIn", "instanceID" : "a1"},
         "scaleInA2" : {"action" : "scaleIn", "instanceID" : "a2"},
 
         "stopN1" : {"action" : "op", "instanceID" : "n1", "opName" : "stop"},
