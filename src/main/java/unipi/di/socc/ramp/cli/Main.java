@@ -47,10 +47,14 @@ public class Main {
 
         Analyzer analyzer = new Analyzer();
 
-        if(!analyzer.planAnalysis(appGS, plan, "--weakly-valid"))
-            analyzer.printReport();
-        else
-            System.out.println("valid plan");
+        try{
+            if(!analyzer.planAnalysis(appGS, plan, "--weakly-valid"))
+                analyzer.printReport();
+            else
+                System.out.println("valid plan");
+        } catch(Exception e) {
+            System.err.println(e);
+        }
         // if(!analyzer.sequenceAnalysis(app, sequence, "--valid"))
         //     analyzer.printReport();
         // else
