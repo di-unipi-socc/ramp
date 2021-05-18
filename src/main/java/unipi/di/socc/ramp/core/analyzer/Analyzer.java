@@ -67,10 +67,14 @@ public class Analyzer {
 
     public boolean planAnalysis(Application app, Plan plan, String property) {
         Sequence actions = new Sequence(plan.getActions());
+        // Case: weakly valid plan analysis
         if(property.equalsIgnoreCase("--weakly-valid"))
             return isValidPlan(app,plan,new Sequence(),actions.clone(),true);
-        else 
+        // Case: valid plan analysis
+        if(property.equalsIgnoreCase("--valid"))
             return isValidPlan(app,plan,new Sequence(),actions.clone(),false);
+        // TODO - Throw exception for unsupported analysis
+        return false;
     }
     
 
@@ -300,14 +304,14 @@ public class Analyzer {
             Sequence newRemainingActions = remainingActions.clone();
             Action a = newRemainingActions.getActions().remove(i);
             // If "a" can be added before the other remaining actions
-            boolean constraintCompliantAction = true;
+            boolean orderPreservingAction = true;
             for(Action remaining : newRemainingActions.getActions()) {
                 if(plan.getPartialOrder().get(remaining).contains(a)) {
-                    constraintCompliantAction = false;
+                    orderPreservingAction = false;
                     break;
                 }
             }
-            if(constraintCompliantAction) {
+            if(orderPreservingAction) {
                 // Concat "a" to "new" traceFragment
                 Sequence newTraceFragment = traceFragment.clone();
                 newTraceFragment.getActions().add(a);
