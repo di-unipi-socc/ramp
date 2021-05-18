@@ -28,8 +28,6 @@ public class Sequence {
     public Sequence clone(){
         List<Action> clonedActions = new ArrayList<>();
         for(Action action : this.actions)
-            //clonedActions.add(action.clone());
-            // TODO cloning actions seems unnecessary, enough to clone lists
             clonedActions.add(action);
         
         return new Sequence(clonedActions);
