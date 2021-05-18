@@ -65,19 +65,12 @@ public class Analyzer {
 
     }
 
-    public boolean planAnalysis(Application app, Plan plan, String property){
-
-        if(property.equals("--valid"))
-            return this.isValidPlan(app, plan);
-        
-        if(property.equals("--weakly-valid"));
-            //return is weakly valid plan
-            
-        
-
-        //TOOD fix
-        return false;
-
+    public boolean planAnalysis(Application app, Plan plan, String property) {
+        Sequence actions = new Sequence(plan.getActions());
+        if(property.equalsIgnoreCase("--weakly-valid"))
+            return _isValidPlan(app,plan,new Sequence(),actions.clone(),true);
+        else 
+            return _isValidPlan(app,plan,new Sequence(),actions.clone(),false);
     }
     
 
@@ -286,17 +279,16 @@ public class Analyzer {
     //#endregion
 
     //#region PLAN ANALYSIS
-
-    public boolean isValidPlan(Application app, Plan plan) {
-        Sequence actions = new Sequence(plan.getActions());
-        return _isValidPlan(app,plan,new Sequence(),actions.clone());
-    }
     
-    private boolean _isValidPlan(Application app, Plan plan, Sequence traceFragment, Sequence remainingActions) {
+    private boolean _isValidPlan(Application app, Plan plan, Sequence traceFragment, Sequence remainingActions, boolean weakValidity) {
         // If there are no remainingActions, check the validity of the trace denoted by traceFragment
         if(remainingActions.getActions().isEmpty()) {
             boolean validTrace = isValidSequence(app.clone(), traceFragment.clone());
-            if(!validTrace) {
+            // Case: Weakly valid plan analysis (found valid trace, return true)
+            if(validTrace && weakValidity)
+                return true;
+            // Case: Valid plan analysis (violation to validity constraints, return false)
+            if(!validTrace && !weakValidity) {
                 this.report.setFailedSequence(traceFragment);
                 return false;
             }
@@ -320,12 +312,21 @@ public class Analyzer {
                 Sequence newTraceFragment = traceFragment.clone();
                 newTraceFragment.getActions().add(a);
                 // Recur with new traceFragment and new remainingActions
-                boolean validPlan = _isValidPlan(app,plan,newTraceFragment,newRemainingActions);
-                if(!validPlan)
+                boolean validPlan = _isValidPlan(app,plan,newTraceFragment,newRemainingActions,weakValidity);
+                // Case: Weakly valid plan analysis (found valid trace, return true)
+                if(validPlan && weakValidity)
+                    return true;
+                // Case: Valid plan analysis (violation to validity constraints, return false)
+                if(!validPlan && !weakValidity) {
+                    this.report.setFailedSequence(traceFragment);
                     return false;
+                }
             }
         }
-        // If no violation to plan's validity is found, the plan is assumed valid
+
+        // Case: Weakly valid plan analysis (plan assumed to not be weakly valid)
+        if(weakValidity) return false;
+        // Case: Valid plan analysis (plan assumed to be valid)
         return true;
     }
 

@@ -49,7 +49,7 @@ public class Main {
 
         Sequence actions = new Sequence(plan.getActions());
         try{ 
-            if(!analyzer.isValidPlan(appGS, plan))
+            if(!analyzer.planAnalysis(appGS, plan, "--valid"))
                 analyzer.printReport();
             else
                 System.out.println("valid plan");
