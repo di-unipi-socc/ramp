@@ -287,6 +287,101 @@ public class Analyzer {
 
     //#region PLAN ANALYSIS
 
+    public List<Sequence> generateTraces(Plan plan) {
+        // Clone plan's list of actions and invoke "_generateTraces"
+        Sequence actions = new Sequence(plan.getActions());
+        return _generateTraces(plan, new Sequence(), actions.clone());
+    }
+    private List<Sequence> _generateTraces(Plan plan, Sequence traceFragment, Sequence remainingActions) {
+        // Create empty list of traces
+        List<Sequence> traces = new ArrayList<Sequence>();
+
+        // If there are no remainingActions, return the singleton set containing
+        // the sequence denoted by traceFragment
+        if(remainingActions.getActions().isEmpty()) {
+            List<Action> traceActions = new ArrayList<Action>();
+            traceActions.addAll(traceFragment.getActions());
+            traces.add(new Sequence(traceActions));
+            return traces;
+        }
+        
+        // Otherwise, expand traceFragment with any of the remainingActions (if possible) and recur
+        for(int i=0; i<remainingActions.getActions().size(); i++) {
+            // Extract action "a" to consider and compute "new" remainingActions
+            Sequence newRemainingActions = remainingActions.clone();
+            Action a = newRemainingActions.getActions().remove(i);
+            // If "a" can be added before the other remaining actions
+            boolean validChoice = true;
+            for(Action remaining : newRemainingActions.getActions()) {
+                if(plan.getPartialOrder().get(remaining).contains(a)) {
+                    validChoice = false;
+                    break;
+                }
+            }
+            if(validChoice) {
+                // Concat "a" to "new" traceFragment
+                Sequence newTraceFragment = traceFragment.clone();
+                newTraceFragment.getActions().add(a);
+                // Recur with new traceFragment and new remainingActions
+                traces.addAll(_generateTraces(plan, newTraceFragment, newRemainingActions));
+            }
+        }
+
+        System.out.println(traces.size());
+        // Return all computed traces
+        return traces;
+    }
+
+    public boolean isValidPlanNew(Application app, Plan plan) {
+        // Generate all plan's possible sequential traces
+        List<Sequence> traces = generateTraces(plan);
+        // If any trace is not valid, return false and set failing sequence
+        for(Sequence trace : traces) {
+            if(!this.sequenceAnalysis(app.clone(), trace, "--valid")){
+                this.report.setFailedSequence(trace);
+                return false;
+            }
+        }
+        // Otherwise, return true
+        return true;
+    }
+
+    public boolean _isValidPlanNew(Application app, Plan plan, Sequence traceFragment, Sequence remainingActions) {
+        // If there are no remainingActions, check the trace corresponding to traceFragment
+        if(remainingActions.getActions().isEmpty()) {
+            if(!this.sequenceAnalysis(app.clone(), traceFragment, "--valid")){
+                this.report.setFailedSequence(traceFragment);
+                return false;
+            }
+        }
+        
+        // Otherwise, expand traceFragment with any of the remainingActions (if possible) and recur
+        for(int i=0; i<remainingActions.getActions().size(); i++) {
+            // Extract action "a" to consider and compute "new" remainingActions
+            Sequence newRemainingActions = remainingActions.clone();
+            Action a = newRemainingActions.getActions().remove(i);
+            // If "a" can be added before the other remaining actions
+            boolean validChoice = true;
+            for(Action remaining : newRemainingActions.getActions()) {
+                if(plan.getPartialOrder().get(remaining).contains(a)) {
+                    validChoice = false;
+                    break;
+                }
+            }
+            if(validChoice) {
+                // Concat "a" to "new" traceFragment
+                Sequence newTraceFragment = traceFragment.clone();
+                newTraceFragment.getActions().add(a);
+                // Recur with new traceFragment and new remainingActions
+                if(!_isValidPlanNew(app,plan,newTraceFragment,newRemainingActions))
+                    return false;
+            }
+        }
+
+        // Return all computed traces
+        return true;
+    }
+    
     public boolean isValidPlan(Application app, Plan plan){
         int permSize = plan.getActions().size();
 

@@ -36,21 +36,27 @@ public class Main {
 
         String appPathFile = System.getProperty("user.dir").concat("/data/thinking-app/thinking.json"); 
         String sequencePathFile = System.getProperty("user.dir").concat("/data/thinking-app/deployment/refactored-sequence.json");
-        String planPathFile = System.getProperty("user.dir").concat("/data/thinking-app/restart-node-maven/plan.json");
+        String planPathFile = System.getProperty("user.dir").concat("/data/thinking-app/undeployment/plan.json");
         String gsPathFile = System.getProperty("user.dir").concat("/data/thinking-app/running-globalstate.json");
 
         Application app = Parser.parseApplication(appPathFile, null);
+        Application appGS = Parser.parseApplication(appPathFile, gsPathFile);
         Sequence sequence = Parser.parseSequence(sequencePathFile);
         Plan plan = Parser.parsePlan(planPathFile);
             
 
         Analyzer analyzer = new Analyzer();
 
-
-        if(!analyzer.sequenceAnalysis(app, sequence, "--valid"))
+        Sequence actions = new Sequence(plan.getActions());
+        if(!analyzer._isValidPlanNew(appGS, plan, new Sequence(),actions.clone()))
             analyzer.printReport();
         else
             System.out.println("valid plan");
+
+        // if(!analyzer.sequenceAnalysis(app, sequence, "--valid"))
+        //     analyzer.printReport();
+        // else
+        //     System.out.println("valid plan");
 
 
         // if(!analyzer.planAnalysis(app, plan, "--valid"))
