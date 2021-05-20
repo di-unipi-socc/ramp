@@ -62,7 +62,8 @@ public class ManagementProtocol {
             this.gamma.put(state, new ArrayList<>());
             this.phi.put(state, new ArrayList<>());
         }
-        //TODO else something??
+        else
+            throw new IllegalArgumentException();
     }
 
     public void addTransition(String startState, String op, String endState){
