@@ -12,7 +12,7 @@ public class Main {
 
     public static void main(String[] args) {
 
-        String appPath = null;
+        String appPath = args[0];;
         String globalStatePath = null;
         String toAnalizePath = null;
         String property = null;
@@ -20,14 +20,12 @@ public class Main {
 
         if(args.length == 4){
             //no global state given
-            appPath = args[0];
             toAnalizePath = args[1];
             type = args[2];
             property = args[3];
         }
         else if(args.length == 5){
             //given global state from where start the analysis
-            appPath = args[0];
             globalStatePath = args[1];
             toAnalizePath = args[2];
             type = args[3];
@@ -117,7 +115,7 @@ public class Main {
         );
 
         System.out.println("\t <type> : --plan, --sequence");
-        System.out.println("\t <property> : --valid, --weakly-valid , --not-valid");
+        System.out.println("\t <property> : --valid, --weakly-valid");
 
         System.out.print("\n\n");
     }
