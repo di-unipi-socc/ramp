@@ -21,9 +21,6 @@ import unipi.di.socc.ramp.core.model.exceptions.InstanceUnknownException;
 import unipi.di.socc.ramp.core.model.exceptions.NodeUnknownException;
 import unipi.di.socc.ramp.core.model.exceptions.RuleNotApplicableException;
 
-//TODO ma le classi devo farle tutte statiche (cosi uso before all) e i campi tutti privati?
-//best practices?
-
 public class IsResolvableFaultTest {
     
     public Application testApp;
