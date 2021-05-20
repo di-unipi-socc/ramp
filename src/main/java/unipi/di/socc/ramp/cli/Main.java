@@ -12,6 +12,11 @@ public class Main {
 
     public static void main(String[] args) {
 
+        if(args.length == 0) {
+            help();
+            return;
+        }
+
         String appPath = args[0];;
         String globalStatePath = null;
         String toAnalizePath = null;
