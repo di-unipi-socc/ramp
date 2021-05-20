@@ -7,9 +7,6 @@ import java.util.Map;
 
 import unipi.di.socc.ramp.core.model.exceptions.*;
 
-//TODO tecnicamente i metodi di global state dovrebbe poterli chiamare solo global state e 
-//application!
-
 public class GlobalState {
     
     private Application app;
@@ -52,7 +49,7 @@ public class GlobalState {
         return instance;
     }
 
-    //TODO needed just for parsing purposes
+    // needed just for parsing with GSON
     public void setApplication(Application app){
         this.app = app;
     }
@@ -184,9 +181,9 @@ public class GlobalState {
             InstanceUnknownException
     {
         NodeInstance instance = this.getNodeInstanceByID(instanceID);
-        //TODO questa e' di un inefficienza mostruosa: sposta neededReqs fuori
+        List<Requirement> neededReqs = instance.getNeededReqs();
         for(Requirement satisfiedReq : this.getSatisfiedReqs(instanceID)){
-            if(!satisfiedReq.isContainment() && !instance.getNeededReqs().contains(satisfiedReq))
+            if(!satisfiedReq.isContainment() && !neededReqs.contains(satisfiedReq))
                 this.removeRuntimeBinding(instanceID, satisfiedReq);
         }
     }
@@ -388,9 +385,7 @@ public class GlobalState {
                     return false;
             }
         }
-        //TODO check
-        //means that a scaleIn on the container was called
-        //the scaleIn called removeRuntimeBindingBothWays and here we are
+        //if here, no vertical binding was involving instance, which is hence broken
         return true;
     }
 

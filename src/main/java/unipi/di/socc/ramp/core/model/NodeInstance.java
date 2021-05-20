@@ -61,7 +61,7 @@ public class NodeInstance {
     }
 
 
-    //TODO: questi due metodi starebbero meglio in ManProtocol? (specie il secondo)
+    //TODO: questi due metodi starebbero meglio in ManProtocol? (JS: il secondo si, il primo no)
     //return the list of transition that could be performed in the current state
     public List<Transition> getPossibleTransitions(){
         List<Transition> possibleTransitions = new ArrayList<>();

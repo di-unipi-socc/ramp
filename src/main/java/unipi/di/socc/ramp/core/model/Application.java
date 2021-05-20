@@ -416,7 +416,7 @@ public class Application{
         this.autodestory();
     }
 
-    //TODO: si chiama destroy, destorys broken instances
+    //TODO: si chiama destroy, destroys broken instances
     private void autodestory()
         throws 
             RuleNotApplicableException, 
@@ -436,17 +436,12 @@ public class Application{
         NullPointerException, 
         RuleNotApplicableException, 
         InstanceUnknownException
-    {   
-        //TODO: possibile?
-        //not a pending fault
-        // if(!this.globalState.getPendingFaults().contains(fault))
-        //     throw new RuleNotApplicableException();
-        
+    {           
         if(fault == null)
             throw new NullPointerException();
-       
-        //not a pending fault
-        if(this.globalState.isResolvableFault(fault))
+
+        // not a pending fault
+        if(!this.globalState.getPendingFaults().contains(fault) || this.globalState.isResolvableFault(fault))
             throw new RuleNotApplicableException();
 
         NodeInstance instance = this.globalState.getNodeInstanceByID(fault.getNodeInstanceID());
