@@ -25,7 +25,7 @@ import unipi.di.socc.ramp.core.model.exceptions.NodeUnknownException;
 import unipi.di.socc.ramp.core.model.exceptions.RuleNotApplicableException;
 
 
-public class ScaleOut1Test {
+public class ScaleOutTest {
 
     public Application testApp;
     public Requirement needyReq;
@@ -48,7 +48,7 @@ public class ScaleOut1Test {
     }
 
     @Test
-    public void testScaleOut1() 
+    public void testScaleOut() 
         throws 
             NullPointerException, 
             IllegalArgumentException, 
@@ -59,26 +59,26 @@ public class ScaleOut1Test {
         {
 
         // EXCEPTION CASES 
-        assertThrows(NullPointerException.class,  () -> this.testApp.scaleOut1(null, "newNodeInstanceID"));
-        assertThrows(NullPointerException.class,  () -> this.testApp.scaleOut1("nodeName", null));
+        assertThrows(NullPointerException.class,  () -> this.testApp.scaleOut(null, "newNodeInstanceID"));
+        assertThrows(NullPointerException.class,  () -> this.testApp.scaleOut("nodeName", null));
         
-        assertThrows(IllegalArgumentException.class,  () -> this.testApp.scaleOut1("", "newNodeInstanceID"));
-        assertThrows(IllegalArgumentException.class,  () -> this.testApp.scaleOut1("nodeName", ""));
+        assertThrows(IllegalArgumentException.class,  () -> this.testApp.scaleOut("", "newNodeInstanceID"));
+        assertThrows(IllegalArgumentException.class,  () -> this.testApp.scaleOut("nodeName", ""));
 
         //hard create needyInstance (to test already used exception)
         NodeInstance dummyInstance = new NodeInstance(this.testApp.getNodes().get("needy"), "state", "dummyInstance");
         this.testApp.getGlobalState().getActiveInstances().put("dummyInstance", dummyInstance);
         this.testApp.getGlobalState().getRuntimeBindings().put("dummyInstance", new ArrayList<>());
 
-        //scaleOut1 an instance whoose id-to-be is already used (dummyInstance)
-        assertThrows(AlreadyUsedIDException.class, () -> this.testApp.scaleOut1("needy", "dummyInstance"));
-        //scaleOut1 of an unknown node
-        assertThrows(NodeUnknownException.class, () -> this.testApp.scaleOut1("unknownNode", "newInstanceID"));
-        //scaleOut1 a node with a containment requirement
-        assertThrows(RuleNotApplicableException.class, () -> this.testApp.scaleOut1("containerNeedy", "newInstanceID"));
+        //scaleOut an instance whoose id-to-be is already used (dummyInstance)
+        assertThrows(AlreadyUsedIDException.class, () -> this.testApp.scaleOut("needy", "dummyInstance"));
+        //scaleOut of an unknown node
+        assertThrows(NodeUnknownException.class, () -> this.testApp.scaleOut("unknownNode", "newInstanceID"));
+        //scaleOut a node with a containment requirement
+        assertThrows(RuleNotApplicableException.class, () -> this.testApp.scaleOut("containerNeedy", "newInstanceID"));
 
         //REAL TESTS
-        this.testApp.scaleOut1("server", "serverInstance");
+        this.testApp.scaleOut("server", "serverInstance");
         //the new instance is in active instances
         assertNotNull(this.testApp.getGlobalState().getActiveInstances().get("serverInstance"));
         //the new instance has inatializated runtime bindings
@@ -87,10 +87,10 @@ public class ScaleOut1Test {
         assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get("serverInstance").isEmpty());
 
         //create needyInstance
-        this.testApp.scaleOut1("needy", "needyInstance");
+        this.testApp.scaleOut("needy", "needyInstance");
         //the new instance is in active instances 
         assertNotNull(this.testApp.getGlobalState().getActiveInstances().get("needyInstance"));
-        //scaleOut1 calls addNewRuntimeBindings and there is server who can satisfy needyReq
+        //scaleOut calls addNewRuntimeBindings and there is server who can satisfy needyReq
         assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get("needyInstance").size() == 1);
         assertEquals(this.needyReq, this.testApp.getGlobalState().getRuntimeBindings().get("needyInstance").get(0).getReq());
 

@@ -67,12 +67,12 @@ public class OpEndTest {
         assertThrows(IllegalArgumentException.class, () -> this.testApp.opEnd("", "go"));
         assertThrows(InstanceUnknownException.class, () -> this.testApp.opEnd("unknownID", "go"));
 
-        this.testApp.scaleOut1("server", "serverID");
+        this.testApp.scaleOut("server", "serverID");
         assertThrows(NullPointerException.class, () -> this.testApp.opEnd("serverID", null));
         assertThrows(IllegalArgumentException.class, () -> this.testApp.opEnd("serverID", ""));
 
         //-- operation failures --
-        this.testApp.scaleOut2("needy", "needyID", "serverID");
+        this.testApp.scaleOutC("needy", "needyID", "serverID");
 
         //needyID has 1 req satisfied (containment req)
         assertTrue(this.testApp.getGlobalState().getSatisfiedReqs("needyID").size() == 1);
@@ -89,7 +89,7 @@ public class OpEndTest {
         //when I put again the binding I have 2 bindings about contReq
         this.testApp.getGlobalState().removeRuntimeBinding("needyID", this.contReq);
         //create again the container
-        this.testApp.scaleOut1("server", "serverID");
+        this.testApp.scaleOut("server", "serverID");
         //put back the containment runtime bindding
         this.testApp.getGlobalState().addRuntimeBinding("needyID", this.contReq, "serverID");
         //now needyID is no longer broken
@@ -109,7 +109,7 @@ public class OpEndTest {
         //needyID has 0 pending faults
         assertTrue(this.testApp.getGlobalState().getPendingFaults("needyID").isEmpty());
        
-        //REAL TESTS (at this point is identical to scaleOut1, not tested all over again)
+        //REAL TESTS (at this point is identical to scaleOut, not tested all over again)
         this.testApp.opEnd("needyID", "go");
         //needyID is in the new state (state2) since it has completed the op "go"
         assertEquals(

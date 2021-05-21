@@ -24,7 +24,7 @@ import unipi.di.socc.ramp.core.model.exceptions.InstanceUnknownException;
 import unipi.di.socc.ramp.core.model.exceptions.NodeUnknownException;
 import unipi.di.socc.ramp.core.model.exceptions.RuleNotApplicableException;
 
-public class ScaleOut2Test {
+public class ScaleOutCTest {
 
     public Application testApp;
     public Requirement containmentReq;
@@ -57,38 +57,38 @@ public class ScaleOut2Test {
             NodeUnknownException
     {
         // EXCEPTION CASES 
-        assertThrows(NullPointerException.class, () -> this.testApp.scaleOut2("needy", "needyInstance", null));
-        assertThrows(IllegalArgumentException.class, () -> this.testApp.scaleOut2("needy", "needyInstance", ""));
-        assertThrows(InstanceUnknownException.class, () -> this.testApp.scaleOut2("needy", "needyInstance", "serverInstance"));
+        assertThrows(NullPointerException.class, () -> this.testApp.scaleOutC("needy", "needyInstance", null));
+        assertThrows(IllegalArgumentException.class, () -> this.testApp.scaleOutC("needy", "needyInstance", ""));
+        assertThrows(InstanceUnknownException.class, () -> this.testApp.scaleOutC("needy", "needyInstance", "serverInstance"));
 
-        this.testApp.scaleOut1("server", "serverInstance");
+        this.testApp.scaleOut("server", "serverInstance");
 
-        assertThrows(NullPointerException.class, () -> this.testApp.scaleOut2(null, "needyInstance", "serverInstance"));
-        assertThrows(NullPointerException.class, () -> this.testApp.scaleOut2("needy", null, "serverInstance"));
+        assertThrows(NullPointerException.class, () -> this.testApp.scaleOutC(null, "needyInstance", "serverInstance"));
+        assertThrows(NullPointerException.class, () -> this.testApp.scaleOutC("needy", null, "serverInstance"));
 
-        assertThrows(IllegalArgumentException.class, () -> this.testApp.scaleOut2("", "needyInstance", "serverInstance"));
-        assertThrows(IllegalArgumentException.class, () -> this.testApp.scaleOut2("needy", "", "serverInstance"));
+        assertThrows(IllegalArgumentException.class, () -> this.testApp.scaleOutC("", "needyInstance", "serverInstance"));
+        assertThrows(IllegalArgumentException.class, () -> this.testApp.scaleOutC("needy", "", "serverInstance"));
         
-        //hard create needyInstance (then we scaleOut2 needy with the same ID and get the exeption)
+        //hard create needyInstance (then we scaleOutC needy with the same ID and get the exeption)
         NodeInstance dummyInstance = new NodeInstance(this.testApp.getNodes().get("needy"), "state", "dummyInstance");
         this.testApp.getGlobalState().getActiveInstances().put("dummyInstance", dummyInstance);
         this.testApp.getGlobalState().getRuntimeBindings().put("dummyInstance", new ArrayList<>());
-        assertThrows(AlreadyUsedIDException.class, () -> this.testApp.scaleOut2("needy", "dummyInstance", "serverInstance"));
+        assertThrows(AlreadyUsedIDException.class, () -> this.testApp.scaleOutC("needy", "dummyInstance", "serverInstance"));
         
-        //scaleOut2 of an unknown node
-        assertThrows(NodeUnknownException.class, () -> this.testApp.scaleOut2("unknownNode", "needyInstance", "serverInstance"));
-        //scaleOut2 of a node without a containment requirement
+        //scaleOutC of an unknown node
+        assertThrows(NodeUnknownException.class, () -> this.testApp.scaleOutC("unknownNode", "needyInstance", "serverInstance"));
+        //scaleOutC of a node without a containment requirement
         assertThrows(
             RuleNotApplicableException.class, 
-            () -> this.testApp.scaleOut2("notNeedy", "notNeedyInstance", "serverInstance")
+            () -> this.testApp.scaleOutC("notNeedy", "notNeedyInstance", "serverInstance")
         );
     
         //REAL TESTS
         //create the needyInstance with its server (containment requirement satisfied)
-        this.testApp.scaleOut2("needy", "needyInstance", "serverInstance");
+        this.testApp.scaleOutC("needy", "needyInstance", "serverInstance");
         //the new instance is in active instances 
         assertNotNull(this.testApp.getGlobalState().getActiveInstances().get("needyInstance"));
-        //scaleOut2 explicitally creates the runtime binding about the containment requirement
+        //scaleOutC explicitally creates the runtime binding about the containment requirement
         assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get("needyInstance").size() == 1);
         assertEquals(
             this.containmentReq, 

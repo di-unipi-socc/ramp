@@ -62,7 +62,7 @@ public class ScaleInTest {
 
         //REAL TESTS
         //-- scale in tests --
-        this.testApp.scaleOut1("server", "serverID");
+        this.testApp.scaleOut("server", "serverID");
         //now serverID is an active instance
         assertTrue(this.testApp.getGlobalState().getActiveInstances().size() == 1);
         assertNotNull(this.testApp.getGlobalState().getActiveInstances().get("serverID"));
@@ -75,11 +75,11 @@ public class ScaleInTest {
         assertNull(this.testApp.getGlobalState().getRuntimeBindings().get("serverID"));
 
         //now we create again serverID
-        this.testApp.scaleOut1("server", "serverID");
+        this.testApp.scaleOut("server", "serverID");
         assertTrue(this.testApp.getGlobalState().getActiveInstances().size() == 1);
 
         //now we create an instance of needy contained by serverID
-        this.testApp.scaleOut2("needy", "needyID", "serverID");
+        this.testApp.scaleOutC("needy", "needyID", "serverID");
         //needyID has 1 satisfied req (about containment)
         assertTrue(this.testApp.getGlobalState().getSatisfiedReqs("needyID").size() == 1);
 
@@ -91,7 +91,7 @@ public class ScaleInTest {
 
         //-- autodestroy test --
         //create again needyID
-        this.testApp.scaleOut2("needy", "needyID", "serverID");
+        this.testApp.scaleOutC("needy", "needyID", "serverID");
         //now we kill serverID
         this.testApp.scaleIn("serverID");
         /*

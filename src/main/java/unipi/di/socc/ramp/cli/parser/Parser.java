@@ -230,7 +230,7 @@ public class Parser {
             //scaleOut1
             if(scaleOutWrap.getContainerID() == null)
             action.add(
-                    new ScaleOut1(
+                    new ScaleOut(
                         scaleOutWrap.getIDToAssign(), 
                         scaleOutWrap.getNodeName()
                     )
@@ -238,7 +238,7 @@ public class Parser {
             else
                 //scaleOut2
                 action.add(
-                    new ScaleOut2(
+                    new ScaleOutC(
                         scaleOutWrap.getIDToAssign(), 
                         scaleOutWrap.getNodeName(), 
                         scaleOutWrap.getContainerID()

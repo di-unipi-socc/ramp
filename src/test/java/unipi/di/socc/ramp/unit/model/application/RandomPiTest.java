@@ -23,7 +23,9 @@ import unipi.di.socc.ramp.core.model.exceptions.InstanceUnknownException;
 import unipi.di.socc.ramp.core.model.exceptions.NodeUnknownException;
 import unipi.di.socc.ramp.core.model.exceptions.RuleNotApplicableException;
 
-//TODO qui uso scaleOut, il test di greedy conta
+//the scaleOut method indirectly calls the PI in use. The "clean" test (where scaleOut is not
+//used to spawn new instances is in GreedyPITest)
+//We later on fully test scaleOut on its own, so here we assume that scaleOut is correct.
 
 public class RandomPiTest {
     public Application testApp;
@@ -44,7 +46,7 @@ public class RandomPiTest {
          * - server offer the right capability serverCap for needyReq
          */
 
-        this.testApp = new Application("testApp", PiVersion.GREEDYPI);
+        this.testApp = new Application("testApp", PiVersion.RANDOMPI);
         this.testApp.addNode(this.createNeedy());
         this.testApp.addNode(this.createServer());
 
@@ -90,23 +92,23 @@ public class RandomPiTest {
         assertThrows(InstanceUnknownException.class, () -> this.testApp.pi("unknown", this.needyReq));
 
         //create first needy (that have an unsatisfied requiremnet needyReq)
-        this.testApp.scaleOut1("needy", "needyInstance");
+        this.testApp.scaleOut("needy", "needyInstance");
 
         //null requirement
         assertThrows(NullPointerException.class, () -> this.testApp.pi("needyInstance", null));
 
         //create 1000 instances of server 
-        for(int i = 0; i < 1000; i++)
-            this.testApp.scaleOut1("server", "server_" + i);;
+        for(int i = 0; i < 10; i++)
+            this.testApp.scaleOut("server", "server_" + i);;
 
         //there are now 101 active instances
-        assertTrue(this.testApp.getGlobalState().getActiveInstances().size() == 1001);
+        assertTrue(this.testApp.getGlobalState().getActiveInstances().size() == 11);
 
         //list of instances that can take care of needyReq (serverA, serverB) (unordered)
         List<NodeInstance> capableInstances = this.testApp.getGlobalState().getCapableInstances("needyInstance", this.needyReq);
-        assertTrue(capableInstances.size() == 1000);
+        assertTrue(capableInstances.size() == 10);
 
-        int indexing[] = new int[1000];
+        int indexing[] = new int[10];
         for(int i = 0; i < 1000; i++){
             NodeInstance randomInstance = this.testApp.pi("needyInstance", this.needyReq);
             assertNotNull(randomInstance);
@@ -115,18 +117,14 @@ public class RandomPiTest {
             indexing[capableInstances.indexOf(randomInstance)]++;
         }
 
-        //TODO
-            //1) poor random performance
-            //2) good random treshhold?
+        int check = 0;
+        for(int i = 0; i < 10; i++){
+            if(indexing[i] > 0)
+                check++;
+        }
 
-        // //since is (pseudo) random, indexing shoult have all the elements at 1
-        // int test = 0;
-        // for(int i = 0; i < 1000; i++){
-        //     if(indexing[i] == 1)
-        //         test++;
-        // }
-
-        // assertTrue(false ,test+"");
+        assertTrue(check >= 2);
+       
 
     }
 

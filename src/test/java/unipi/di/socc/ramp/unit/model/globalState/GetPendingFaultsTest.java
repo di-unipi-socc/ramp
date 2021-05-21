@@ -70,11 +70,11 @@ public class GetPendingFaultsTest {
         assertThrows(InstanceUnknownException.class, () -> gs.getPendingFaults("unknownID"));
 
         //REAL TESTS
-        this.testApp.scaleOut1("server", "serverID");
+        this.testApp.scaleOut("server", "serverID");
         //serverID has no reqs hence no pending faults
         assertTrue(gs.getPendingFaults("serverID").isEmpty());
 
-        this.testApp.scaleOut2("needy", "needyID", "serverID");
+        this.testApp.scaleOutC("needy", "needyID", "serverID");
         //needyID has everything satisfied now
         assertTrue(gs.getSatisfiedReqs("needyID").size() == 3);
         //remove a runtime binding of needyID (about unawReq)

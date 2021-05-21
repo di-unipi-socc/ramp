@@ -68,8 +68,8 @@ public class RemoveAllRuntimeBindingsBothWays {
         );
 
         //real tests
-        this.testApp.scaleOut1("nodeA", "instanceA");
-        this.testApp.scaleOut1("nodeB", "instanceB");
+        this.testApp.scaleOut("nodeA", "instanceA");
+        this.testApp.scaleOut("nodeB", "instanceB");
         this.testApp.getGlobalState().addNewRuntimeBindings("instanceA");
 
         //now both nodes have what they needs

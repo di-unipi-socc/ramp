@@ -27,13 +27,13 @@ public abstract class Action {
             return toCheck.equals(this);
         }
 
-        if(obj instanceof ScaleOut1 && this instanceof ScaleOut1){
-            ScaleOut1 toCheck = (ScaleOut1) obj;
+        if(obj instanceof ScaleOut && this instanceof ScaleOut){
+            ScaleOut toCheck = (ScaleOut) obj;
             return toCheck.equals(this);
         }
 
-        if(obj instanceof ScaleOut2 && this instanceof ScaleOut2){
-            ScaleOut2 toCheck = (ScaleOut2) obj;
+        if(obj instanceof ScaleOutC && this instanceof ScaleOutC){
+            ScaleOutC toCheck = (ScaleOutC) obj;
             return toCheck.equals(this);
         }
 
@@ -59,12 +59,12 @@ public abstract class Action {
             ScaleIn castedThis = (ScaleIn) this;
             return castedThis.clone();
         }
-        if(this instanceof ScaleOut1){
-            ScaleOut1 castedThis = (ScaleOut1) this;
+        if(this instanceof ScaleOut){
+            ScaleOut castedThis = (ScaleOut) this;
             return castedThis.clone();
         }
-        if(this instanceof ScaleOut2){
-            ScaleOut2 castedThis = (ScaleOut2) this;
+        if(this instanceof ScaleOutC){
+            ScaleOutC castedThis = (ScaleOutC) this;
             return castedThis.clone();
         }
 

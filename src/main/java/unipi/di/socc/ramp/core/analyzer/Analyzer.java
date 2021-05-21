@@ -149,7 +149,7 @@ public class Analyzer {
                     if(isResolvableFault){
                         try {
                             //fix the fault by creating a new runtime binding that safisfy it
-                            clonedApp.autoreconnect(pendingFault);
+                            clonedApp.resolveFault(pendingFault);
                             if(!this.isValidSequence(clonedApp, sequence))
                                 return false;
 
@@ -159,9 +159,8 @@ public class Analyzer {
                     }else{
                         try {
                             //handle the fault by applying the fault handler
-                            clonedApp.faultHandler(pendingFault);
+                            clonedApp.handleFault(pendingFault);
                             
-
                             if(faultedOpEnd)
                                 sequence.getActions().remove(0);
 
@@ -178,98 +177,6 @@ public class Analyzer {
         return true;
     }
 
-    // private boolean isWeaklyValidSequence(Application app, Sequence sequence){
-
-    //     //base case
-    //     if(sequence.getActions().isEmpty())
-    //         return true;
-
-    //     // pop the first action of the sequential plan
-    //     Action action = sequence.getActions().remove(0);
-    //     try {
-    //         app.execute(action);
-    //     } catch (FailedOperationException e) {
-    //         //go on, this will be a fault
-    //     } catch (Exception e) {
-    //         this.report.setFailedAction(action);
-    //         this.report.setFailException(e);
-    //         return false;
-    //     }
-
-    //     //check the branches of the faults
-    //     if(this.checkFaultsWeaklyValid(app, sequence))
-    //         return true;
-        
-    //     this.report.setFailedAction(action);
-    //     return false;
-    // }
-    // private boolean checkFaultsWeaklyValid(Application app, Sequence sequence){
-    //     //list of broken instances and pending faults of app just after the execution of action
-    //     List<NodeInstance> brokenInstances;
-    //     List<Fault> pendingFaults;
-    //     try {
-    //         brokenInstances = app.getGlobalState().getBrokenInstances();
-    //         pendingFaults = app.getGlobalState().getPendingFaults();
-    //     } catch (Exception e) {
-    //         return false;
-    //     }
-
-    //     if(app.isPiDeterministic()){
-    //         //application of no-broken-instances
-    //         if(!brokenInstances.isEmpty()){
-    //             Application clonedApp = app.clone();
-    //             try {
-    //                 //this will kill all the broken instances
-    //                 clonedApp.scaleIn(brokenInstances.get(0).getID());
-    //             } catch (Exception e) {
-    //                 return false;
-    //             }
-    //         }
-
-    //         //branching: we keep exploring not handling a single fault
-    //         if(this.isWeaklyValidSequence(app.clone(), sequence))
-    //             return true;
-
-    //         //branching: for each fault we fix it and starts exploring
-    //         if(!pendingFaults.isEmpty()){
-    //             for(Fault pendingFault : pendingFaults){
-    //                 Application clonedApp = app.clone();
-
-    //                 boolean isResolvableFault;
-    //                 try {
-    //                     isResolvableFault = clonedApp.getGlobalState().isResolvableFault(pendingFault);
-    //                 } catch (Exception e) {
-    //                     return false;
-    //                 }
-
-    //                 if(isResolvableFault){
-    //                     try {
-    //                         //fix the fault by creating a new runtime binding that safisfy it
-    //                         clonedApp.autoreconnect(pendingFault);
-    //                         if(this.isWeaklyValidSequence(clonedApp, sequence))
-    //                             return true;
-
-    //                     } catch (Exception e) {
-    //                         return false;
-    //                     }
-    //                 }else{
-    //                     try {
-    //                         //handle the fault by applying the fault handler
-    //                         clonedApp.faultHandler(pendingFault);
-    //                         if(this.isWeaklyValidSequence(clonedApp, sequence))
-    //                             return true;
-
-    //                     } catch (Exception e) {
-    //                         return false;
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //     }
-    //     return false;
-    // }
-
-    //#endregion
 
     //#region PLAN ANALYSIS
     
@@ -323,10 +230,6 @@ public class Analyzer {
     }
 
     //#endregion
-
-
-
-
 
     public void printReport(){
         System.out.println("FAILED SEQUENCE: ");

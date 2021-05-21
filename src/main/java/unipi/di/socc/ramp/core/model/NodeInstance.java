@@ -59,9 +59,7 @@ public class NodeInstance {
     public List<String> getOfferedCaps(){
         return this.nodeType.getManProtocol().getGamma().get(this.currentState);
     }
-
-
-    //TODO: questi due metodi starebbero meglio in ManProtocol? (JS: il secondo si, il primo no)
+    
     //return the list of transition that could be performed in the current state
     public List<Transition> getPossibleTransitions(){
         List<Transition> possibleTransitions = new ArrayList<>();

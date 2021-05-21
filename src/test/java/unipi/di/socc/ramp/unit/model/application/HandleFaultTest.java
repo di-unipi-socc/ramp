@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -16,13 +17,14 @@ import unipi.di.socc.ramp.core.model.NodeReq;
 import unipi.di.socc.ramp.core.model.PiVersion;
 import unipi.di.socc.ramp.core.model.Requirement;
 import unipi.di.socc.ramp.core.model.RequirementSort;
-import unipi.di.socc.ramp.core.model.RuntimeBinding;
 import unipi.di.socc.ramp.core.model.exceptions.AlreadyUsedIDException;
+import unipi.di.socc.ramp.core.model.exceptions.FailedFaultHandlingExecption;
 import unipi.di.socc.ramp.core.model.exceptions.InstanceUnknownException;
 import unipi.di.socc.ramp.core.model.exceptions.NodeUnknownException;
 import unipi.di.socc.ramp.core.model.exceptions.RuleNotApplicableException;
 
-public class AutoreconnectTest {
+
+public class HandleFaultTest {
     public Application testApp;
     public Requirement awReq;
     public Requirement unawReq;
@@ -46,62 +48,59 @@ public class AutoreconnectTest {
     }
 
     @Test
-    public void autoreconnectTest() 
+    public void handleFaultTest() 
         throws 
             NullPointerException, 
             IllegalArgumentException, 
             AlreadyUsedIDException, 
             RuleNotApplicableException, 
             InstanceUnknownException, 
-            NodeUnknownException
+            NodeUnknownException, 
+            FailedFaultHandlingExecption
     {
         //exception cases
-        assertThrows(NullPointerException.class, () -> this.testApp.autoreconnect(null));
-
-        this.testApp.scaleOut1("needy", "needyID");
-        //needyID has two fault pending non resolvable fault now
+        assertThrows(NullPointerException.class, () -> this.testApp.handleFault(null));
+        
+        this.testApp.scaleOut("needy", "needyID");
+        //needyID has now 2 non resolvable faults
         assertTrue(this.testApp.getGlobalState().getPendingFaults("needyID").size() == 2);
         assertTrue(this.testApp.getGlobalState().getResolvableFaults("needyID").isEmpty());
 
-        Fault nonResolvableFault = this.testApp.getGlobalState().getPendingFaults("needyID").get(0);
-        assertThrows(
-            RuleNotApplicableException.class, 
-            () -> this.testApp.autoreconnect(nonResolvableFault)
-        );
-        Fault unknownInstanceFault = new Fault("unknownID", this.awReq);
-        assertThrows(
-            InstanceUnknownException.class, 
-            () -> this.testApp.autoreconnect(unknownInstanceFault)
-        );
-
-        //REAL TESTS
-        //starts from scratch
-        this.testApp.scaleIn("needyID");
-
-        this.testApp.scaleOut1("server", "serverID1");
-        this.testApp.scaleOut1("needy", "needyID");
-
-        this.testApp.scaleOut1("server", "serverID2");
-
-        //needyID has both of its reqs satisfied 
-        assertTrue(this.testApp.getGlobalState().getSatisfiedReqs("needyID").size() == 2);
-        //both of the reqs are handled by serverID1
-        for(RuntimeBinding needyRB : this.testApp.getGlobalState().getRuntimeBindings().get("needyID"))
-            assertEquals("serverID1", needyRB.getNodeInstanceID());
-
-        //now we kill serverID1
-        this.testApp.scaleIn("serverID1");
-        //needyID has 2 pending faults, 1 of them is resolvable (unawReq by serverID2)
+        this.testApp.scaleOut("server", "serverID");
+        //needyID now has 2 pending faults, 1 of them resolvable thanks to serverID
         assertTrue(this.testApp.getGlobalState().getPendingFaults("needyID").size() == 2);
         assertTrue(this.testApp.getGlobalState().getResolvableFaults("needyID").size() == 1);
-        
-        //we fix the resolvable fault
+
         Fault resolvableFault = this.testApp.getGlobalState().getResolvableFaults("needyID").get(0);
-        this.testApp.autoreconnect(resolvableFault);
-        //now needyID has 1 satisfied req, 1 pending fault and 0 resolvable fault
-        assertTrue(this.testApp.getGlobalState().getSatisfiedReqs("needyID").size() == 1);
-        assertTrue(this.testApp.getGlobalState().getPendingFaults("needyID").size() == 1);
-        assertTrue(this.testApp.getGlobalState().getResolvableFaults("needyID").size() == 0);
+        assertThrows(RuleNotApplicableException.class, () -> this.testApp.handleFault(resolvableFault));
+
+        Fault tmp = null;
+        for(Fault f : this.testApp.getGlobalState().getPendingFaults("needyID")){
+            if(f.getReq().isReplicaAware())
+                tmp = f;
+        }
+        //needed: lambda requries final local variables
+        final Fault nonResolvableFault = tmp;
+        //fails because needy has not a fault handling state for this fault
+        assertThrows(
+            FailedFaultHandlingExecption.class, 
+            () -> this.testApp.handleFault(nonResolvableFault)
+        );
+
+        //real tests    
+        //add the fault handling state
+        ManagementProtocol needyMP = this.testApp.getNodes().get("needy").getManProtocol();
+        //phi: faulted state -> states for fault handling
+        needyMP.getPhi().get("state").add("damaged");
+
+        this.testApp.handleFault(nonResolvableFault);
+        //needyID is in damaged state
+        assertEquals(
+            "damaged", 
+            this.testApp.getGlobalState().getActiveInstances().get("needyID").getCurrentState()
+        );
+        //in the current state needyID dont requires nothing (hence has no faults)
+        assertTrue(this.testApp.getGlobalState().getPendingFaults("needyID").isEmpty());
     }
 
     public Node createNeedy(){
@@ -110,6 +109,9 @@ public class AutoreconnectTest {
         needy.addRequirement(this.unawReq);
 
         ManagementProtocol needyMP = needy.getManProtocol();
+        //phi entry added in test
+        needyMP.addState("damaged");
+
         //rho: state -> needed req in that state
         needyMP.getRho().get("state").add(this.awReq);
         needyMP.getRho().get("state").add(this.unawReq);
@@ -128,6 +130,4 @@ public class AutoreconnectTest {
 
         return server;
     }
-
-
 }

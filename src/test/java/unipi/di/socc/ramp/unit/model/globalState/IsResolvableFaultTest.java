@@ -64,7 +64,7 @@ public class IsResolvableFaultTest {
         );
 
         //real tests
-        this.testApp.scaleOut1("needy", "needyID");
+        this.testApp.scaleOut("needy", "needyID");
         //needyID has no satisfied requirements
         assertTrue(this.testApp.getGlobalState().getSatisfiedReqs("needyID").isEmpty());
         //needyID requires two requirements in its state, so there are two pending faults
@@ -74,7 +74,7 @@ public class IsResolvableFaultTest {
             assertFalse(this.testApp.getGlobalState().isResolvableFault(f));
 
         //now we create an instance of server
-        this.testApp.scaleOut1("server", "serverID");
+        this.testApp.scaleOut("server", "serverID");
         //still 2 pending faults
         assertTrue(this.testApp.getGlobalState().getPendingFaults("needyID").size() == 2);
         //one of the pending faults is now a resolvable fault (the one about unawReq)

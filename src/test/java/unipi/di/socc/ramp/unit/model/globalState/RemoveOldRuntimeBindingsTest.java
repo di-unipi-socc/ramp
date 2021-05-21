@@ -59,9 +59,9 @@ public class RemoveOldRuntimeBindingsTest {
         assertThrows(InstanceUnknownException.class, () -> this.testApp.getGlobalState().removeOldRuntimeBindings("unknownID"));
 
         //real tests
-        this.testApp.scaleOut1("server", "serverInstance");
+        this.testApp.scaleOut("server", "serverInstance");
         //create needyInstance
-        this.testApp.scaleOut1("needy", "needyInstance");
+        this.testApp.scaleOut("needy", "needyInstance");
         //scaleOut1 automatically satisfy the needed requirement of needy (addNewRuntimeBindings)
         assertTrue(this.testApp.getGlobalState().getRuntimeBindings().get("needyInstance").size() == 1);
 

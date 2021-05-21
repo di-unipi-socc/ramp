@@ -59,15 +59,15 @@ public class OpStartTest {
         assertThrows(IllegalArgumentException.class, () -> this.testApp.opStart("", "go"));
         assertThrows(InstanceUnknownException.class, () -> this.testApp.opStart("unknownID", "go"));
 
-        this.testApp.scaleOut1("server", "serverInstance");
+        this.testApp.scaleOut("server", "serverInstance");
         assertThrows(NullPointerException.class, () -> this.testApp.opStart("serverInstance", null));
         assertThrows(IllegalArgumentException.class, () -> this.testApp.opStart("serverInstance", ""));
         //undefined operation of a node (server has no op)
         assertThrows(OperationNotAvailableException.class, () -> this.testApp.opStart("serverInstance", "op"));
 
         //real tests
-        this.testApp.scaleOut1("needy", "needyInstance");
-        //needyInstance has one requirement (needyReq) satisfied thx to scaleOut1
+        this.testApp.scaleOut("needy", "needyInstance");
+        //needyInstance has one requirement (needyReq) satisfied thx to scaleOut
         assertTrue(this.testApp.getGlobalState().getSatisfiedReqs("needyInstance").size() == 1);
 
         //now we make the operation

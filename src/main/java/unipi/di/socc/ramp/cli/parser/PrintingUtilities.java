@@ -187,16 +187,16 @@ public class PrintingUtilities {
     }
 
     public static void printAction(unipi.di.socc.ramp.core.analyzer.actions.Action action){
-        if(action instanceof ScaleOut1){
-            ScaleOut1 castedAction = (ScaleOut1) action;
+        if(action instanceof ScaleOut){
+            ScaleOut castedAction = (ScaleOut) action;
             System.out.print(
                 castedAction.getActionName() + " " + 
                 castedAction.getNodeName() + " " + 
                 castedAction.getIDToAssign()
             );
         }
-        if(action instanceof ScaleOut2){
-            ScaleOut2 castedAction = (ScaleOut2) action;
+        if(action instanceof ScaleOutC){
+            ScaleOutC castedAction = (ScaleOutC) action;
             System.out.print(
                 castedAction.getActionName() + " " + 
                 castedAction.getNodeName() + " " + 

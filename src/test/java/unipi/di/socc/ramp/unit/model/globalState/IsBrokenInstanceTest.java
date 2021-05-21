@@ -64,9 +64,9 @@ public class IsBrokenInstanceTest {
         assertThrows(InstanceUnknownException.class, () -> this.testApp.getGlobalState().isBrokenInstance("unknownID"));
 
         //REAL TESTS
-        this.testApp.scaleOut1("unawareServer", "unawareServerID");
-        this.testApp.scaleOut1("containerServer", "containerServerID");
-        this.testApp.scaleOut2("needy", "needyID", "containerServerID");
+        this.testApp.scaleOut("unawareServer", "unawareServerID");
+        this.testApp.scaleOut("containerServer", "containerServerID");
+        this.testApp.scaleOutC("needy", "needyID", "containerServerID");
 
         //containerServerID has no requirement at all, so it is not a broken instance
         assertFalse(this.testApp.getGlobalState().isBrokenInstance("containerServerID"));
@@ -86,7 +86,7 @@ public class IsBrokenInstanceTest {
         assertTrue(this.testApp.getGlobalState().isBrokenInstance("needyID"));
         
         //we recreate again the container instance
-        this.testApp.scaleOut1("containerServer", "containerServerID");
+        this.testApp.scaleOut("containerServer", "containerServerID");
         //we put again the runtime binding
         this.testApp.getGlobalState().addRuntimeBinding("needyID", this.containmentReq, "containerServerID");
         //needyID is no longer broken

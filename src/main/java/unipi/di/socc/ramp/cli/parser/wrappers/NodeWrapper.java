@@ -28,8 +28,6 @@ public class NodeWrapper {
         this.managementProtocol = managementProtocol;
     }
 
-    //TODO: rinomina getMP in getWrappedMP
-
     public List<String> getCapabilities() {
         return capabilities;
     }

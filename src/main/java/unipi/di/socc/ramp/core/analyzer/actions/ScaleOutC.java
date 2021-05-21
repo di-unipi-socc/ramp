@@ -2,13 +2,13 @@ package unipi.di.socc.ramp.core.analyzer.actions;
 
 import java.util.Objects;
 
-public class ScaleOut2 extends Action{
+public class ScaleOutC extends Action{
 
     private final String idToAssign;
     private final String nodeName;
     private final String containerID;
 
-    public ScaleOut2(String idToAssign, String nodeName, String containerID) {
+    public ScaleOutC(String idToAssign, String nodeName, String containerID) {
         this.setAction();
         this.idToAssign = idToAssign;
         this.nodeName = nodeName;
@@ -16,7 +16,7 @@ public class ScaleOut2 extends Action{
     }
 
     public void setAction(){
-        this.action = "scaleOut2";
+        this.action = "scaleOutC";
     }
     public String getContainerID() {
         return containerID;
@@ -30,8 +30,8 @@ public class ScaleOut2 extends Action{
     
     @Override
     public boolean equals(Object obj){
-        if(obj instanceof ScaleOut2){
-            ScaleOut2 check = (ScaleOut2) obj;
+        if(obj instanceof ScaleOutC){
+            ScaleOutC check = (ScaleOutC) obj;
             return 
                 check.getIDToAssign().equals(this.idToAssign) && 
                 check.getNodeName().equals(this.nodeName) && 
@@ -51,7 +51,7 @@ public class ScaleOut2 extends Action{
     }
 
     @Override
-    public ScaleOut2 clone(){
-        return new ScaleOut2(this.idToAssign, this.nodeName, this.containerID);
+    public ScaleOutC clone(){
+        return new ScaleOutC(this.idToAssign, this.nodeName, this.containerID);
     }
 }

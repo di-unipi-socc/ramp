@@ -290,7 +290,6 @@ public class Application{
         this.globalState.addNewRuntimeBindings(instanceID);
     }
 
-    //TODO questo si chiama scaleOut
     /**
      * 
      * @param nodeName name of the Node of which we want to create an instance
@@ -301,7 +300,7 @@ public class Application{
      * @throws AlreadyUsedIDException
      * @throws RuleNotApplicableException
      */
-    public NodeInstance scaleOut1(String nodeName, String newNodeInstanceID)
+    public NodeInstance scaleOut(String nodeName, String newNodeInstanceID)
         throws
             NullPointerException, 
             IllegalArgumentException, 
@@ -324,7 +323,7 @@ public class Application{
             throw new NodeUnknownException();
             
         for(Requirement req : node.getReqs()){
-            //scaleOut1 do not handle such nodes
+            //scaleOut do not handle such nodes
             if(req.isContainment())
                 throw new RuleNotApplicableException();
         }
@@ -341,9 +340,7 @@ public class Application{
         return newNodeInstance;
     }   
 
-    //TODO: questo si chiama scaleOutC
-    //adatta anche nomi actions analyzer
-    public NodeInstance scaleOut2(String nodeName, String newNodeInstanceID, String containerID)
+    public NodeInstance scaleOutC(String nodeName, String newNodeInstanceID, String containerID)
         throws 
             RuleNotApplicableException,
             NullPointerException, 
@@ -413,11 +410,10 @@ public class Application{
         this.globalState.getRuntimeBindings().remove(instanceID);
 
         //if instance was a container this cause the death of the instances it was containing
-        this.autodestory();
+        this.destroy();
     }
 
-    //TODO: si chiama destroy, destroys broken instances
-    private void autodestory()
+    private void destroy()
         throws 
             RuleNotApplicableException, 
             NullPointerException, 
@@ -429,8 +425,7 @@ public class Application{
             this.scaleIn(brokenInstances.get(0).getID());
     }
 
-    //this was fault() TODO: si chiama handleFault
-    public void faultHandler(Fault fault)
+    public void handleFault(Fault fault)
         throws  
         FailedFaultHandlingExecption, 
         NullPointerException, 
@@ -479,7 +474,6 @@ public class Application{
         this.globalState.addNewRuntimeBindings(instance.getID());
     }
 
-    //TODO: si chiama resolveFault
     /***
      * @param fault the fault to solve by finding a new server instance for the failed requirement
      * @throws NullPointerException
@@ -487,7 +481,7 @@ public class Application{
      * @throws InstanceUnknownException
      * @throws RuleNotApplicableException
      */
-    public void autoreconnect(Fault fault)
+    public void resolveFault(Fault fault)
         throws 
             NullPointerException,
             IllegalArgumentException, 
@@ -654,13 +648,13 @@ public class Application{
                 ScaleIn scaleIn = (ScaleIn) action;
                 this.scaleIn(scaleIn.getInstanceID());
                 break;
-            case "scaleOut1":
-                ScaleOut1 scaleOut1 = (ScaleOut1) action;
-                this.scaleOut1(scaleOut1.getNodeName(), scaleOut1.getIDToAssign());
+            case "scaleOut":
+                ScaleOut scaleOut = (ScaleOut) action;
+                this.scaleOut(scaleOut.getNodeName(), scaleOut.getIDToAssign());
                 break;
-            case "scaleOut2": 
-                ScaleOut2 scaleOut2 = (ScaleOut2) action;
-                this.scaleOut2(scaleOut2.getNodeName(), scaleOut2.getIDToAssign(), scaleOut2.getContainerID());
+            case "scaleOutC": 
+                ScaleOutC scaleOutC = (ScaleOutC) action;
+                this.scaleOutC(scaleOutC.getNodeName(), scaleOutC.getIDToAssign(), scaleOutC.getContainerID());
                 break;
 
             default:
