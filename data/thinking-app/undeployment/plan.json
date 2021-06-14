@@ -117,15 +117,6 @@
             "before" : "stopA2", 
             "after" : "stopN1"
         },
-
-
-
-       
-
-
-
-
-
         {
             "before" : "stopN1", 
             "after" : "scaleInN1"
