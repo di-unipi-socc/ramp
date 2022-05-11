@@ -1,6 +1,6 @@
 # RAMP: Replica-Aware Management Protocols
 This repository provides an implementation of the modelling and analysis framework given by replica-aware management protocols, which is presented in
-> Soldani J, Cameriero M, Paparelli G, Brogi A. _Modelling and Analysing Replica- and Fault-aware Management of Horizontally Scalable Applications_, Submitted for Publication
+> Soldani J, Cameriero M, Paparelli G, Brogi A. _Modelling and Analysing Replica- and Fault-aware Management of Horizontally Scalable Applications_, ACM Trans. Internet Technol. Just Accepted (January 2022). DOI: 10.1145/3511302
 
 ## About RAMP
 RAMP is a Maven project, whose sources are organized in two main parts:
